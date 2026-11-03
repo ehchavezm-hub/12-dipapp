@@ -8,10 +8,10 @@ class Settings(BaseSettings):
     """Centralised settings — sourced from environment or .env file."""
 
     NEXTAUTH_SECRET: str
-    ANTHROPIC_API_KEY: str
-    OPENAI_API_KEY: str
-    UPSTASH_REDIS_REST_URL: str
-    UPSTASH_REDIS_REST_TOKEN: str
+    ANTHROPIC_API_KEY: str = ""
+    OPENAI_API_KEY: str = ""
+    UPSTASH_REDIS_REST_URL: str = ""
+    UPSTASH_REDIS_REST_TOKEN: str = ""
     ALLOWED_ORIGINS: str = "http://localhost:3000"
 
     model_config = SettingsConfigDict(env_file=".env")
