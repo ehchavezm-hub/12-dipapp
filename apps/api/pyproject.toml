@@ -18,6 +18,7 @@ dependencies = [
     "openai",
     "pdfplumber",
     "pytesseract",
+    "tiktoken",
     "upstash-redis",
     "tenacity",
     "uvicorn[standard]",
@@ -38,6 +39,7 @@ include = ["app*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.pyright]
 pythonVersion = "3.11"

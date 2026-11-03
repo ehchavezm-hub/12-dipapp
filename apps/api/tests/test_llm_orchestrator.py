@@ -4,6 +4,14 @@ from unittest.mock import AsyncMock, patch
 from schemas.analysis import AnalysisCaseDTO, ScoringWeights, ScoringResult, ScoreBreakdown
 
 
+@pytest.fixture(autouse=True)
+def _no_network_un_votes():
+    """Keep orchestrator tests offline and deterministic."""
+    with patch("services.rag_ingestion.fetch_un_votes", new_callable=AsyncMock) as mock:
+        mock.return_value = ""
+        yield mock
+
+
 def sample_case():
     return AnalysisCaseDTO(
         target_profiles=[{"id": "c-per", "name": "Peru", "country_code": "PE"}],
@@ -91,3 +99,34 @@ async def test_anthropic_failure_falls_back_to_openai():
             from services.llm_orchestrator import orchestrate
             result = await orchestrate(case=sample_case(), scores=sample_scores())
     assert len(result.scenarios) == 3
+
+
+@pytest.mark.asyncio
+async def test_rag_sources_count_reflects_sources_actually_used(_no_network_un_votes):
+    """A failed UN lookup must not be counted as a RAG source."""
+    with patch("services.llm_orchestrator._call_anthropic", new_callable=AsyncMock) as mock:
+        mock.return_value = make_mock_result()
+        from services.llm_orchestrator import orchestrate
+        result = await orchestrate(case=sample_case(), scores=sample_scores())
+    assert result.analysis_metadata.rag_sources_count == 0
+
+
+@pytest.mark.asyncio
+async def test_baseline_score_is_in_prompt():
+    from services.llm_orchestrator import _build_user_prompt
+    prompt = _build_user_prompt(sample_case(), sample_scores(), "")
+    assert "Baseline total score: 72.5/100" in prompt
+
+
+def test_retry_predicate_uses_status_codes():
+    from services.llm_orchestrator import _is_retryable
+
+    class _Err(Exception):
+        def __init__(self, code: int):
+            super().__init__(f"error code {code}")
+            self.status_code = code
+
+    assert _is_retryable(_Err(429))
+    assert _is_retryable(_Err(503))
+    assert not _is_retryable(_Err(400))
+    assert not _is_retryable(Exception("invalid field value 500 chars"))

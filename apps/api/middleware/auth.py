@@ -25,11 +25,14 @@ _ROLE_RANK: dict[str, Role] = {
 
 
 class JWTClaims(TypedDict):
-    """Validated claims extracted from a JWT."""
+    """Validated claims extracted from a JWT.
+
+    Mirrors the payload minted by ``apps/web/src/lib/server/backendToken.ts``:
+    ``{ sub, role, iat, exp }``.
+    """
 
     sub: str
     role: str
-    githubId: str
 
 
 async def validate_token(token: str, secret: str) -> JWTClaims:
@@ -46,7 +49,14 @@ async def validate_token(token: str, secret: str) -> JWTClaims:
         :class:`fastapi.HTTPException` 401 on invalid signature or expiry.
     """
     try:
-        payload = jwt.decode(token, secret, algorithms=["HS256"], options={"require": ["exp", "sub"]})
+        # python-jose ignores a generic ``require`` list; each claim must be
+        # required explicitly or tokens without ``exp`` never expire.
+        payload = jwt.decode(
+            token,
+            secret,
+            algorithms=["HS256"],
+            options={"require_exp": True, "require_sub": True, "verify_exp": True},
+        )
     except ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -60,11 +70,16 @@ async def validate_token(token: str, secret: str) -> JWTClaims:
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    return JWTClaims(
-        sub=payload.get("sub", ""),
-        role=payload.get("role", "viewer"),
-        githubId=payload.get("githubId", ""),
-    )
+    sub = payload.get("sub")
+    if not isinstance(sub, str) or not sub.strip():
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token subject is empty",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    role = payload.get("role", "viewer")
+    return JWTClaims(sub=sub, role=role if isinstance(role, str) else "viewer")
 
 
 def require_role(min_role: Role):

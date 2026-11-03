@@ -35,3 +35,21 @@ export interface ThreeScenariosResult {
   scenarios: [Scenario, Scenario, Scenario]
   analysis_metadata: AnalysisMetadata
 }
+
+/** Deterministic pre-LLM score (backend `ScoringResult`). */
+export interface ScoreBreakdown {
+  affinity: number
+  history: number
+  interests: number
+}
+
+export interface ScoringResult {
+  score_total: number
+  breakdown: ScoreBreakdown
+  litigation_penalty: number
+}
+
+/** POST /analysis/ response (backend `AnalysisResponse`). */
+export interface AnalysisResponse extends ThreeScenariosResult {
+  scoring: ScoringResult
+}

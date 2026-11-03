@@ -1,7 +1,9 @@
 """RAG context builder with domain whitelist and UN vote fetching."""
 from __future__ import annotations
 
+import asyncio
 import logging
+from datetime import date
 from urllib.parse import urlparse
 
 import httpx
@@ -61,9 +63,10 @@ async def fetch_un_votes(country: str, years: int) -> str:
     Calls the UN DATA API (or a stub when unavailable). Returns an empty string
     on any network error — graceful degradation.
     """
+    current_year = date.today().year
     url = (
         f"https://data.un.org/ws/rest/data/DF_GA_Voting_Records/A..{country}/"
-        f"?startPeriod={(2026 - years)}&endPeriod=2026&format=json"
+        f"?startPeriod={current_year - years}&endPeriod={current_year}&format=json"
     )
     if not is_domain_allowed(url):
         logger.warning("fetch_un_votes: domain not in whitelist for URL %s", url)
@@ -82,23 +85,28 @@ async def fetch_un_votes(country: str, years: int) -> str:
         return ""
 
 
+async def collect_rag_parts(case: AnalysisCaseDTO) -> list[str]:
+    """Collect RAG context blocks (UN vote summaries + sanitized support documents).
+
+    UN vote lookups run concurrently; failed lookups are dropped, so the
+    length of the result is the number of sources actually used.
+    """
+    votes = await asyncio.gather(
+        *(fetch_un_votes(p.country_code, case.analysis_period_years) for p in case.target_profiles)
+    )
+    parts: list[str] = [
+        f"[UN Voting — {profile.name}]\n{text}"
+        for profile, text in zip(case.target_profiles, votes)
+        if text
+    ]
+    parts.extend(
+        f"[Document: {doc.source} #{doc.chunk_index}]\n{doc.content}"
+        for doc in case.support_documents
+        if doc.content.strip()
+    )
+    return parts
+
+
 async def build_rag_context(case: AnalysisCaseDTO) -> str:
     """Build a RAG context string from UN vote data and support documents."""
-    parts: list[str] = []
-
-    # Fetch UN vote summaries for each target country
-    for profile in case.target_profiles:
-        votes_text = await fetch_un_votes(
-            profile.country_code, case.analysis_period_years
-        )
-        if votes_text:
-            parts.append(f"[UN Voting — {profile.name}]\n{votes_text}")
-
-    # Append support documents (DocumentChunk objects or plain dicts)
-    for doc in case.support_documents:
-        if hasattr(doc, "content"):
-            parts.append(f"[Document]\n{doc.content}")
-        elif isinstance(doc, dict) and "content" in doc:
-            parts.append(f"[Document]\n{doc['content']}")
-
-    return "\n\n".join(parts)
+    return "\n\n".join(await collect_rag_parts(case))

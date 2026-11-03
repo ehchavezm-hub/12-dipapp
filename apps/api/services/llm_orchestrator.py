@@ -12,11 +12,11 @@ from tenacity import (
     retry,
     retry_if_exception,
     stop_after_attempt,
-    wait_exponential,
+    wait_random_exponential,
 )
 
 from schemas.analysis import AnalysisCaseDTO, ScoringResult, ThreeScenariosResult
-from services.rag_ingestion import build_rag_context
+from services.rag_ingestion import collect_rag_parts
 
 logger = logging.getLogger(__name__)
 
@@ -43,9 +43,18 @@ chancelleries across Latin America on geopolitical strategy.
 
 ## Output format
 Return exactly three diplomatic scenarios labeled A, B, C:
-- A: Most ambitious / integrationist
-- B: Pragmatic / incremental
-- C: Minimalist / status-quo plus
+- A: Optimal — most ambitious / integrationist
+- B: Moderate — pragmatic / incremental
+- C: Contingency — minimalist / status-quo plus
+
+## Numeric fields
+- `score_total` (0-100): start from the deterministic baseline score provided in the \
+request and adjust it by at most ±15 points according to how well the scenario \
+exploits the affinity, treaty history and shared interests described.
+- `viability_score` (0-100): probability of successful execution within the analysis \
+period, considering political will, legal feasibility (Art. 38 hierarchy), \
+litigation exposure and resource requirements.
+- Always justify both numbers in `chain_of_thought` before stating them.
 
 ## Few-shot examples
 
@@ -72,18 +81,24 @@ When analyzing, always show explicit reasoning before conclusions (chain_of_thou
 # ---------------------------------------------------------------------------
 
 
+_RETRYABLE_STATUS = {408, 409, 429, 500, 502, 503, 504, 529}
+
+
 def _is_retryable(exc: BaseException) -> bool:
-    """Retry on 429 / 5xx-like errors from any SDK."""
+    """Retry on 429 / 5xx and connection errors from the Anthropic or OpenAI SDKs."""
+    if isinstance(exc, (anthropic.APIConnectionError, openai.APIConnectionError)):
+        return True
+    status_code = getattr(exc, "status_code", None)
+    if isinstance(status_code, int):
+        return status_code in _RETRYABLE_STATUS
     msg = str(exc).lower()
-    return any(
-        kw in msg for kw in ("429", "500", "502", "503", "rate limit", "overloaded")
-    )
+    return any(kw in msg for kw in ("rate limit", "overloaded"))
 
 
 _retry_decorator = retry(
     retry=retry_if_exception(_is_retryable),
     stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=1, max=10),
+    wait=wait_random_exponential(multiplier=1, min=1, max=10),  # backoff + jitter
     reraise=True,
 )
 
@@ -145,7 +160,8 @@ async def orchestrate(case: AnalysisCaseDTO, scores: ScoringResult) -> ThreeScen
     """Build RAG context, call Anthropic, fall back to OpenAI on failure."""
     t0 = time.monotonic()
 
-    rag_context = await build_rag_context(case)
+    rag_parts = await collect_rag_parts(case)
+    rag_context = "\n\n".join(rag_parts)
 
     user_prompt = _build_user_prompt(case, scores, rag_context)
 
@@ -162,9 +178,7 @@ async def orchestrate(case: AnalysisCaseDTO, scores: ScoringResult) -> ThreeScen
     # Patch metadata with actual runtime values
     result.analysis_metadata.model_used = model_used
     result.analysis_metadata.processing_time_s = round(elapsed, 2)
-    result.analysis_metadata.rag_sources_count = len(case.target_profiles) + len(
-        case.support_documents
-    )
+    result.analysis_metadata.rag_sources_count = len(rag_parts)
 
     return result
 
@@ -188,8 +202,8 @@ def _build_user_prompt(
         f"**Region/Context:** {geo.region} — {geo.description}",
         f"**Analysis period:** {case.analysis_period_years} years",
         f"",
-        f"## Geopolitical Scores",
-        f"- Total score: {scores.score_total:.1f}/100",
+        f"## Deterministic Geopolitical Scores (baseline)",
+        f"- Baseline total score: {scores.score_total:.1f}/100",
         f"- Affinity: {breakdown.affinity:.1f}",
         f"- Historical relations: {breakdown.history:.1f}",
         f"- Shared interests: {breakdown.interests:.1f}",

@@ -9,7 +9,22 @@ os.environ.setdefault("OPENAI_API_KEY", "sk-test")
 os.environ.setdefault("UPSTASH_REDIS_REST_URL", "https://test.upstash.io")
 os.environ.setdefault("UPSTASH_REDIS_REST_TOKEN", "test-token")
 
+import time
+
 import pytest
+from jose import jwt
+
+
+def make_test_jwt(role: str = "editor", secret: str = "test-secret", *, exp_offset: int | None = 3600, sub: str = "user-123") -> str:
+    """Mint an HS256 JWT shaped like the web app's backendToken ({sub, role, iat, exp}).
+
+    ``exp_offset=None`` omits the ``exp`` claim entirely.
+    """
+    now = int(time.time())
+    payload: dict[str, object] = {"sub": sub, "role": role, "iat": now}
+    if exp_offset is not None:
+        payload["exp"] = now + exp_offset
+    return jwt.encode(payload, secret, algorithm="HS256")
 
 
 @pytest.fixture

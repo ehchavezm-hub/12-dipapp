@@ -7,7 +7,7 @@ export default function LoginPage() {
     <main className="min-h-screen flex items-center justify-center bg-white">
       <div className="w-full max-w-md mx-auto px-6 py-12">
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold tracking-tight text-black mb-2">
             DipApp
           </h1>
           <p className="text-[var(--google-gray)] text-sm">
@@ -15,8 +15,8 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+        <div className="bg-white border border-brand-gray/30 rounded-2xl shadow-sm p-8">
+          <h2 className="text-xl font-semibold text-black mb-2">
             Sign in
           </h2>
           <p className="text-sm text-[var(--google-gray)] mb-8">

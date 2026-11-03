@@ -19,8 +19,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={urbanist.variable}>
-      <body className="font-sans antialiased bg-white text-gray-900">{children}</body>
+    <html lang="es" className={urbanist.variable}>
+      <body className="font-sans antialiased bg-white text-black">{children}</body>
     </html>
   )
 }

@@ -1,22 +1,9 @@
 """Tests for the /graph/data endpoint."""
 import pytest
 from httpx import AsyncClient, ASGITransport
-from jose import jwt
+from tests.conftest import make_test_jwt
 
 from app.main import app
-
-
-# ---------------------------------------------------------------------------
-# Helper
-# ---------------------------------------------------------------------------
-
-def make_test_jwt(role: str = "viewer", secret: str = "test-secret") -> str:
-    payload = {
-        "sub": "user-123",
-        "role": role,
-        "githubId": "gh-456",
-    }
-    return jwt.encode(payload, secret, algorithm="HS256")
 
 
 # ---------------------------------------------------------------------------

@@ -45,7 +45,7 @@ export default function NodeSheet() {
               <button
                 type="button"
                 onClick={clearSelection}
-                className="rounded-full p-1.5 hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-colors"
+                className="rounded-full p-1.5 hover:bg-brand-gray/10 text-brand-gray hover:text-black transition-colors"
                 aria-label="Close panel"
               >
                 <svg
@@ -75,26 +75,26 @@ export default function NodeSheet() {
                 className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: TYPE_COLORS[selectedNode.type] ?? "#5F6368" }}
               />
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-brand-gray">
                 {TYPE_LABELS[selectedNode.type] ?? selectedNode.type}
               </span>
             </div>
 
             {/* Region */}
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Region</p>
-              <p className="text-sm text-gray-900">
+              <p className="text-xs text-brand-gray uppercase tracking-wide mb-1">Region</p>
+              <p className="text-sm text-black">
                 {REGION_LABELS[selectedNode.region] ?? selectedNode.region}
               </p>
             </div>
 
             {/* Affinity score */}
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+              <p className="text-xs text-brand-gray uppercase tracking-wide mb-1">
                 Affinity Score
               </p>
               <div className="flex items-center gap-2">
-                <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="flex-1 h-2 bg-brand-gray/20 rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{
@@ -108,7 +108,7 @@ export default function NodeSheet() {
                     }}
                   />
                 </div>
-                <span className="text-sm font-semibold text-gray-900 tabular-nums w-10 text-right">
+                <span className="text-sm font-semibold text-black tabular-nums w-10 text-right">
                   {selectedNode.affinityScore.toFixed(1)}
                 </span>
               </div>
@@ -116,16 +116,16 @@ export default function NodeSheet() {
 
             {/* Cluster ID */}
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+              <p className="text-xs text-brand-gray uppercase tracking-wide mb-1">
                 Cluster
               </p>
-              <p className="text-sm text-gray-900 font-mono">{selectedNode.clusterId}</p>
+              <p className="text-sm text-black font-mono">{selectedNode.clusterId}</p>
             </div>
 
             {/* Node ID */}
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">ID</p>
-              <p className="text-xs text-gray-600 font-mono break-all">{selectedNode.id}</p>
+              <p className="text-xs text-brand-gray uppercase tracking-wide mb-1">ID</p>
+              <p className="text-xs text-brand-gray font-mono break-all">{selectedNode.id}</p>
             </div>
           </div>
         )}

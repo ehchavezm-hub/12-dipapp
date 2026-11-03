@@ -1,8 +1,9 @@
 "use client"
 
+import { useState } from "react"
 import { useAnalysisStore } from "@/lib/store/analysisStore"
-import { submitAnalysis } from "@/lib/services/analysisService"
-import { AnalysisCaseDTOSchema } from "@/lib/schemas/analysis"
+import { useResultsStore } from "@/lib/store/resultsStore"
+import { AnalysisCaseDTOSchema, DEFAULT_SCORING_WEIGHTS } from "@/lib/schemas/analysis"
 import { TargetProfileStep } from "@/components/analysis/steps/TargetProfileStep"
 import { GeopoliticalContextStep } from "@/components/analysis/steps/GeopoliticalContextStep"
 import { ObjectiveStep } from "@/components/analysis/steps/ObjectiveStep"
@@ -27,25 +28,49 @@ const STEPS = [
 ]
 
 export function AnalysisStepper() {
-  const { step, nextStep, prevStep, loadExampleCase, currentCase, setSubmitting, isSubmitting } =
-    useAnalysisStore()
+  const {
+    step,
+    nextStep,
+    prevStep,
+    loadExampleCase,
+    currentCase,
+    updateCase,
+    setSubmitting,
+    isSubmitting,
+  } = useAnalysisStore()
+  const resetResults = useResultsStore((s) => s.reset)
   const router = useRouter()
+  const [issues, setIssues] = useState<string[]>([])
 
   const StepComponent = STEPS[step]
 
-  async function handleSubmit() {
-    const parsed = AnalysisCaseDTOSchema.safeParse(currentCase)
+  /**
+   * Validate and hand off to /results/new, which performs the single LLM request.
+   * (Previously the stepper POSTed here AND the results page POSTed again,
+   * doubling LLM cost/latency and discarding the first response.)
+   */
+  function handleSubmit() {
+    // Apply the defaults the steps display but only persist once edited
+    const parsed = AnalysisCaseDTOSchema.safeParse({
+      analysis_period_years: 10,
+      scoring_weights: { ...DEFAULT_SCORING_WEIGHTS },
+      ...currentCase,
+    })
     if (!parsed.success) {
-      alert("Por favor complete todos los campos requeridos.")
+      setIssues(
+        parsed.error.issues.map((issue) => {
+          const path = issue.path.join(".") || "caso"
+          return `${path}: ${issue.message}`
+        })
+      )
       return
     }
+    setIssues([])
     setSubmitting(true)
-    try {
-      await submitAnalysis(parsed.data)
-      router.push("/results/new")
-    } finally {
-      setSubmitting(false)
-    }
+    updateCase(parsed.data)
+    resetResults()
+    router.push("/results/new")
+    setSubmitting(false)
   }
 
   return (
@@ -81,7 +106,7 @@ export function AnalysisStepper() {
                 height: 28,
                 borderRadius: "50%",
                 background: i <= step ? "#4285F4" : "#5F6368",
-                color: i <= step ? "#fff" : "#5F6368",
+                color: "#fff",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -149,6 +174,27 @@ export function AnalysisStepper() {
         <StepComponent />
       </div>
 
+      {issues.length > 0 && (
+        <div
+          role="alert"
+          style={{
+            border: "1px solid #EA4335",
+            color: "#EA4335",
+            borderRadius: 4,
+            padding: "12px 16px",
+            marginBottom: 16,
+            fontSize: 13,
+          }}
+        >
+          <strong>Complete los campos requeridos:</strong>
+          <ul style={{ margin: "8px 0 0 16px" }}>
+            {issues.map((msg) => (
+              <li key={msg}>{msg}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Navigation */}
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <button
@@ -199,7 +245,7 @@ export function AnalysisStepper() {
               fontFamily: "var(--font-urbanist)",
             }}
           >
-            {isSubmitting ? "Analizando..." : "Analizar"}
+            {isSubmitting ? "Enviando..." : "Analizar"}
           </button>
         )}
       </div>

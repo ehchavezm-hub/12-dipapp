@@ -1,45 +1,86 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
+import { z } from "zod"
 import { useAnalysisStore } from "@/lib/store/analysisStore"
+import {
+  DocumentChunkSchema,
+  MAX_SUPPORT_CHUNKS,
+  type DocumentChunk,
+} from "@/lib/schemas/analysis"
+import { readErrorMessage } from "@/lib/services/analysisService"
+
+const IngestResponseSchema = z.array(DocumentChunkSchema)
+const MAX_FILE_BYTES = 10 * 1024 * 1024
+
+interface UploadError {
+  file: string
+  message: string
+}
 
 export function DocumentsStep() {
   const { currentCase, updateCase } = useAnalysisStore()
-  const docs = currentCase.support_documents ?? []
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [chunkCounts, setChunkCounts] = useState<Record<string, number>>({})
   const [uploading, setUploading] = useState(false)
+  const [errors, setErrors] = useState<UploadError[]>([])
 
-  async function handleFiles(files: FileList | null) {
-    if (!files) return
-    setUploading(true)
-    const newDocs = [...docs]
-    for (const file of Array.from(files)) {
-      try {
-        const formData = new FormData()
-        formData.append("file", file)
-        const resp = await fetch("/api/proxy/documents/ingest", {
-          method: "POST",
-          body: formData,
-        })
-        if (resp.ok) {
-          const chunks: { content: string; source: string; chunk_index: number }[] = await resp.json()
-          setChunkCounts(prev => ({ ...prev, [file.name]: chunks.length }))
-          newDocs.push(...chunks)
-        } else {
-          newDocs.push(file)
-        }
-      } catch {
-        newDocs.push(file)
-      }
+  const docs: DocumentChunk[] = useMemo(
+    () => currentCase.support_documents ?? [],
+    [currentCase.support_documents]
+  )
+
+  // One row per source file, with its chunk count
+  const bySource = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const d of docs) counts.set(d.source, (counts.get(d.source) ?? 0) + 1)
+    return Array.from(counts.entries())
+  }, [docs])
+
+  async function ingestFile(file: File): Promise<DocumentChunk[]> {
+    if (file.size > MAX_FILE_BYTES) {
+      throw new Error("Archivo mayor a 10 MB (carga por URL prefirmada aún no disponible)")
     }
-    updateCase({ support_documents: newDocs })
-    setUploading(false)
+    const formData = new FormData()
+    formData.append("file", file)
+    const resp = await fetch("/api/proxy/documents/ingest", { method: "POST", body: formData })
+    if (!resp.ok) throw new Error(await readErrorMessage(resp))
+    const parsed = IngestResponseSchema.safeParse(await resp.json())
+    if (!parsed.success) throw new Error("Respuesta de ingesta inválida")
+    return parsed.data
   }
 
-  function removeDocument(index: number) {
-    const updated = docs.filter((_, i) => i !== index)
-    updateCase({ support_documents: updated })
+  async function handleFiles(files: FileList | null) {
+    if (!files || files.length === 0) return
+    setUploading(true)
+    const newErrors: UploadError[] = []
+    let next = [...docs]
+    for (const file of Array.from(files)) {
+      try {
+        const chunks = await ingestFile(file)
+        // Re-uploading the same file replaces its chunks
+        next = [...next.filter((d) => d.source !== file.name), ...chunks]
+      } catch (err) {
+        newErrors.push({
+          file: file.name,
+          message: err instanceof Error ? err.message : "Error desconocido",
+        })
+      }
+    }
+    if (next.length > MAX_SUPPORT_CHUNKS) {
+      newErrors.push({
+        file: "—",
+        message: `Se conservaron los primeros ${MAX_SUPPORT_CHUNKS} fragmentos (límite del análisis).`,
+      })
+      next = next.slice(0, MAX_SUPPORT_CHUNKS)
+    }
+    updateCase({ support_documents: next })
+    setErrors(newErrors)
+    setUploading(false)
+    if (fileInputRef.current) fileInputRef.current.value = ""
+  }
+
+  function removeSource(source: string) {
+    updateCase({ support_documents: docs.filter((d) => d.source !== source) })
   }
 
   return (
@@ -48,13 +89,13 @@ export function DocumentsStep() {
         Documentos de Soporte
       </h2>
       <p style={{ color: "#5F6368" }}>
-        Adjunte PDFs relevantes para el análisis (opcional).
+        Adjunte PDFs relevantes para el análisis (opcional, máx. 10 MB por archivo).
       </p>
       <input
         ref={fileInputRef}
         type="file"
         multiple
-        accept=".pdf"
+        accept=".pdf,application/pdf"
         aria-label="Subir documentos PDF"
         onChange={(e) => handleFiles(e.target.files)}
         style={{ display: "none" }}
@@ -76,37 +117,38 @@ export function DocumentsStep() {
       >
         {uploading ? "Procesando…" : "Agregar PDFs"}
       </button>
-      {docs.length > 0 && (
+
+      {errors.length > 0 && (
+        <ul role="alert" style={{ listStyle: "none", padding: 0, color: "#EA4335", fontSize: 13 }}>
+          {errors.map((e) => (
+            <li key={`${e.file}-${e.message}`}>
+              {e.file}: {e.message}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {bySource.length > 0 && (
         <ul style={{ listStyle: "none", padding: 0 }}>
-          {docs.map((doc, i) => (
+          {bySource.map(([source, count]) => (
             <li
-              key={i}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "4px 0",
-              }}
+              key={source}
+              style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0" }}
             >
-              <span style={{ color: "#34A853" }}>📄</span>
+              <span style={{ color: "#34A853" }} aria-hidden="true">
+                PDF
+              </span>
               <span style={{ fontFamily: "var(--font-urbanist)" }}>
-                {doc instanceof File ? doc.name : (doc as { source?: string }).source ?? String(doc)}
-                {doc instanceof File && chunkCounts[doc.name] != null && (
-                  <span style={{ color: "#5F6368", fontSize: 12, marginLeft: 6 }}>
-                    ({chunkCounts[doc.name]} fragmentos)
-                  </span>
-                )}
+                {source}
+                <span style={{ color: "#5F6368", fontSize: 12, marginLeft: 6 }}>
+                  ({count} fragmentos)
+                </span>
               </span>
               <button
                 type="button"
-                onClick={() => removeDocument(i)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#EA4335",
-                  cursor: "pointer",
-                }}
-                aria-label={`Eliminar ${doc instanceof File ? doc.name : String(doc)}`}
+                onClick={() => removeSource(source)}
+                style={{ background: "none", border: "none", color: "#EA4335", cursor: "pointer" }}
+                aria-label={`Eliminar ${source}`}
               >
                 ✕
               </button>

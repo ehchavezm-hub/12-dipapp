@@ -1,21 +1,30 @@
 "use client"
 
-import { useEffect } from "react"
+import Link from "next/link"
+import { useEffect, useMemo } from "react"
 import { useAnalysisStore } from "@/lib/store/analysisStore"
 import { useResultsStore } from "@/lib/store/resultsStore"
 import { ScenarioTabs } from "@/components/results/ScenarioTabs"
-import type { AnalysisCaseDTO } from "@/lib/schemas/analysis"
+import { AnalysisCaseDTOSchema } from "@/lib/schemas/analysis"
 
 export default function ResultsPage() {
-  const { currentCase } = useAnalysisStore()
-  const { streamScenarios, scenarios, isStreaming } = useResultsStore()
+  const currentCase = useAnalysisStore((s) => s.currentCase)
+  const { streamScenarios, scenarios, isStreaming, error, scoring, metadata } = useResultsStore()
+
+  // Results are stateless (no DB): they exist only for the case in memory.
+  const parsedCase = useMemo(() => AnalysisCaseDTOSchema.safeParse(currentCase), [currentCase])
 
   useEffect(() => {
-    if (currentCase && Object.keys(currentCase).length > 0 && scenarios.length === 0 && !isStreaming) {
-      streamScenarios(currentCase as AnalysisCaseDTO)
+    if (parsedCase.success && scenarios.length === 0 && !error) {
+      void streamScenarios(parsedCase.data)
     }
+    // Run once per mount; streamScenarios guards against concurrent calls.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const retry = () => {
+    if (parsedCase.success) void streamScenarios(parsedCase.data)
+  }
 
   return (
     <main
@@ -26,18 +35,99 @@ export default function ResultsPage() {
         fontFamily: "var(--font-urbanist)",
       }}
     >
-      <h1 style={{ color: "#5F6368", marginBottom: 24 }}>
-        Análisis Diplomático
-      </h1>
+      <h1 style={{ color: "#5F6368", marginBottom: 24 }}>Análisis Diplomático</h1>
+
+      {!parsedCase.success && scenarios.length === 0 && (
+        <div style={{ textAlign: "center", padding: 48, color: "#5F6368" }}>
+          <p style={{ marginBottom: 16 }}>
+            No hay un caso de análisis activo. Los resultados no se almacenan en el servidor.
+          </p>
+          <Link href="/analysis/new" style={{ color: "#4285F4", fontWeight: 600 }}>
+            Crear un nuevo análisis
+          </Link>
+        </div>
+      )}
+
+      {error && (
+        <div
+          role="alert"
+          style={{
+            border: "1px solid #EA4335",
+            color: "#EA4335",
+            borderRadius: 8,
+            padding: "12px 16px",
+            marginBottom: 24,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 16,
+          }}
+        >
+          <span>{error}</span>
+          {parsedCase.success && (
+            <button
+              type="button"
+              onClick={retry}
+              disabled={isStreaming}
+              style={{
+                background: "#EA4335",
+                color: "#fff",
+                border: "none",
+                borderRadius: 4,
+                padding: "6px 14px",
+                cursor: "pointer",
+                fontFamily: "var(--font-urbanist)",
+              }}
+            >
+              Reintentar
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Deterministic baseline score (pre-LLM) */}
+      {scoring && (
+        <section
+          aria-label="Puntuación determinística"
+          style={{
+            border: "1px solid #5F6368",
+            borderRadius: 8,
+            padding: 16,
+            marginBottom: 24,
+            display: "flex",
+            gap: 24,
+            flexWrap: "wrap",
+            fontSize: 13,
+            color: "#5F6368",
+          }}
+        >
+          <div>
+            <div>Score base</div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: "#4285F4" }}>
+              {scoring.score_total.toFixed(1)}
+            </div>
+          </div>
+          <div>Afinidad: {scoring.breakdown.affinity.toFixed(1)}</div>
+          <div>Historial: {scoring.breakdown.history.toFixed(1)}</div>
+          <div>Intereses: {scoring.breakdown.interests.toFixed(1)}</div>
+          <div style={{ color: scoring.litigation_penalty < 0 ? "#EA4335" : "#5F6368" }}>
+            Litigios: {scoring.litigation_penalty.toFixed(0)}
+          </div>
+          {metadata && (
+            <div>
+              Modelo: {metadata.model_used} · {metadata.processing_time_s.toFixed(1)} s ·{" "}
+              {metadata.rag_sources_count} fuentes
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Comparison bar */}
       {scenarios.length === 3 && (
         <div style={{ display: "flex", gap: 16, marginBottom: 32 }}>
           {scenarios.map((s) => (
             <div key={s.label} style={{ flex: 1, textAlign: "center" }}>
-              <div
-                style={{ fontSize: 12, color: "#5F6368", marginBottom: 4 }}
-              >
+              <div style={{ fontSize: 12, color: "#5F6368", marginBottom: 4 }}>
                 Escenario {s.label}
               </div>
               <div
@@ -51,15 +141,13 @@ export default function ResultsPage() {
                 <div
                   style={{
                     height: "100%",
-                    width: `${s.score_total}%`,
+                    width: `${Math.min(100, Math.max(0, s.score_total))}%`,
                     background: "#4285F4",
                     borderRadius: 4,
                   }}
                 />
               </div>
-              <div
-                style={{ fontSize: 14, fontWeight: 600, marginTop: 4 }}
-              >
+              <div style={{ fontSize: 14, fontWeight: 600, marginTop: 4 }}>
                 {s.score_total.toFixed(1)}
               </div>
             </div>
@@ -67,21 +155,16 @@ export default function ResultsPage() {
         </div>
       )}
 
-      {/* Loading indicator */}
       {isStreaming && scenarios.length === 0 && (
         <div
-          style={{
-            textAlign: "center",
-            padding: 48,
-            color: "#5F6368",
-            fontSize: 14,
-          }}
+          role="status"
+          style={{ textAlign: "center", padding: 48, color: "#5F6368", fontSize: 14 }}
         >
-          Generando análisis diplomático…
+          Generando análisis diplomático… (puede tardar hasta 45 s)
         </div>
       )}
 
-      <ScenarioTabs />
+      {(parsedCase.success || scenarios.length > 0) && <ScenarioTabs />}
     </main>
   )
 }

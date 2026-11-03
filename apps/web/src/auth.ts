@@ -29,6 +29,35 @@ type GitHubTeam = { slug: string; organization: { login: string } }
 
 const REQUIRED_ORG = process.env.GITHUB_ORG // e.g. "cosapi-dipapp"
 
+function githubHeaders(accessToken: string): HeadersInit {
+  return { Authorization: `Bearer ${accessToken}`, Accept: "application/vnd.github+json" }
+}
+
+async function fetchGitHubList<T>(url: string, accessToken: string): Promise<T[]> {
+  try {
+    const res = await fetch(url, { headers: githubHeaders(accessToken) })
+    if (!res.ok) return []
+    const data: unknown = await res.json()
+    return Array.isArray(data) ? (data as T[]) : []
+  } catch {
+    return []
+  }
+}
+
+/**
+ * When GITHUB_ORG is configured, only members of that org may sign in.
+ * Superadmins listed in SUPERADMIN_GITHUB_LOGINS are always allowed.
+ */
+export function isAllowedToSignIn(login: string, orgs: GitHubOrg[]): boolean {
+  if (!REQUIRED_ORG) return true
+  const superadmins = (process.env.SUPERADMIN_GITHUB_LOGINS ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+  if (superadmins.includes(login)) return true
+  return orgs.some((o) => o.login.toLowerCase() === REQUIRED_ORG.toLowerCase())
+}
+
 /**
  * Resolves the Role for a GitHub user based on their login, orgs, and teams.
  */
@@ -69,33 +98,27 @@ export const authConfig: NextAuthConfig = {
     }),
   ],
   callbacks: {
+    async signIn({ account, profile }) {
+      if (!REQUIRED_ORG) return true
+      const accessToken = account?.access_token
+      if (!accessToken) return false
+      const login = (profile as { login?: string } | undefined)?.login ?? ""
+      const orgs = await fetchGitHubList<GitHubOrg>("https://api.github.com/user/orgs", accessToken)
+      return isAllowedToSignIn(login, orgs)
+    },
     async jwt({ token, account, profile }) {
       // On initial sign in, account and profile are available
-      if (account && profile) {
-        const accessToken = account.access_token as string
+      if (account?.access_token && profile) {
+        const accessToken = account.access_token
 
         // Get the actual GitHub login from the profile (not derived from display name)
         const githubProfile = profile as { login?: string }
         const login = githubProfile.login ?? token.email?.split("@")[0] ?? ""
 
-        // Fetch orgs and teams
-        const [orgsRes, teamsRes] = await Promise.all([
-          fetch("https://api.github.com/user/orgs", {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              Accept: "application/vnd.github+json",
-            },
-          }),
-          fetch("https://api.github.com/user/teams", {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              Accept: "application/vnd.github+json",
-            },
-          }),
+        const [orgs, rawTeams] = await Promise.all([
+          fetchGitHubList<GitHubOrg>("https://api.github.com/user/orgs", accessToken),
+          fetchGitHubList<GitHubTeam>("https://api.github.com/user/teams", accessToken),
         ])
-
-        const orgs: GitHubOrg[] = orgsRes.ok ? await orgsRes.json() : []
-        const rawTeams: GitHubTeam[] = teamsRes.ok ? await teamsRes.json() : []
 
         token.githubLogin = login
         token.login = login

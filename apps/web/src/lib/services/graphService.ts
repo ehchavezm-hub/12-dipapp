@@ -1,4 +1,5 @@
 import type { DiplomaticEdge, DiplomaticNode } from "@dipapp/types"
+import { getBackendUrl } from "@/lib/server/backendToken"
 
 export interface GraphData {
   nodes: DiplomaticNode[]
@@ -6,24 +7,18 @@ export interface GraphData {
 }
 
 /**
- * Fetches /graph/data from the backend API.
- * Requires a valid JWT in the Authorization header.
+ * Fetches /graph/data from the backend API (server-side only).
+ * Requires a valid backend JWT (see createBackendToken).
  */
-export async function fetchGraphData(token?: string): Promise<GraphData> {
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000"
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  }
-
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`
-  }
-
-  const res = await fetch(`${backendUrl}/graph/data`, { headers })
+export async function fetchGraphData(token: string): Promise<GraphData> {
+  const res = await fetch(`${getBackendUrl()}/graph/data`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  })
 
   if (!res.ok) {
     throw new Error(`Failed to fetch graph data: ${res.status} ${res.statusText}`)
   }
 
-  return res.json() as Promise<GraphData>
+  return (await res.json()) as GraphData
 }

@@ -1,21 +1,45 @@
-from schemas.analysis import ScoringWeights, Treaty, ScoreBreakdown, ScoringResult
+"""Deterministic pre-LLM geopolitical scoring.
 
+Score_total = W_afinidad x S_afinidad + W_historial x S_historial + W_intereses x S_intereses
+              - 15 x (pending ICJ / PCA / ICSID cases), clamped to [0, 100].
+"""
+from schemas.analysis import (
+    AnalysisCaseDTO,
+    ScoreBreakdown,
+    ScoringResult,
+    ScoringWeights,
+    TargetProfile,
+    Treaty,
+)
+from services.graph_seed import country_affinity
+
+# Art. 38 ICJ Statute hierarchy: level 1 (alliance/peace/borders) x3,
+# level 2 (FTAs/regional integration) x2, level 3 (technical/cultural) x1.
 TREATY_MULTIPLIERS = {1: 3.0, 2: 2.0, 3: 1.0}
+LITIGATION_PENALTY_PER_CASE = -15.0
+NEUTRAL_SCORE = 50.0
 
 
 class GeopoliticalScorer:
     def _treaty_score(self, treaties: list[Treaty]) -> float:
-        """Weight each treaty by Art.38 CIJ multiplier, normalize to [0, 100]."""
+        """Weight each active treaty by its Art.38 CIJ multiplier, normalize to [0, 100]."""
         active_treaties = [t for t in treaties if t.active]
         if not active_treaties:
             return 0.0
         weighted_sum = sum(TREATY_MULTIPLIERS[t.level] for t in active_treaties)
-        max_possible = len(active_treaties) * 3.0  # all level-1 would be max
+        max_possible = len(active_treaties) * TREATY_MULTIPLIERS[1]  # all level-1 is max
         return (weighted_sum / max_possible) * 100.0
 
     def _litigation_penalty(self, icj_cases: int) -> float:
         """Returns icj_cases * -15.0"""
-        return icj_cases * -15.0
+        return icj_cases * LITIGATION_PENALTY_PER_CASE
+
+    def _affinity_score(self, profiles: list[TargetProfile]) -> float:
+        """Mean seeded affinity of the target countries; neutral 50 when none are known."""
+        known = [a for a in (country_affinity(p.country_code) for p in profiles) if a is not None]
+        if not known:
+            return NEUTRAL_SCORE
+        return sum(known) / len(known)
 
     def _compute_total(
         self,
@@ -33,19 +57,16 @@ class GeopoliticalScorer:
         ) + litigation_penalty
         return max(0.0, min(100.0, raw))
 
-    def compute(self, case) -> ScoringResult:
-        """Orchestrate scoring. S_afinidad and S_intereses use placeholder values
-        from the case context until RAG is wired in Task 7."""
-        weights = getattr(case, "scoring_weights", None) or ScoringWeights()
+    def compute(self, case: AnalysisCaseDTO) -> ScoringResult:
+        """Compute the deterministic score for an analysis case."""
+        weights = case.scoring_weights
 
-        # Placeholder values until RAG integration in Task 7
-        treaties = getattr(case, "treaties", [])
-        icj_cases = getattr(case, "icj_cases", 0)
-        s_affinity = getattr(case, "s_affinity", 50.0)
-        s_interests = getattr(case, "s_interests", 50.0)
-
-        s_history = self._treaty_score(treaties)
-        litigation_penalty = self._litigation_penalty(icj_cases)
+        s_affinity = (
+            case.s_affinity if case.s_affinity is not None else self._affinity_score(case.target_profiles)
+        )
+        s_interests = case.s_interests if case.s_interests is not None else NEUTRAL_SCORE
+        s_history = self._treaty_score(case.treaties)
+        litigation_penalty = self._litigation_penalty(case.icj_cases)
 
         score_total = self._compute_total(
             s_affinity=s_affinity,
@@ -56,11 +77,11 @@ class GeopoliticalScorer:
         )
 
         return ScoringResult(
-            score_total=score_total,
+            score_total=round(score_total, 2),
             breakdown=ScoreBreakdown(
-                affinity=s_affinity,
-                history=s_history,
-                interests=s_interests,
+                affinity=round(s_affinity, 2),
+                history=round(s_history, 2),
+                interests=round(s_interests, 2),
             ),
             litigation_penalty=litigation_penalty,
         )

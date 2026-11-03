@@ -1,0 +1,35 @@
+import Link from "next/link"
+import { auth } from "@/auth"
+
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth()
+  const role = session?.user.role ?? "viewer"
+  const canAnalyze = role === "editor" || role === "superadmin"
+
+  return (
+    <div className="min-h-screen bg-white font-sans">
+      <nav
+        aria-label="Navegación principal"
+        className="flex items-center gap-6 px-6 py-3 border-b border-brand-gray/30"
+      >
+        <Link href="/graph" className="font-bold text-brand-blue">
+          DipApp
+        </Link>
+        <Link href="/graph" className="text-sm text-brand-gray hover:text-brand-blue">
+          Grafo
+        </Link>
+        {canAnalyze && (
+          <Link href="/analysis/new" className="text-sm text-brand-gray hover:text-brand-blue">
+            Nuevo análisis
+          </Link>
+        )}
+        {session?.user && (
+          <span className="ml-auto text-xs text-brand-gray">
+            {session.user.githubLogin || session.user.email} · {role}
+          </span>
+        )}
+      </nav>
+      {children}
+    </div>
+  )
+}

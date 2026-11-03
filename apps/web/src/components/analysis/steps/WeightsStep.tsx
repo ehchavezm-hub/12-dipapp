@@ -3,15 +3,12 @@
 import { useEffect } from "react"
 import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { ScoringWeightsSchema } from "@/lib/schemas/analysis"
+import { DEFAULT_SCORING_WEIGHTS, ScoringWeightsSchema } from "@/lib/schemas/analysis"
 import { useAnalysisStore } from "@/lib/store/analysisStore"
 import type { ScoringWeights } from "@/lib/schemas/analysis"
 
-const defaultValues: ScoringWeights = {
-  w_affinity: 0,
-  w_history: 0,
-  w_interests: 0,
-}
+// Spec defaults: W_afinidad 0.40, W_historial 0.35, W_intereses 0.25
+const defaultValues: ScoringWeights = { ...DEFAULT_SCORING_WEIGHTS }
 
 export function WeightsStep() {
   const { currentCase, updateCase } = useAnalysisStore()

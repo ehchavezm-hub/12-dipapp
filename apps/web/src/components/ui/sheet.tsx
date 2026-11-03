@@ -77,7 +77,7 @@ export const SheetTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <Dialog.Title
     ref={ref}
-    className={["text-lg font-semibold text-gray-900", className]
+    className={["text-lg font-semibold text-black", className]
       .filter(Boolean)
       .join(" ")}
     {...props}
@@ -91,7 +91,7 @@ export const SheetDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <Dialog.Description
     ref={ref}
-    className={["text-sm text-gray-500", className].filter(Boolean).join(" ")}
+    className={["text-sm text-brand-gray", className].filter(Boolean).join(" ")}
     {...props}
   />
 ))

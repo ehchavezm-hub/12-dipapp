@@ -1,7 +1,16 @@
 "use client"
 
+import dynamic from "next/dynamic"
 import type { Scenario } from "@/lib/types/results"
-import { ScenarioExport } from "./ScenarioExport"
+
+// @react-pdf/renderer is ~500 kB and browser-only: load it on demand, client-side.
+const ScenarioExport = dynamic(
+  () => import("./ScenarioExport").then((m) => m.ScenarioExport),
+  {
+    ssr: false,
+    loading: () => <span style={{ color: "#5F6368", fontSize: 14 }}>Preparando exportación…</span>,
+  }
+)
 
 interface ScenarioCardProps {
   scenario: Scenario

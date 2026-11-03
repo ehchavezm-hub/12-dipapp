@@ -62,9 +62,9 @@ export default function GraphFilters() {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+    <div className="flex flex-col gap-4 p-4 bg-white border border-brand-gray/30 rounded-lg shadow-sm">
       <div>
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+        <p className="text-xs font-semibold text-brand-gray uppercase tracking-wide mb-2">
           Regions
         </p>
         <div className="flex flex-wrap gap-2">
@@ -79,7 +79,7 @@ export default function GraphFilters() {
                   "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
                   active
                     ? "bg-[#4285F4] text-white border-[#4285F4]"
-                    : "bg-white text-gray-700 border-gray-300 hover:border-[#4285F4] hover:text-[#4285F4]",
+                    : "bg-white text-brand-gray border-brand-gray/30 hover:border-[#4285F4] hover:text-[#4285F4]",
                 ].join(" ")}
               >
                 {REGION_LABELS[region]}
@@ -90,9 +90,9 @@ export default function GraphFilters() {
       </div>
 
       <div>
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+        <p className="text-xs font-semibold text-brand-gray uppercase tracking-wide mb-2">
           Min Affinity Score:{" "}
-          <span className="text-gray-900 font-bold">{filters.minAffinityScore}</span>
+          <span className="text-black font-bold">{filters.minAffinityScore}</span>
         </p>
         <input
           type="range"
@@ -106,7 +106,7 @@ export default function GraphFilters() {
           className="w-full h-2 rounded-full accent-[#4285F4]"
           aria-label="Minimum affinity score filter"
         />
-        <div className="flex justify-between text-xs text-gray-400 mt-1">
+        <div className="flex justify-between text-xs text-brand-gray mt-1">
           <span>0</span>
           <span>50</span>
           <span>100</span>
@@ -114,7 +114,7 @@ export default function GraphFilters() {
       </div>
 
       <div>
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+        <p className="text-xs font-semibold text-brand-gray uppercase tracking-wide mb-2">
           Node Types
         </p>
         <div className="flex flex-wrap gap-3">
@@ -123,13 +123,13 @@ export default function GraphFilters() {
             return (
               <label
                 key={type}
-                className="flex items-center gap-2 cursor-pointer text-sm text-gray-700"
+                className="flex items-center gap-2 cursor-pointer text-sm text-brand-gray"
               >
                 <input
                   type="checkbox"
                   checked={checked}
                   onChange={() => toggleType(type)}
-                  className="rounded border-gray-300"
+                  className="rounded border-brand-gray/30"
                   style={{ accentColor: TYPE_COLORS[type] }}
                 />
                 <span

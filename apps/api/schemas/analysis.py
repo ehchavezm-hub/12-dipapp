@@ -39,10 +39,14 @@ class ScoringResult(BaseModel):
 # Analysis Case DTOs (added in Task 7)
 # ---------------------------------------------------------------------------
 
+MAX_SUPPORT_CHUNKS = 100
+MAX_CHUNK_CHARS = 20_000
+
+
 class TargetProfile(BaseModel):
     id: str
-    name: str
-    country_code: str
+    name: str = Field(min_length=1)
+    country_code: str = Field(min_length=2, max_length=2)
 
 
 class GeopoliticalContext(BaseModel):
@@ -55,15 +59,29 @@ class DiplomaticObjective(BaseModel):
     description: str
 
 
+class SupportDocument(BaseModel):
+    """A pre-ingested document chunk (shape returned by POST /documents/ingest)."""
+
+    content: str = Field(max_length=MAX_CHUNK_CHARS)
+    source: str = Field(max_length=512)
+    chunk_index: int = Field(default=0, ge=0)
+
+
 class AnalysisCaseDTO(BaseModel):
-    target_profiles: list[TargetProfile]
+    target_profiles: list[TargetProfile] = Field(min_length=1)
     geopolitical_context: GeopoliticalContext
     diplomatic_objective: DiplomaticObjective
     scoring_weights: ScoringWeights
     analysis_period_years: Literal[5, 10, 20]
-    support_documents: list = []  # list[DocumentChunk] — avoid circular import
-    treaties: list[Treaty] = []
-    icj_cases: int = 0
+    support_documents: list[SupportDocument] = Field(default_factory=list, max_length=MAX_SUPPORT_CHUNKS)
+    # S_historial inputs (Art. 38 CIJ hierarchy) and litigation penalty
+    treaties: list[Treaty] = Field(default_factory=list, max_length=500)
+    icj_cases: int = Field(default=0, ge=0, le=50)
+    # Optional analyst overrides (0-100). When omitted, S_afinidad is derived
+    # from the seeded graph affinity of the target countries and S_intereses
+    # falls back to a neutral 50.
+    s_affinity: float | None = Field(default=None, ge=0, le=100)
+    s_interests: float | None = Field(default=None, ge=0, le=100)
 
 
 class RoadmapStep(BaseModel):
@@ -102,3 +120,9 @@ class AnalysisMetadata(BaseModel):
 class ThreeScenariosResult(BaseModel):
     scenarios: Annotated[list[Scenario], Len(3, 3)]
     analysis_metadata: AnalysisMetadata
+
+
+class AnalysisResponse(ThreeScenariosResult):
+    """POST /analysis/ response: LLM scenarios plus the deterministic pre-LLM score."""
+
+    scoring: ScoringResult
