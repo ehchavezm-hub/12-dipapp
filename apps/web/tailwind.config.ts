@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Urbanist", "sans-serif"],
+        sans: ["var(--font-urbanist)", "sans-serif"],
       },
       colors: {
         // Google Material palette — only permitted colors
