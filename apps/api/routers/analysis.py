@@ -1,7 +1,10 @@
 """Analysis router: POST /analysis — runs geopolitical scoring + LLM orchestration."""
+import json
 import logging
+from collections.abc import AsyncIterator
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse
 
 from middleware.auth import JWTClaims, Role, require_role
 from middleware.rate_limit import check_rate_limit
@@ -24,15 +27,18 @@ def _sanitize_support_documents(docs: list[SupportDocument]) -> list[SupportDocu
     ]
 
 
-@router.post("/", response_model=AnalysisResponse)
+@router.post("/")
 async def run_analysis(
     case: AnalysisCaseDTO,
     claims: JWTClaims = Depends(require_role(Role.EDITOR)),
-) -> AnalysisResponse:
-    """Run deterministic geopolitical scoring, then LLM scenario generation.
+) -> StreamingResponse:
+    """Run geopolitical scoring + LLM scenario generation.
 
-    Requires EDITOR role or higher. Returns 502 (RFC 7807) when every LLM
-    provider fails.
+    Returns NDJSON: one Scenario JSON per line (A, B, C), then the full
+    AnalysisResponse as the last line. The frontend reads lines progressively
+    so each scenario appears as soon as the LLM finishes.
+
+    Requires EDITOR role or higher. Returns 502 when every LLM provider fails.
     """
     if case.support_documents:
         case.support_documents = _sanitize_support_documents(case.support_documents)
@@ -41,15 +47,28 @@ async def run_analysis(
 
     try:
         result = await orchestrate(case, scores)
-    except Exception as exc:  # both Anthropic and the OpenAI fallback failed
+    except Exception as exc:
         logger.error("LLM orchestration failed for sub=%s: %s", claims["sub"], exc)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="LLM providers unavailable — please retry in a few moments",
         ) from exc
 
-    return AnalysisResponse(
+    full_response = AnalysisResponse(
         scenarios=result.scenarios,
         analysis_metadata=result.analysis_metadata,
         scoring=scores,
+    )
+
+    async def _ndjson_stream() -> AsyncIterator[str]:
+        # Emit each scenario immediately so the browser can render it
+        for scenario in full_response.scenarios:
+            yield json.dumps(scenario.model_dump()) + "\n"
+        # Final line: full payload (includes scoring + metadata)
+        yield full_response.model_dump_json() + "\n"
+
+    return StreamingResponse(
+        _ndjson_stream(),
+        media_type="application/x-ndjson",
+        headers={"X-Content-Type-Options": "nosniff"},
     )

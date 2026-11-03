@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { auth } from "@/auth"
+import { SignOutButton } from "@/components/ui/SignOutButton"
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
@@ -29,9 +30,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </Link>
         )}
         {session?.user && (
-          <span className="ml-auto text-xs text-brand-gray">
-            {session.user.githubLogin || session.user.email} · {role}
-          </span>
+          <div className="ml-auto flex items-center gap-4">
+            <span className="text-xs text-brand-gray">
+              {session.user.githubLogin || session.user.email} · {role}
+            </span>
+            <SignOutButton />
+          </div>
         )}
       </nav>
       {children}
