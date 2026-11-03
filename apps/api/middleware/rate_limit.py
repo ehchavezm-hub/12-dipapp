@@ -22,7 +22,7 @@ async def check_rate_limit(
     headers = {"Authorization": f"Bearer {settings.UPSTASH_REDIS_REST_TOKEN}"}
     pipeline = [
         ["INCR", key],
-        ["EXPIRE", key, 60],
+        ["EXPIRE", key, 60, "NX"],  # NX = only set if key has no TTL yet
     ]
 
     try:
@@ -38,6 +38,6 @@ async def check_rate_limit(
     if count > 60:
         raise HTTPException(
             status_code=429,
-            detail={"type": "rate_limit_exceeded", "title": "Too Many Requests", "status": 429, "detail": "60 requests/min exceeded"},
+            detail="60 requests/min per user exceeded",
         )
     return claims

@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str
     UPSTASH_REDIS_REST_URL: str
     UPSTASH_REDIS_REST_TOKEN: str
+    ALLOWED_ORIGINS: str = "http://localhost:3000"
 
     model_config = SettingsConfigDict(env_file=".env")
 

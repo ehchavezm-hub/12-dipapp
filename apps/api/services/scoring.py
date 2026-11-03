@@ -36,7 +36,7 @@ class GeopoliticalScorer:
     def compute(self, case) -> ScoringResult:
         """Orchestrate scoring. S_afinidad and S_intereses use placeholder values
         from the case context until RAG is wired in Task 7."""
-        weights = ScoringWeights()
+        weights = getattr(case, "scoring_weights", None) or ScoringWeights()
 
         # Placeholder values until RAG integration in Task 7
         treaties = getattr(case, "treaties", [])

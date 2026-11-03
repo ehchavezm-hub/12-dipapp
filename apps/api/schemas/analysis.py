@@ -62,6 +62,8 @@ class AnalysisCaseDTO(BaseModel):
     scoring_weights: ScoringWeights
     analysis_period_years: Literal[5, 10, 20]
     support_documents: list = []  # list[DocumentChunk] — avoid circular import
+    treaties: list[Treaty] = []
+    icj_cases: int = 0
 
 
 class RoadmapStep(BaseModel):

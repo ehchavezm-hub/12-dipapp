@@ -11,6 +11,7 @@ declare module "next-auth" {
       email?: string | null
       image?: string | null
       role: Role
+      githubLogin?: string
     }
   }
 }
@@ -24,7 +25,9 @@ declare module "@auth/core/jwt" {
 }
 
 type GitHubOrg = { login: string }
-type GitHubTeam = { slug: string }
+type GitHubTeam = { slug: string; organization: { login: string } }
+
+const REQUIRED_ORG = process.env.GITHUB_ORG // e.g. "cosapi-dipapp"
 
 /**
  * Resolves the Role for a GitHub user based on their login, orgs, and teams.
@@ -43,13 +46,14 @@ export function resolveRole(
     return "superadmin"
   }
 
-  const teamSlugs = teams.map((t) => t.slug)
+  const inOrg = (team: GitHubTeam) =>
+    !REQUIRED_ORG || team.organization.login === REQUIRED_ORG
 
-  if (teamSlugs.includes("dipapp-admins")) {
+  if (teams.some((t) => t.slug === "dipapp-admins" && inOrg(t))) {
     return "superadmin"
   }
 
-  if (teamSlugs.includes("dipapp-editors")) {
+  if (teams.some((t) => t.slug === "dipapp-editors" && inOrg(t))) {
     return "editor"
   }
 
@@ -61,6 +65,7 @@ export const authConfig: NextAuthConfig = {
     GitHub({
       clientId: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      authorization: { params: { scope: "read:user user:email read:org" } },
     }),
   ],
   callbacks: {
@@ -90,11 +95,11 @@ export const authConfig: NextAuthConfig = {
         ])
 
         const orgs: GitHubOrg[] = orgsRes.ok ? await orgsRes.json() : []
-        const teams: GitHubTeam[] = teamsRes.ok ? await teamsRes.json() : []
+        const rawTeams: GitHubTeam[] = teamsRes.ok ? await teamsRes.json() : []
 
         token.githubLogin = login
         token.login = login
-        token.role = resolveRole(login, orgs, teams)
+        token.role = resolveRole(login, orgs, rawTeams)
       }
 
       return token
@@ -105,6 +110,7 @@ export const authConfig: NextAuthConfig = {
         user: {
           ...session.user,
           role: (token.role as Role) ?? "viewer",
+          githubLogin: (token.githubLogin as string) ?? "",
         },
       }
     },

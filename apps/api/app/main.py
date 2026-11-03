@@ -1,5 +1,6 @@
 """DipApp FastAPI entry point."""
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -8,6 +9,7 @@ from routers.analysis import router as analysis_router
 from routers.documents import router as documents_router
 from routers.graph import router as graph_router
 from schemas.errors import ProblemDetail
+from settings import get_settings
 
 app = FastAPI(
     title="DipApp API",
@@ -18,9 +20,11 @@ app = FastAPI(
 # ---------------------------------------------------------------------------
 # CORS
 # ---------------------------------------------------------------------------
+_settings = get_settings()
+_origins = [o.strip() for o in _settings.ALLOWED_ORIGINS.split(",")]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -42,6 +46,26 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException) 
     return JSONResponse(
         status_code=exc.status_code,
         content=problem.model_dump(),
+        media_type="application/problem+json",
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    """Return RFC 7807 Problem Details for validation errors."""
+    return JSONResponse(
+        status_code=422,
+        content={"type": "validation_error", "title": "Unprocessable Entity", "status": 422, "detail": str(exc)},
+        media_type="application/problem+json",
+    )
+
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Return RFC 7807 Problem Details for unhandled exceptions."""
+    return JSONResponse(
+        status_code=500,
+        content={"type": "internal_error", "title": "Internal Server Error", "status": 500, "detail": "An unexpected error occurred"},
         media_type="application/problem+json",
     )
 

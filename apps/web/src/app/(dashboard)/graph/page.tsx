@@ -3,28 +3,9 @@ import DiplomaticGraph from "@/components/graph/DiplomaticGraph"
 import GraphFilters from "@/components/graph/GraphFilters"
 import NodeSheet from "@/components/graph/NodeSheet"
 import { fetchGraphData } from "@/lib/services/graphService"
+import { createBackendToken } from "@/lib/server/backendToken"
 import type { DiplomaticEdge, DiplomaticNode } from "@dipapp/types"
-import { createHmac } from "crypto"
 import { redirect } from "next/navigation"
-
-/** Create a backend-compatible HS256 JWT from the session's user claims. */
-function createBackendToken(role: string, sub: string): string {
-  const secret = process.env.NEXTAUTH_SECRET ?? ""
-  const now = Math.floor(Date.now() / 1000)
-  const payload = { sub, role, githubId: sub, iat: now, exp: now + 300 }
-  const b64url = (data: string) =>
-    Buffer.from(data).toString("base64").replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_")
-  const header = b64url(JSON.stringify({ alg: "HS256", typ: "JWT" }))
-  const body = b64url(JSON.stringify(payload))
-  const signingInput = `${header}.${body}`
-  const sig = createHmac("sha256", secret)
-    .update(signingInput)
-    .digest("base64")
-    .replace(/=/g, "")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-  return `${signingInput}.${sig}`
-}
 
 // Server Component — fetches graph data with session JWT for SSR
 export default async function GraphPage() {
@@ -36,10 +17,8 @@ export default async function GraphPage() {
   let error: string | null = null
 
   try {
-    const token = createBackendToken(
-      session.user?.role ?? "viewer",
-      session.user?.email ?? ""
-    )
+    const sub = (session.user as { githubLogin?: string }).githubLogin ?? session.user?.email ?? ""
+    const token = createBackendToken(sub, session.user?.role ?? "viewer")
     const data = await fetchGraphData(token)
     initialNodes = data.nodes
     initialEdges = data.edges

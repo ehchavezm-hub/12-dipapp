@@ -46,7 +46,7 @@ async def validate_token(token: str, secret: str) -> JWTClaims:
         :class:`fastapi.HTTPException` 401 on invalid signature or expiry.
     """
     try:
-        payload = jwt.decode(token, secret, algorithms=["HS256"])
+        payload = jwt.decode(token, secret, algorithms=["HS256"], options={"require": ["exp", "sub"]})
     except ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -89,16 +89,13 @@ def require_role(min_role: Role):
     """
 
     async def dependency(
-        token: str = "",
         credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
     ) -> JWTClaims:
         from settings import get_settings  # lazy import avoids circular deps
 
         settings = get_settings()
 
-        # When called directly in tests, ``token`` is passed as a positional
-        # argument; when used as a real FastAPI Depends, extract from header.
-        raw_token = token or (credentials.credentials if credentials else "")
+        raw_token = credentials.credentials if credentials else ""
 
         if not raw_token:
             raise HTTPException(
