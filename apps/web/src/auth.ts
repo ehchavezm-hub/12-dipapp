@@ -19,6 +19,7 @@ declare module "@auth/core/jwt" {
   interface JWT {
     role?: Role
     login?: string
+    githubLogin?: string
   }
 }
 
@@ -63,13 +64,14 @@ export const authConfig: NextAuthConfig = {
     }),
   ],
   callbacks: {
-    async jwt({ token, account }) {
-      // On initial sign in, account is available
-      if (account?.access_token) {
-        const accessToken = account.access_token
+    async jwt({ token, account, profile }) {
+      // On initial sign in, account and profile are available
+      if (account && profile) {
+        const accessToken = account.access_token as string
 
-        // Fetch GitHub user info for login
-        const login = (token.name ?? "").toLowerCase().replace(/\s+/g, "")
+        // Get the actual GitHub login from the profile (not derived from display name)
+        const githubProfile = profile as { login?: string }
+        const login = githubProfile.login ?? token.email?.split("@")[0] ?? ""
 
         // Fetch orgs and teams
         const [orgsRes, teamsRes] = await Promise.all([
@@ -90,6 +92,7 @@ export const authConfig: NextAuthConfig = {
         const orgs: GitHubOrg[] = orgsRes.ok ? await orgsRes.json() : []
         const teams: GitHubTeam[] = teamsRes.ok ? await teamsRes.json() : []
 
+        token.githubLogin = login
         token.login = login
         token.role = resolveRole(login, orgs, teams)
       }

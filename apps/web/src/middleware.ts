@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import type { Role } from "@dipapp/types"
+import { auth } from "./auth"
 
 // Route permission map
 const ROUTE_PERMISSIONS: Array<{
@@ -29,9 +30,9 @@ function hasPermission(pathname: string, role: Role): boolean {
 export async function testableMiddleware(req: NextRequest): Promise<NextResponse> {
   const { pathname } = req.nextUrl
 
-  // In test environments, read role from x-test-role header
-  const testRole = req.headers.get("x-test-role") as Role | null
-  const role: Role = testRole ?? "viewer"
+  // Only trust x-test-role in test environment — never in production
+  const role: Role = (process.env.NODE_ENV === "test" && req.headers.get("x-test-role") as Role | null)
+    || "viewer"
 
   // For protected routes, check permissions
   const isProtectedRoute = ROUTE_PERMISSIONS.some((r) => r.pattern.test(pathname))
@@ -50,8 +51,6 @@ export async function testableMiddleware(req: NextRequest): Promise<NextResponse
 /**
  * The actual NextAuth v5 middleware — wraps the auth session check around the RBAC logic.
  */
-import { auth } from "./auth"
-
 export default auth((req) => {
   const { pathname } = req.nextUrl
   const session = req.auth
