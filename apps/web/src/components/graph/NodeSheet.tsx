@@ -26,10 +26,10 @@ const REGION_LABELS: Record<string, string> = {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  country: "#4285F4",
-  organization: "#34A853",
-  embassy: "#FBBC05",
-  diplomat: "#5F6368",
+  country: "#FF6600",
+  organization: "#003087",
+  embassy: "#0078C1",
+  diplomat: "#6D6E71",
 }
 
 export default function NodeSheet() {
@@ -73,7 +73,7 @@ export default function NodeSheet() {
             <div className="flex items-center gap-2">
               <span
                 className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: TYPE_COLORS[selectedNode.type] ?? "#5F6368" }}
+                style={{ backgroundColor: TYPE_COLORS[selectedNode.type] ?? "#6D6E71" }}
               />
               <span className="text-sm font-medium text-brand-gray">
                 {TYPE_LABELS[selectedNode.type] ?? selectedNode.type}
@@ -101,10 +101,10 @@ export default function NodeSheet() {
                       width: `${selectedNode.affinityScore}%`,
                       backgroundColor:
                         selectedNode.affinityScore >= 70
-                          ? "#34A853"
+                          ? "#003087"
                           : selectedNode.affinityScore >= 45
-                          ? "#FBBC05"
-                          : "#EA4335",
+                          ? "#0078C1"
+                          : "#E85500",
                     }}
                   />
                 </div>

@@ -47,15 +47,15 @@ export default async function AdminPage() {
 
   return (
     <main style={{ maxWidth: 760, margin: "0 auto", padding: "32px 24px", fontFamily: "var(--font-urbanist)" }}>
-      <h1 style={{ fontSize: 28, fontWeight: 700, color: "#202124", marginBottom: 8 }}>
+      <h1 style={{ fontSize: 28, fontWeight: 700, color: "#1A1A1A", marginBottom: 8 }}>
         Panel de Superadministrador
       </h1>
-      <p style={{ color: "#5F6368", marginBottom: 32, fontSize: 14 }}>
+      <p style={{ color: "#6D6E71", marginBottom: 32, fontSize: 14 }}>
         Configuración del sistema y estado de servicios. Solo visible para superadmins.
       </p>
 
       <section style={{ marginBottom: 40 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: "#5F6368", marginBottom: 16, textTransform: "uppercase", letterSpacing: 1 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: "#6D6E71", marginBottom: 16, textTransform: "uppercase", letterSpacing: 1 }}>
           Estado del Sistema
         </h2>
         <div style={{ border: "1px solid #DADCE0", borderRadius: 8, overflow: "hidden" }}>
@@ -67,15 +67,15 @@ export default async function AdminPage() {
                 justifyContent: "space-between",
                 alignItems: "center",
                 padding: "12px 20px",
-                background: i % 2 === 0 ? "#fff" : "#F8F9FA",
+                background: i % 2 === 0 ? "#fff" : "#F2F2F2",
                 borderBottom: i < rows.length - 1 ? "1px solid #DADCE0" : "none",
               }}
             >
-              <span style={{ fontSize: 13, color: "#5F6368", fontWeight: 500 }}>{label}</span>
+              <span style={{ fontSize: 13, color: "#6D6E71", fontWeight: 500 }}>{label}</span>
               <span style={{
                 fontSize: 13,
                 fontWeight: 600,
-                color: ok === false ? "#EA4335" : ok === true ? "#34A853" : "#202124",
+                color: ok === false ? "#E85500" : ok === true ? "#003087" : "#1A1A1A",
               }}>
                 {value}
               </span>
@@ -85,7 +85,7 @@ export default async function AdminPage() {
       </section>
 
       <section style={{ marginBottom: 40 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: "#5F6368", marginBottom: 16, textTransform: "uppercase", letterSpacing: 1 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: "#6D6E71", marginBottom: 16, textTransform: "uppercase", letterSpacing: 1 }}>
           Variables de Entorno Requeridas
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
@@ -93,10 +93,10 @@ export default async function AdminPage() {
             { title: "Vercel (frontend)", vars: ["NEXTAUTH_SECRET", "AUTH_GITHUB_ID", "AUTH_GITHUB_SECRET", "BACKEND_URL", "SUPERADMIN_GITHUB_LOGINS"] },
             { title: "Render (backend)", vars: ["NEXTAUTH_SECRET", "ANTHROPIC_API_KEY", "OPENAI_API_KEY", "UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"] },
           ].map(({ title, vars }) => (
-            <div key={title} style={{ background: "#F8F9FA", border: "1px solid #DADCE0", borderRadius: 8, padding: 16 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#4285F4", marginBottom: 10 }}>{title}</div>
+            <div key={title} style={{ background: "#F2F2F2", border: "1px solid #DADCE0", borderRadius: 8, padding: 16 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#FF6600", marginBottom: 10 }}>{title}</div>
               {vars.map(v => (
-                <div key={v} style={{ fontSize: 12, color: "#202124", fontFamily: "monospace", padding: "3px 0", borderBottom: "1px solid #DADCE0" }}>
+                <div key={v} style={{ fontSize: 12, color: "#1A1A1A", fontFamily: "monospace", padding: "3px 0", borderBottom: "1px solid #DADCE0" }}>
                   {v}
                 </div>
               ))}
@@ -106,7 +106,7 @@ export default async function AdminPage() {
       </section>
 
       <section>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: "#5F6368", marginBottom: 16, textTransform: "uppercase", letterSpacing: 1 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: "#6D6E71", marginBottom: 16, textTransform: "uppercase", letterSpacing: 1 }}>
           RBAC — Roles
         </h2>
         <div style={{ border: "1px solid #DADCE0", borderRadius: 8, overflow: "hidden" }}>
@@ -115,10 +115,10 @@ export default async function AdminPage() {
             { rol: "editor", acceso: "/analysis/new, /graph, /results", criterio: "Team dipapp-editors en la org GitHub" },
             { rol: "viewer", acceso: "/graph, /results (solo lectura)", criterio: "Cualquier usuario GitHub autenticado" },
           ].map(({ rol, acceso, criterio }, i) => (
-            <div key={rol} style={{ padding: "12px 20px", background: i % 2 === 0 ? "#fff" : "#F8F9FA", borderBottom: i < 2 ? "1px solid #DADCE0" : "none" }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#4285F4", marginBottom: 4 }}>{rol}</div>
-              <div style={{ fontSize: 12, color: "#202124", marginBottom: 2 }}>Acceso: {acceso}</div>
-              <div style={{ fontSize: 11, color: "#5F6368" }}>Criterio: {criterio}</div>
+            <div key={rol} style={{ padding: "12px 20px", background: i % 2 === 0 ? "#fff" : "#F2F2F2", borderBottom: i < 2 ? "1px solid #DADCE0" : "none" }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#FF6600", marginBottom: 4 }}>{rol}</div>
+              <div style={{ fontSize: 12, color: "#1A1A1A", marginBottom: 2 }}>Acceso: {acceso}</div>
+              <div style={{ fontSize: 11, color: "#6D6E71" }}>Criterio: {criterio}</div>
             </div>
           ))}
         </div>

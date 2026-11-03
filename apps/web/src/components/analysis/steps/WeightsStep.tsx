@@ -48,7 +48,7 @@ export function WeightsStep() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <h2 style={{ color: "#5F6368", fontFamily: "var(--font-urbanist)" }}>
+      <h2 style={{ color: "#6D6E71", fontFamily: "var(--font-urbanist)" }}>
         Pesos de Puntuación
       </h2>
 
@@ -66,7 +66,7 @@ export function WeightsStep() {
           {...register("w_affinity", { valueAsNumber: true })}
           onBlur={handleBlur}
           style={{
-            border: "1px solid #5F6368",
+            border: "1px solid #6D6E71",
             borderRadius: 4,
             padding: "8px 12px",
             width: "120px",
@@ -88,7 +88,7 @@ export function WeightsStep() {
           {...register("w_history", { valueAsNumber: true })}
           onBlur={handleBlur}
           style={{
-            border: "1px solid #5F6368",
+            border: "1px solid #6D6E71",
             borderRadius: 4,
             padding: "8px 12px",
             width: "120px",
@@ -110,7 +110,7 @@ export function WeightsStep() {
           {...register("w_interests", { valueAsNumber: true })}
           onBlur={handleBlur}
           style={{
-            border: "1px solid #5F6368",
+            border: "1px solid #6D6E71",
             borderRadius: 4,
             padding: "8px 12px",
             width: "120px",
@@ -118,14 +118,14 @@ export function WeightsStep() {
         />
       </div>
 
-      <p style={{ color: "#5F6368", fontFamily: "var(--font-urbanist)" }}>
+      <p style={{ color: "#6D6E71", fontFamily: "var(--font-urbanist)" }}>
         Suma actual: {sum.toFixed(2)}
       </p>
 
       {!sumsToOne && sum > 0 && (
         <p
           role="alert"
-          style={{ color: "#EA4335", fontFamily: "var(--font-urbanist)" }}
+          style={{ color: "#E85500", fontFamily: "var(--font-urbanist)" }}
         >
           Los pesos deben sumar 1.0
         </p>
@@ -134,7 +134,7 @@ export function WeightsStep() {
       {errors.w_affinity && (
         <p
           role="alert"
-          style={{ color: "#EA4335", fontFamily: "var(--font-urbanist)" }}
+          style={{ color: "#E85500", fontFamily: "var(--font-urbanist)" }}
         >
           {errors.w_affinity.message}
         </p>

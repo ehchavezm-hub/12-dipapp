@@ -4,13 +4,13 @@ import {
 } from "@react-pdf/renderer"
 import type { Scenario, ScoringResult } from "@/lib/types/results"
 
-const BLUE = "#4285F4"
-const GREEN = "#34A853"
-const YELLOW = "#FBBC05"
-const RED = "#EA4335"
-const GRAY = "#5F6368"
-const LIGHT = "#F8F9FA"
-const DARK = "#202124"
+const BLUE = "#FF6600"
+const GREEN = "#003087"
+const YELLOW = "#0078C1"
+const RED = "#E85500"
+const GRAY = "#6D6E71"
+const LIGHT = "#F2F2F2"
+const DARK = "#1A1A1A"
 
 const styles = StyleSheet.create({
   page: { padding: 48, fontFamily: "Helvetica", backgroundColor: "#FFFFFF" },
@@ -19,8 +19,8 @@ const styles = StyleSheet.create({
   coverPage: { padding: 48, fontFamily: "Helvetica", backgroundColor: DARK, justifyContent: "center" },
   coverBadge: { fontSize: 10, color: BLUE, letterSpacing: 2, marginBottom: 16, textTransform: "uppercase" },
   coverTitle: { fontSize: 28, fontWeight: "bold", color: "#FFFFFF", marginBottom: 8 },
-  coverSub: { fontSize: 13, color: "#9AA0A6", marginBottom: 32 },
-  coverMeta: { fontSize: 10, color: "#9AA0A6", marginTop: 4 },
+  coverSub: { fontSize: 13, color: "#555555", marginBottom: 32 },
+  coverMeta: { fontSize: 10, color: "#555555", marginTop: 4 },
 
   /* Section headers */
   scenarioHeader: { marginBottom: 20, paddingBottom: 12, borderBottom: `2px solid ${BLUE}` },
@@ -59,10 +59,10 @@ const styles = StyleSheet.create({
 
   /* Chain of Thought */
   cotBox: {
-    backgroundColor: "#FFF8E1", borderLeft: `3px solid ${YELLOW}`,
+    backgroundColor: "#FFF3E0", borderLeft: `3px solid ${YELLOW}`,
     padding: "12 14", borderRadius: 2,
   },
-  cotText: { fontSize: 9, color: "#3C4043", lineHeight: 1.7, fontFamily: "Helvetica-Oblique" },
+  cotText: { fontSize: 9, color: "#1A1A1A", lineHeight: 1.7, fontFamily: "Helvetica-Oblique" },
 
   /* Sources */
   link: { fontSize: 9, color: BLUE, textDecoration: "underline", marginBottom: 3 },
@@ -97,7 +97,7 @@ function CoverPage({ scenarios, scoring, generatedAt }: ScenarioPDFProps) {
       <Text style={styles.coverSub}>3 Escenarios: Óptima · Moderada · Contingencia</Text>
       {scoring && (
         <View style={{ marginBottom: 24 }}>
-          <Text style={{ fontSize: 10, color: "#9AA0A6", marginBottom: 8 }}>SCORE PRE-LLM (DETERMINÍSTICO)</Text>
+          <Text style={{ fontSize: 10, color: "#555555", marginBottom: 8 }}>SCORE PRE-LLM (DETERMINÍSTICO)</Text>
           <View style={{ flexDirection: "row", gap: 12 }}>
             {[
               { label: "Afinidad", val: scoring.breakdown.affinity },
@@ -105,9 +105,9 @@ function CoverPage({ scenarios, scoring, generatedAt }: ScenarioPDFProps) {
               { label: "Intereses", val: scoring.breakdown.interests },
               { label: "Total", val: scoring.score_total },
             ].map(({ label, val }) => (
-              <View key={label} style={{ backgroundColor: "#293241", padding: "10 14", borderRadius: 4, flex: 1 }}>
+              <View key={label} style={{ backgroundColor: "#2E2E2E", padding: "10 14", borderRadius: 4, flex: 1 }}>
                 <Text style={{ fontSize: 18, fontWeight: "bold", color: BLUE }}>{val.toFixed(1)}</Text>
-                <Text style={{ fontSize: 8, color: "#9AA0A6" }}>{label}</Text>
+                <Text style={{ fontSize: 8, color: "#555555" }}>{label}</Text>
               </View>
             ))}
           </View>
@@ -124,7 +124,7 @@ function CoverPage({ scenarios, scoring, generatedAt }: ScenarioPDFProps) {
             <Text style={{ fontSize: 10, fontWeight: "bold", color: "#FFFFFF" }}>
               {s.label} — {s.name}
             </Text>
-            <Text style={{ fontSize: 9, color: "#9AA0A6", marginTop: 2 }}>
+            <Text style={{ fontSize: 9, color: "#555555", marginTop: 2 }}>
               Score {s.score_total.toFixed(1)} · Viab. {s.viability_score.toFixed(1)}
             </Text>
           </View>

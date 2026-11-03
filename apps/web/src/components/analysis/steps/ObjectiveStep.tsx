@@ -18,7 +18,7 @@ export function ObjectiveStep() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <h2 style={{ color: "#5F6368", fontFamily: "var(--font-urbanist)" }}>
+      <h2 style={{ color: "#6D6E71", fontFamily: "var(--font-urbanist)" }}>
         Objetivo Diplomático
       </h2>
       <div>
@@ -34,7 +34,7 @@ export function ObjectiveStep() {
             })
           }
           style={{
-            border: "1px solid #5F6368",
+            border: "1px solid #6D6E71",
             borderRadius: 4,
             padding: "8px 12px",
             width: "100%",
@@ -62,7 +62,7 @@ export function ObjectiveStep() {
           }
           rows={4}
           style={{
-            border: "1px solid #5F6368",
+            border: "1px solid #6D6E71",
             borderRadius: 4,
             padding: "8px 12px",
             width: "100%",
@@ -82,7 +82,7 @@ export function ObjectiveStep() {
             })
           }
           style={{
-            border: "1px solid #5F6368",
+            border: "1px solid #6D6E71",
             borderRadius: 4,
             padding: "8px 12px",
             width: "120px",

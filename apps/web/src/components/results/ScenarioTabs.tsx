@@ -7,7 +7,7 @@ import { DecisionMap } from "./DecisionMap"
 
 const ScenarioExport = dynamic(
   () => import("./ScenarioExport").then((m) => m.ScenarioExport),
-  { ssr: false, loading: () => <span style={{ fontSize: 13, color: "#5F6368" }}>Preparando PDF…</span> }
+  { ssr: false, loading: () => <span style={{ fontSize: 13, color: "#6D6E71" }}>Preparando PDF…</span> }
 )
 
 const TAB_LABELS: Record<"A" | "B" | "C", string> = {
@@ -24,7 +24,7 @@ function SkeletonPlaceholder() {
           key={i}
           style={{
             height: 20,
-            background: "#5F6368",
+            background: "#6D6E71",
             borderRadius: 4,
             marginBottom: 16,
             width: `${90 - i * 10}%`,
@@ -60,7 +60,7 @@ export function ScenarioTabs() {
       <div
         style={{
           display: "flex",
-          borderBottom: "2px solid #5F6368",
+          borderBottom: "2px solid #6D6E71",
           marginBottom: 24,
           gap: 4,
         }}
@@ -79,9 +79,9 @@ export function ScenarioTabs() {
                 fontFamily: "var(--font-urbanist)",
                 fontSize: 14,
                 fontWeight: isActive ? 700 : 400,
-                background: isActive ? "#4285F4" : "#fff",
-                color: isActive ? "#fff" : "#5F6368",
-                borderBottom: isActive ? "2px solid #4285F4" : "2px solid transparent",
+                background: isActive ? "#FF6600" : "#fff",
+                color: isActive ? "#fff" : "#6D6E71",
+                borderBottom: isActive ? "2px solid #FF6600" : "2px solid transparent",
                 transition: "all 0.2s ease",
               }}
             >
@@ -98,7 +98,7 @@ export function ScenarioTabs() {
           <div>
             <h3
               style={{
-                color: "#5F6368",
+                color: "#6D6E71",
                 fontSize: 16,
                 marginBottom: 16,
                 fontFamily: "var(--font-urbanist)",
@@ -116,7 +116,7 @@ export function ScenarioTabs() {
           style={{
             textAlign: "center",
             padding: 48,
-            color: "#5F6368",
+            color: "#6D6E71",
             fontSize: 14,
           }}
         >

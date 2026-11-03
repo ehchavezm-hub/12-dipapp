@@ -4,7 +4,7 @@ import { useAnalysisStore } from "@/lib/store/analysisStore"
 import type { Treaty } from "@/lib/schemas/analysis"
 
 const INPUT_STYLE = {
-  border: "1px solid #5F6368",
+  border: "1px solid #6D6E71",
   borderRadius: 4,
   padding: "8px 12px",
   width: "100%",
@@ -42,7 +42,7 @@ export function GeopoliticalContextStep() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <h2 style={{ color: "#5F6368", fontFamily: "var(--font-urbanist)" }}>
+      <h2 style={{ color: "#6D6E71", fontFamily: "var(--font-urbanist)" }}>
         Contexto Geopolítico
       </h2>
       <div>
@@ -78,8 +78,8 @@ export function GeopoliticalContextStep() {
         />
       </div>
 
-      <fieldset style={{ border: "1px solid #5F6368", borderRadius: 4, padding: 16 }}>
-        <legend style={{ color: "#5F6368", padding: "0 4px", fontSize: 14 }}>
+      <fieldset style={{ border: "1px solid #6D6E71", borderRadius: 4, padding: 16 }}>
+        <legend style={{ color: "#6D6E71", padding: "0 4px", fontSize: 14 }}>
           Historial de acuerdos vigentes (Art. 38 Estatuto CIJ)
         </legend>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>

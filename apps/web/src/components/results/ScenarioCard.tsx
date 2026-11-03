@@ -29,7 +29,7 @@ function CircularGauge({ value }: { value: number }) {
           cy={44}
           r={radius}
           fill="none"
-          stroke="#5F6368"
+          stroke="#6D6E71"
           strokeWidth={8}
         />
         <circle
@@ -37,7 +37,7 @@ function CircularGauge({ value }: { value: number }) {
           cy={44}
           r={radius}
           fill="none"
-          stroke="#4285F4"
+          stroke="#FF6600"
           strokeWidth={8}
           strokeDasharray={circumference}
           strokeDashoffset={offset}
@@ -49,12 +49,12 @@ function CircularGauge({ value }: { value: number }) {
           y={44}
           textAnchor="middle"
           dominantBaseline="central"
-          style={{ fontSize: 16, fontWeight: 700, fill: "#4285F4" }}
+          style={{ fontSize: 16, fontWeight: 700, fill: "#FF6600" }}
         >
           {clamped.toFixed(1)}
         </text>
       </svg>
-      <div style={{ fontSize: 11, color: "#5F6368" }}>Puntuación total</div>
+      <div style={{ fontSize: 11, color: "#6D6E71" }}>Puntuación total</div>
     </div>
   )
 }
@@ -68,19 +68,19 @@ function ProgressBar({ value, label }: { value: number; label: string }) {
           display: "flex",
           justifyContent: "space-between",
           fontSize: 12,
-          color: "#5F6368",
+          color: "#6D6E71",
           marginBottom: 4,
         }}
       >
         <span>{label}</span>
-        <span style={{ fontWeight: 600, color: "#34A853" }}>
+        <span style={{ fontWeight: 600, color: "#003087" }}>
           {clamped.toFixed(1)}%
         </span>
       </div>
       <div
         style={{
           height: 8,
-          background: "#5F6368",
+          background: "#6D6E71",
           borderRadius: 4,
           overflow: "hidden",
         }}
@@ -89,7 +89,7 @@ function ProgressBar({ value, label }: { value: number; label: string }) {
           style={{
             height: "100%",
             width: `${clamped}%`,
-            background: "#34A853",
+            background: "#003087",
             borderRadius: 4,
             transition: "width 0.4s ease",
           }}
@@ -104,7 +104,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
     <div
       style={{
         background: "#fff",
-        border: "1px solid #5F6368",
+        border: "1px solid #6D6E71",
         borderRadius: 12,
         padding: 24,
         fontFamily: "var(--font-urbanist)",
@@ -126,7 +126,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
               margin: "0 0 8px",
               fontSize: 20,
               fontWeight: 700,
-              color: "#5F6368",
+              color: "#6D6E71",
             }}
           >
             {scenario.name}
@@ -139,7 +139,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
       <p
         style={{
           fontSize: 14,
-          color: "#5F6368",
+          color: "#6D6E71",
           lineHeight: 1.6,
           marginBottom: 20,
         }}
@@ -154,7 +154,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
             style={{
               fontSize: 12,
               fontWeight: 700,
-              color: "#34A853",
+              color: "#003087",
               marginBottom: 8,
               textTransform: "uppercase",
               letterSpacing: 1,
@@ -168,7 +168,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
                 key={i}
                 style={{
                   fontSize: 13,
-                  color: "#5F6368",
+                  color: "#6D6E71",
                   marginBottom: 6,
                   paddingLeft: 16,
                   position: "relative",
@@ -178,7 +178,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
                   style={{
                     position: "absolute",
                     left: 0,
-                    color: "#34A853",
+                    color: "#003087",
                     fontWeight: 700,
                   }}
                 >
@@ -194,7 +194,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
             style={{
               fontSize: 12,
               fontWeight: 700,
-              color: "#EA4335",
+              color: "#E85500",
               marginBottom: 8,
               textTransform: "uppercase",
               letterSpacing: 1,
@@ -208,7 +208,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
                 key={i}
                 style={{
                   fontSize: 13,
-                  color: "#5F6368",
+                  color: "#6D6E71",
                   marginBottom: 6,
                   paddingLeft: 16,
                   position: "relative",
@@ -218,7 +218,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
                   style={{
                     position: "absolute",
                     left: 0,
-                    color: "#EA4335",
+                    color: "#E85500",
                     fontWeight: 700,
                   }}
                 >
@@ -238,7 +238,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
             style={{
               fontSize: 12,
               fontWeight: 700,
-              color: "#5F6368",
+              color: "#6D6E71",
               marginBottom: 8,
               textTransform: "uppercase",
               letterSpacing: 1,
@@ -251,8 +251,8 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
               <span
                 key={i}
                 style={{
-                  background: "#FBBC05",
-                  color: "#5F6368",
+                  background: "#0078C1",
+                  color: "#6D6E71",
                   fontSize: 12,
                   fontWeight: 600,
                   padding: "4px 10px",
@@ -273,7 +273,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
             style={{
               fontSize: 12,
               fontWeight: 700,
-              color: "#5F6368",
+              color: "#6D6E71",
               marginBottom: 8,
               textTransform: "uppercase",
               letterSpacing: 1,
@@ -283,12 +283,12 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
           </div>
           <div
             style={{
-              background: "#FFF8E1",
-              borderLeft: "3px solid #FBBC05",
+              background: "#FFF3E0",
+              borderLeft: "3px solid #0078C1",
               padding: "12px 16px",
               borderRadius: 2,
               fontSize: 13,
-              color: "#3C4043",
+              color: "#1A1A1A",
               lineHeight: 1.7,
               fontStyle: "italic",
             }}
@@ -305,7 +305,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
             style={{
               fontSize: 12,
               fontWeight: 700,
-              color: "#5F6368",
+              color: "#6D6E71",
               marginBottom: 8,
               textTransform: "uppercase",
               letterSpacing: 1,
@@ -320,12 +320,12 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
                   href={source.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: "#4285F4", textDecoration: "none" }}
+                  style={{ color: "#FF6600", textDecoration: "none" }}
                 >
                   [{i + 1}] {source.title}
                 </a>
                 {source.date && (
-                  <span style={{ color: "#5F6368", marginLeft: 8 }}>
+                  <span style={{ color: "#6D6E71", marginLeft: 8 }}>
                     ({source.date})
                   </span>
                 )}

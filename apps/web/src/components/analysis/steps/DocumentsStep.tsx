@@ -91,10 +91,10 @@ export function DocumentsStep() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <h2 style={{ color: "#5F6368", fontFamily: "var(--font-urbanist)" }}>
+      <h2 style={{ color: "#6D6E71", fontFamily: "var(--font-urbanist)" }}>
         Documentos de Soporte
       </h2>
-      <p style={{ color: "#5F6368" }}>
+      <p style={{ color: "#6D6E71" }}>
         Adjunte PDFs relevantes para el análisis (opcional). Máx. {MAX_FILES} archivos · 500 KB por archivo.
       </p>
       <input
@@ -111,7 +111,7 @@ export function DocumentsStep() {
         onClick={() => fileInputRef.current?.click()}
         disabled={uploading}
         style={{
-          background: uploading ? "#5F6368" : "#4285F4",
+          background: uploading ? "#6D6E71" : "#FF6600",
           color: "#fff",
           border: "none",
           borderRadius: 4,
@@ -125,7 +125,7 @@ export function DocumentsStep() {
       </button>
 
       {errors.length > 0 && (
-        <ul role="alert" style={{ listStyle: "none", padding: 0, color: "#EA4335", fontSize: 13 }}>
+        <ul role="alert" style={{ listStyle: "none", padding: 0, color: "#E85500", fontSize: 13 }}>
           {errors.map((e) => (
             <li key={`${e.file}-${e.message}`}>
               {e.file}: {e.message}
@@ -141,19 +141,19 @@ export function DocumentsStep() {
               key={source}
               style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0" }}
             >
-              <span style={{ color: "#34A853" }} aria-hidden="true">
+              <span style={{ color: "#003087" }} aria-hidden="true">
                 PDF
               </span>
               <span style={{ fontFamily: "var(--font-urbanist)" }}>
                 {source}
-                <span style={{ color: "#5F6368", fontSize: 12, marginLeft: 6 }}>
+                <span style={{ color: "#6D6E71", fontSize: 12, marginLeft: 6 }}>
                   ({count} fragmentos)
                 </span>
               </span>
               <button
                 type="button"
                 onClick={() => removeSource(source)}
-                style={{ background: "none", border: "none", color: "#EA4335", cursor: "pointer" }}
+                style={{ background: "none", border: "none", color: "#E85500", cursor: "pointer" }}
                 aria-label={`Eliminar ${source}`}
               >
                 ✕

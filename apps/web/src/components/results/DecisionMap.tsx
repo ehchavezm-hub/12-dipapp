@@ -13,11 +13,11 @@ import "@xyflow/react/dist/style.css"
 import type { Scenario } from "@/lib/types/results"
 
 /* ── Semantic colours ───────────────────────────────────────────────── */
-const C_ACTION  = "#4285F4"   // blue  — acción clave (roadmap step)
-const C_PRO     = "#34A853"   // green — favorable
-const C_CON     = "#EA4335"   // red   — fricción / riesgo
-const C_LEV     = "#FBBC05"   // amber — punto de apalancamiento
-const C_ROOT    = "#202124"   // dark  — escenario raíz
+const C_ACTION  = "#FF6600"   // AECOM Orange — acción clave (roadmap step)
+const C_PRO     = "#003087"   // Engineering Blue — favorable
+const C_CON     = "#E85500"   // Orange Deep — fricción / riesgo
+const C_LEV     = "#0078C1"   // Blue Medium — punto de apalancamiento
+const C_ROOT    = "#1A1A1A"   // AECOM Black — escenario raíz
 
 /* ── Layout constants ───────────────────────────────────────────────── */
 const COL_W     = 300   // horizontal distance between columns
@@ -171,7 +171,7 @@ export function DecisionMap({ scenario }: DecisionMapProps) {
           { color: C_CON,    label: "Riesgo / fricción" },
           { color: C_LEV,    label: "Punto de apalancamiento" },
         ].map(({ color, label }) => (
-          <div key={label} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#5F6368" }}>
+          <div key={label} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#6D6E71" }}>
             <span style={{ width: 10, height: 10, borderRadius: 2, background: color, display: "inline-block" }} />
             {label}
           </div>
@@ -193,7 +193,7 @@ export function DecisionMap({ scenario }: DecisionMapProps) {
           <Background color="#F1F3F4" gap={20} />
           <Controls showInteractive={false} />
           <MiniMap
-            nodeColor={(n) => (n.style?.background as string) ?? "#5F6368"}
+            nodeColor={(n) => (n.style?.background as string) ?? "#6D6E71"}
             maskColor="rgba(241,243,244,0.7)"
             style={{ background: "#fff", border: "1px solid #DADCE0" }}
           />
@@ -208,17 +208,17 @@ export function DecisionMap({ scenario }: DecisionMapProps) {
             onClick={() => setShowCoT((v) => !v)}
             style={{
               background: "none", border: "1px solid #DADCE0", borderRadius: 6,
-              padding: "6px 14px", fontSize: 12, color: "#5F6368", cursor: "pointer",
+              padding: "6px 14px", fontSize: 12, color: "#6D6E71", cursor: "pointer",
               fontFamily: "var(--font-urbanist)", display: "flex", alignItems: "center", gap: 6,
             }}
           >
-            <span style={{ color: "#FBBC05", fontWeight: 700 }}>⚙</span>
+            <span style={{ color: "#0078C1", fontWeight: 700 }}>⚙</span>
             {showCoT ? "Ocultar" : "Ver"} cadena de razonamiento completa
           </button>
           {showCoT && (
             <div style={{
-              marginTop: 8, background: "#FFF8E1", borderLeft: "3px solid #FBBC05",
-              padding: "12px 16px", borderRadius: 4, fontSize: 12, color: "#3C4043",
+              marginTop: 8, background: "#FFF3E0", borderLeft: "3px solid #0078C1",
+              padding: "12px 16px", borderRadius: 4, fontSize: 12, color: "#1A1A1A",
               lineHeight: 1.7, fontStyle: "italic", whiteSpace: "pre-wrap",
             }}>
               {scenario.chain_of_thought}

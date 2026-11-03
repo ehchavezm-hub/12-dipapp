@@ -35,14 +35,14 @@ export default function ResultsPage() {
         fontFamily: "var(--font-urbanist)",
       }}
     >
-      <h1 style={{ color: "#5F6368", marginBottom: 24 }}>Análisis Diplomático</h1>
+      <h1 style={{ color: "#6D6E71", marginBottom: 24 }}>Análisis Diplomático</h1>
 
       {!parsedCase.success && scenarios.length === 0 && (
-        <div style={{ textAlign: "center", padding: 48, color: "#5F6368" }}>
+        <div style={{ textAlign: "center", padding: 48, color: "#6D6E71" }}>
           <p style={{ marginBottom: 16 }}>
             No hay un caso de análisis activo. Los resultados no se almacenan en el servidor.
           </p>
-          <Link href="/analysis/new" style={{ color: "#4285F4", fontWeight: 600 }}>
+          <Link href="/analysis/new" style={{ color: "#FF6600", fontWeight: 600 }}>
             Crear un nuevo análisis
           </Link>
         </div>
@@ -52,8 +52,8 @@ export default function ResultsPage() {
         <div
           role="alert"
           style={{
-            border: "1px solid #EA4335",
-            color: "#EA4335",
+            border: "1px solid #E85500",
+            color: "#E85500",
             borderRadius: 8,
             padding: "12px 16px",
             marginBottom: 24,
@@ -70,7 +70,7 @@ export default function ResultsPage() {
               onClick={retry}
               disabled={isStreaming}
               style={{
-                background: "#EA4335",
+                background: "#E85500",
                 color: "#fff",
                 border: "none",
                 borderRadius: 4,
@@ -90,7 +90,7 @@ export default function ResultsPage() {
         <section
           aria-label="Puntuación determinística"
           style={{
-            border: "1px solid #5F6368",
+            border: "1px solid #6D6E71",
             borderRadius: 8,
             padding: 16,
             marginBottom: 24,
@@ -98,19 +98,19 @@ export default function ResultsPage() {
             gap: 24,
             flexWrap: "wrap",
             fontSize: 13,
-            color: "#5F6368",
+            color: "#6D6E71",
           }}
         >
           <div>
             <div>Score base</div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: "#4285F4" }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: "#FF6600" }}>
               {scoring.score_total.toFixed(1)}
             </div>
           </div>
           <div>Afinidad: {scoring.breakdown.affinity.toFixed(1)}</div>
           <div>Historial: {scoring.breakdown.history.toFixed(1)}</div>
           <div>Intereses: {scoring.breakdown.interests.toFixed(1)}</div>
-          <div style={{ color: scoring.litigation_penalty < 0 ? "#EA4335" : "#5F6368" }}>
+          <div style={{ color: scoring.litigation_penalty < 0 ? "#E85500" : "#6D6E71" }}>
             Litigios: {scoring.litigation_penalty.toFixed(0)}
           </div>
           {metadata && (
@@ -127,13 +127,13 @@ export default function ResultsPage() {
         <div style={{ display: "flex", gap: 16, marginBottom: 32 }}>
           {scenarios.map((s) => (
             <div key={s.label} style={{ flex: 1, textAlign: "center" }}>
-              <div style={{ fontSize: 12, color: "#5F6368", marginBottom: 4 }}>
+              <div style={{ fontSize: 12, color: "#6D6E71", marginBottom: 4 }}>
                 Escenario {s.label}
               </div>
               <div
                 style={{
                   height: 8,
-                  background: "#5F6368",
+                  background: "#6D6E71",
                   borderRadius: 4,
                   overflow: "hidden",
                 }}
@@ -142,7 +142,7 @@ export default function ResultsPage() {
                   style={{
                     height: "100%",
                     width: `${Math.min(100, Math.max(0, s.score_total))}%`,
-                    background: "#4285F4",
+                    background: "#FF6600",
                     borderRadius: 4,
                   }}
                 />
@@ -158,7 +158,7 @@ export default function ResultsPage() {
       {isStreaming && scenarios.length === 0 && (
         <div
           role="status"
-          style={{ textAlign: "center", padding: 48, color: "#5F6368", fontSize: 14 }}
+          style={{ textAlign: "center", padding: 48, color: "#6D6E71", fontSize: 14 }}
         >
           Generando análisis diplomático… (puede tardar hasta 45 s)
         </div>

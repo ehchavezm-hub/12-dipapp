@@ -12,13 +12,13 @@ const config: Config = {
         sans: ["var(--font-urbanist)", "sans-serif"],
       },
       colors: {
-        // Google Material palette — only permitted colors
+        // AECOM official palette
         brand: {
-          blue: "#4285F4",
-          green: "#34A853",
-          yellow: "#FBBC05",
-          red: "#EA4335",
-          gray: "#5F6368",
+          blue:   "#FF6600",   // AECOM Orange Primary — acento principal
+          green:  "#003087",   // Engineering Blue — positivo / éxito
+          yellow: "#0078C1",   // Blue Medium — destacado
+          red:    "#E85500",   // Orange Deep — alerta / riesgo
+          gray:   "#6D6E71",   // Gray Corporate — texto secundario
         },
       },
     },

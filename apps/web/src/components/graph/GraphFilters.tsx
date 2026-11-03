@@ -37,10 +37,10 @@ const TYPE_LABELS: Record<DiplomaticNode["type"], string> = {
 }
 
 const TYPE_COLORS: Record<DiplomaticNode["type"], string> = {
-  country: "#4285F4",
-  organization: "#34A853",
-  embassy: "#FBBC05",
-  diplomat: "#5F6368",
+  country: "#FF6600",
+  organization: "#003087",
+  embassy: "#0078C1",
+  diplomat: "#6D6E71",
 }
 
 export default function GraphFilters() {
@@ -89,8 +89,8 @@ export default function GraphFilters() {
                 className={[
                   "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
                   active
-                    ? "bg-[#4285F4] text-white border-[#4285F4]"
-                    : "bg-white text-brand-gray border-brand-gray/30 hover:border-[#4285F4] hover:text-[#4285F4]",
+                    ? "bg-[#FF6600] text-white border-[#FF6600]"
+                    : "bg-white text-brand-gray border-brand-gray/30 hover:border-[#FF6600] hover:text-[#FF6600]",
                 ].join(" ")}
               >
                 {REGION_LABELS[region]}
@@ -114,7 +114,7 @@ export default function GraphFilters() {
           onChange={(e) =>
             setFilters({ minAffinityScore: Number(e.target.value) })
           }
-          className="w-full h-2 rounded-full accent-[#4285F4]"
+          className="w-full h-2 rounded-full accent-[#FF6600]"
           aria-label="Minimum affinity score filter"
         />
         <div className="flex justify-between text-xs text-brand-gray mt-1">
@@ -193,7 +193,7 @@ export default function GraphFilters() {
             onClick={handleFindPath}
             disabled={!pathSrc || !pathTgt}
             className="px-3 py-1 rounded text-xs font-semibold text-white"
-            style={{ background: pathSrc && pathTgt ? "#4285F4" : "#9AA0A6", cursor: pathSrc && pathTgt ? "pointer" : "default" }}
+            style={{ background: pathSrc && pathTgt ? "#FF6600" : "#555555", cursor: pathSrc && pathTgt ? "pointer" : "default" }}
           >
             Trazar ruta
           </button>
@@ -205,7 +205,7 @@ export default function GraphFilters() {
             Limpiar
           </button>
         </div>
-        {pathError && <p className="text-xs text-[#EA4335] mt-1">{pathError}</p>}
+        {pathError && <p className="text-xs text-[#E85500] mt-1">{pathError}</p>}
         <p className="text-xs text-brand-gray mt-1">
           El camino resaltado en rojo es la ruta de menor costo entre los nodos seleccionados.
         </p>

@@ -17,17 +17,17 @@ if (typeof window !== "undefined") {
 // ---------------------------------------------------------------------------
 
 const NODE_COLOR: Record<DiplomaticNode["type"], string> = {
-  country: "#4285F4",
-  organization: "#34A853",
-  embassy: "#FBBC05",
-  diplomat: "#5F6368",
+  country: "#FF6600",
+  organization: "#003087",
+  embassy: "#0078C1",
+  diplomat: "#6D6E71",
 }
 
 const EDGE_COLOR: Record<DiplomaticEdge["type"], string> = {
-  bilateral_treaty: "#34A853",
-  trade_agreement: "#4285F4",
-  un_vote_alignment: "#FBBC05",
-  dispute: "#EA4335",
+  bilateral_treaty: "#003087",
+  trade_agreement: "#FF6600",
+  un_vote_alignment: "#0078C1",
+  dispute: "#E85500",
 }
 
 /**
@@ -144,7 +144,7 @@ export default function DiplomaticGraph({
           selector: "node",
           style: {
             "background-color": (ele: cytoscape.NodeSingular) =>
-              NODE_COLOR[ele.data("nodeType") as DiplomaticNode["type"]] ?? "#5F6368",
+              NODE_COLOR[ele.data("nodeType") as DiplomaticNode["type"]] ?? "#6D6E71",
             label: "data(label)",
             "font-size": 10,
             "font-family": fontFamily,
@@ -167,9 +167,9 @@ export default function DiplomaticGraph({
           selector: "edge",
           style: {
             "line-color": (ele: cytoscape.EdgeSingular) =>
-              EDGE_COLOR[ele.data("edgeType") as DiplomaticEdge["type"]] ?? "#5F6368",
+              EDGE_COLOR[ele.data("edgeType") as DiplomaticEdge["type"]] ?? "#6D6E71",
             "target-arrow-color": (ele: cytoscape.EdgeSingular) =>
-              EDGE_COLOR[ele.data("edgeType") as DiplomaticEdge["type"]] ?? "#5F6368",
+              EDGE_COLOR[ele.data("edgeType") as DiplomaticEdge["type"]] ?? "#6D6E71",
             "target-arrow-shape": "triangle",
             "curve-style": "bezier",
             width: (ele: cytoscape.EdgeSingular) =>
@@ -180,15 +180,15 @@ export default function DiplomaticGraph({
         {
           selector: "node.highlighted",
           style: {
-            "border-color": "#EA4335",
+            "border-color": "#E85500",
             "border-width": 4,
           },
         },
         {
           selector: "edge.highlighted",
           style: {
-            "line-color": "#EA4335",
-            "target-arrow-color": "#EA4335",
+            "line-color": "#E85500",
+            "target-arrow-color": "#E85500",
             opacity: 1,
             width: 4,
           },
@@ -196,7 +196,7 @@ export default function DiplomaticGraph({
         {
           selector: "node:selected",
           style: {
-            "border-color": "#4285F4",
+            "border-color": "#FF6600",
             "border-width": 4,
           },
         },

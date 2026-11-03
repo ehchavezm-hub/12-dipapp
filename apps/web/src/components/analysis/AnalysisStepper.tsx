@@ -131,14 +131,14 @@ export function AnalysisStepper() {
     >
       {/* Language selector */}
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
-        <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#5F6368", fontFamily: "var(--font-urbanist)" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#6D6E71", fontFamily: "var(--font-urbanist)" }}>
           🌐 Idioma de salida:
           <select
             value={language}
             onChange={(e) => updateCase({ output_language: e.target.value as OutputLanguage })}
             style={{
               border: "1px solid #DADCE0", borderRadius: 4, padding: "4px 8px",
-              fontFamily: "var(--font-urbanist)", fontSize: 13, color: "#202124",
+              fontFamily: "var(--font-urbanist)", fontSize: 13, color: "#1A1A1A",
               background: "#fff", cursor: "pointer",
             }}
           >
@@ -173,7 +173,7 @@ export function AnalysisStepper() {
                 width: 28,
                 height: 28,
                 borderRadius: "50%",
-                background: i <= step ? "#4285F4" : "#5F6368",
+                background: i <= step ? "#FF6600" : "#6D6E71",
                 color: "#fff",
                 display: "flex",
                 alignItems: "center",
@@ -188,7 +188,7 @@ export function AnalysisStepper() {
             <span
               style={{
                 fontSize: 12,
-                color: i === step ? "#4285F4" : "#5F6368",
+                color: i === step ? "#FF6600" : "#6D6E71",
                 fontWeight: i === step ? 600 : 400,
               }}
             >
@@ -199,7 +199,7 @@ export function AnalysisStepper() {
                 style={{
                   flex: 1,
                   height: 2,
-                  background: i < step ? "#4285F4" : "#5F6368",
+                  background: i < step ? "#FF6600" : "#6D6E71",
                   marginLeft: 4,
                 }}
               />
@@ -226,22 +226,22 @@ export function AnalysisStepper() {
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <h2 style={{ margin: 0, fontSize: 18, color: "#202124" }}>{STEP_HELP[step].title}</h2>
+              <h2 style={{ margin: 0, fontSize: 18, color: "#1A1A1A" }}>{STEP_HELP[step].title}</h2>
               <button
                 onClick={() => setShowHelp(false)}
-                style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#5F6368" }}
+                style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#6D6E71" }}
               >✕</button>
             </div>
             {STEP_HELP[step].content.map((item) => (
               <div key={item.label} style={{ marginBottom: 14 }}>
-                <div style={{ fontWeight: 600, color: "#4285F4", fontSize: 14, marginBottom: 4 }}>{item.label}</div>
-                <div style={{ color: "#3C4043", fontSize: 14, lineHeight: 1.5 }}>{item.desc}</div>
+                <div style={{ fontWeight: 600, color: "#FF6600", fontSize: 14, marginBottom: 4 }}>{item.label}</div>
+                <div style={{ color: "#1A1A1A", fontSize: 14, lineHeight: 1.5 }}>{item.desc}</div>
               </div>
             ))}
             <button
               onClick={() => setShowHelp(false)}
               style={{
-                marginTop: 8, background: "#4285F4", border: "none", color: "#fff",
+                marginTop: 8, background: "#FF6600", border: "none", color: "#fff",
                 borderRadius: 4, padding: "8px 20px", cursor: "pointer",
                 fontFamily: "var(--font-urbanist)", fontSize: 14,
               }}
@@ -257,7 +257,7 @@ export function AnalysisStepper() {
             type="button"
             onClick={loadExampleCase}
             style={{
-              background: "none", border: "1px solid #4285F4", color: "#4285F4",
+              background: "none", border: "1px solid #FF6600", color: "#FF6600",
               borderRadius: 4, padding: "6px 14px", cursor: "pointer",
               fontFamily: "var(--font-urbanist)", fontSize: 14,
             }}
@@ -270,7 +270,7 @@ export function AnalysisStepper() {
           onClick={() => setShowHelp(true)}
           title="Ayuda para este paso"
           style={{
-            background: "#F1F3F4", border: "1px solid #DADCE0", color: "#5F6368",
+            background: "#F1F3F4", border: "1px solid #DADCE0", color: "#6D6E71",
             borderRadius: "50%", width: 32, height: 32, cursor: "pointer",
             fontFamily: "var(--font-urbanist)", fontSize: 15, fontWeight: 700,
             display: "flex", alignItems: "center", justifyContent: "center",
@@ -282,7 +282,7 @@ export function AnalysisStepper() {
       <div
         style={{
           background: "#fff",
-          border: "1px solid #5F6368",
+          border: "1px solid #6D6E71",
           borderRadius: 8,
           padding: 24,
           marginBottom: 24,
@@ -295,8 +295,8 @@ export function AnalysisStepper() {
         <div
           role="alert"
           style={{
-            border: "1px solid #EA4335",
-            color: "#EA4335",
+            border: "1px solid #E85500",
+            color: "#E85500",
             borderRadius: 4,
             padding: "12px 16px",
             marginBottom: 16,
@@ -319,9 +319,9 @@ export function AnalysisStepper() {
           onClick={prevStep}
           disabled={step === 0}
           style={{
-            background: step === 0 ? "#5F6368" : "#fff",
-            border: "1px solid #5F6368",
-            color: step === 0 ? "#fff" : "#5F6368",
+            background: step === 0 ? "#6D6E71" : "#fff",
+            border: "1px solid #6D6E71",
+            color: step === 0 ? "#fff" : "#6D6E71",
             borderRadius: 4,
             padding: "8px 20px",
             cursor: step === 0 ? "default" : "pointer",
@@ -336,7 +336,7 @@ export function AnalysisStepper() {
             type="button"
             onClick={nextStep}
             style={{
-              background: "#4285F4",
+              background: "#FF6600",
               border: "none",
               color: "#fff",
               borderRadius: 4,
@@ -353,7 +353,7 @@ export function AnalysisStepper() {
             onClick={handleSubmit}
             disabled={isSubmitting}
             style={{
-              background: isSubmitting ? "#5F6368" : "#34A853",
+              background: isSubmitting ? "#6D6E71" : "#003087",
               border: "none",
               color: "#fff",
               borderRadius: 4,
