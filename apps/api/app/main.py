@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from routers.graph import router as graph_router
 from schemas.errors import ProblemDetail
 
 app = FastAPI(
@@ -59,6 +60,9 @@ _STATUS_TITLES: dict[int, str] = {
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
+app.include_router(graph_router)
+
+
 @app.get("/health")
 async def health_check() -> dict[str, str]:
     """Health check endpoint."""
