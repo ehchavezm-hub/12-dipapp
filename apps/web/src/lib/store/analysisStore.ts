@@ -15,24 +15,29 @@ interface AnalysisState {
   setSubmitting: (value: boolean) => void
 }
 
-// Peru TLC example case (ids match the seeded graph: c-per = Peru)
+// Demo: Peru analyzing China for trade and infrastructure cooperation
 export const EXAMPLE_CASE: AnalysisCaseDTO = {
-  target_profiles: [{ id: "c-per", name: "Peru", country_code: "PE" }],
+  target_profiles: [{ id: "c-chn", name: "China", country_code: "CN" }],
   geopolitical_context: {
-    region: "americas",
-    description: "Pacific Alliance integration",
+    region: "Asia-Pacífico",
+    description:
+      "China es el principal socio comercial de Perú, con creciente presencia en minería e infraestructura. La relación bilateral se enmarca en el TLC vigente desde 2010 y el interés chino en la Iniciativa de la Franja y la Ruta en América Latina.",
   },
   diplomatic_objective: {
     type: "trade",
     description:
-      "Negotiate comprehensive TLC with Pacific Alliance partners",
+      "Ampliar el TLC Perú-China para incluir servicios digitales y cooperación en infraestructura portuaria (Puerto de Chancay), fortaleciendo la posición peruana en la cadena de suministro Asia-Pacífico.",
   },
   scoring_weights: { ...DEFAULT_SCORING_WEIGHTS },
   analysis_period_years: 10,
   support_documents: [],
   treaties: [
-    { level: 2, active: true },
-    { level: 3, active: true },
+    { level: 1, active: true },  // Alianza, paz y límites
+    { level: 2, active: true },  // TLC vigente
+    { level: 2, active: true },  // Acuerdo inversiones
+    { level: 3, active: true },  // Cooperación técnica
+    { level: 3, active: true },  // Cooperación cultural
+    { level: 3, active: true },  // Acuerdo científico
   ],
   icj_cases: 0,
 }
