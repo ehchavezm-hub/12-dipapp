@@ -56,7 +56,7 @@ function ScenarioPDF({ scenario }: { scenario: Scenario }) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Fuentes</Text>
           {scenario.sources.map((s, i) => (
-            <Link key={i} src={s.url} style={styles.link}>{s.title} ({s.date})</Link>
+            <Link key={i} src={s.url} style={styles.link}>{s.title}{s.date ? ` (${s.date})` : ""}</Link>
           ))}
         </View>
       </Page>
