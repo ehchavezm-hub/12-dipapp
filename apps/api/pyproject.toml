@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dipapp-api"
+version = "0.1.0"
+description = "DipApp FastAPI backend — Diplomatic Intelligence Platform"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi==0.111.*",
+    "pydantic[email]>=2.7",
+    "pydantic-settings",
+    "httpx",
+    "python-jose[cryptography]",
+    "instructor",
+    "anthropic",
+    "openai",
+    "pdfplumber",
+    "pytesseract",
+    "tiktoken",
+    "upstash-redis",
+    "tenacity",
+    "uvicorn[standard]",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "httpx",
+    "pytest-cov",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.pyright]
+pythonVersion = "3.11"
+strict = true
