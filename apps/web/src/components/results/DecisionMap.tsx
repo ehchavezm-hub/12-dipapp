@@ -22,7 +22,6 @@ const C_ROOT    = "#1A1A1A"   // AECOM Black — escenario raíz
 /* ── Layout constants ───────────────────────────────────────────────── */
 const COL_W     = 300   // horizontal distance between columns
 const NODE_H    = 80    // vertical step between leaf nodes
-const STEP_X    = 0
 const LEAF_X    = COL_W + 40
 
 /* ── Node factory helpers ───────────────────────────────────────────── */

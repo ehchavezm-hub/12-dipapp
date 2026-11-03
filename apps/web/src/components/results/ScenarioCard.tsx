@@ -1,6 +1,5 @@
 "use client"
 
-import dynamic from "next/dynamic"
 import type { Scenario } from "@/lib/types/results"
 
 
