@@ -144,7 +144,7 @@ _retry_decorator = retry(
 
 
 async def _call_anthropic(user_prompt: str, system_prompt: str) -> ThreeScenariosResult:
-    """Call claude-sonnet-4-5 via instructor, with tenacity retries."""
+    """Call claude-opus-4-5 via instructor, with tenacity retries."""
     from settings import get_settings
 
     settings = get_settings()
@@ -157,7 +157,7 @@ async def _call_anthropic(user_prompt: str, system_prompt: str) -> ThreeScenario
             anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
         )
         return await client.chat.completions.create(
-            model="claude-sonnet-4-5",
+            model="claude-opus-4-5",
             max_tokens=6000,
             response_model=ThreeScenariosResult,
             messages=[
