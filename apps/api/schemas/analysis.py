@@ -1,4 +1,4 @@
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, Field, model_validator
 from typing import Literal, Annotated
 from annotated_types import Len
 
@@ -85,10 +85,10 @@ class Scenario(BaseModel):
     pros: list[str]
     cons: list[str]
     leverage_points: list[str]
-    score_total: float
-    viability_score: float
+    score_total: float = Field(ge=0, le=100)
+    viability_score: float = Field(ge=0, le=100)
     sources: list[SourceCitation]
-    chain_of_thought: str
+    chain_of_thought: str = Field(min_length=1)
 
 
 class AnalysisMetadata(BaseModel):

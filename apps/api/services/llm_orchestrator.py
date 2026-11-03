@@ -10,7 +10,7 @@ import instructor
 import openai
 from tenacity import (
     retry,
-    retry_if_exception_type,
+    retry_if_exception,
     stop_after_attempt,
     wait_exponential,
 )
@@ -81,7 +81,7 @@ def _is_retryable(exc: BaseException) -> bool:
 
 
 _retry_decorator = retry(
-    retry=retry_if_exception_type(Exception),
+    retry=retry_if_exception(_is_retryable),
     stop=stop_after_attempt(3),
     wait=wait_exponential(multiplier=1, min=1, max=10),
     reraise=True,

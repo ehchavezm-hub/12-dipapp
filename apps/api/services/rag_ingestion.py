@@ -65,6 +65,9 @@ async def fetch_un_votes(country: str, years: int) -> str:
         f"https://data.un.org/ws/rest/data/DF_GA_Voting_Records/A..{country}/"
         f"?startPeriod={(2026 - years)}&endPeriod=2026&format=json"
     )
+    if not is_domain_allowed(url):
+        logger.warning("fetch_un_votes: domain not in whitelist for URL %s", url)
+        return ""
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             resp = await client.get(url)
