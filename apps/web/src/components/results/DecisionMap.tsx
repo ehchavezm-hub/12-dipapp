@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo } from "react"
-import ReactFlow, { Background, type Node, type Edge } from "@xyflow/react"
+import { ReactFlow, Background, type Node, type Edge } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 import type { Scenario } from "@/lib/types/results"
 
