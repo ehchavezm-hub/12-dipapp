@@ -11,7 +11,8 @@ import {
 import { readErrorMessage } from "@/lib/services/analysisService"
 
 const IngestResponseSchema = z.array(DocumentChunkSchema)
-const MAX_FILE_BYTES = 10 * 1024 * 1024
+const MAX_FILE_BYTES = 500 * 1024
+const MAX_FILES = 3
 
 interface UploadError {
   file: string
@@ -38,7 +39,7 @@ export function DocumentsStep() {
 
   async function ingestFile(file: File): Promise<DocumentChunk[]> {
     if (file.size > MAX_FILE_BYTES) {
-      throw new Error("Archivo mayor a 10 MB (carga por URL prefirmada aún no disponible)")
+      throw new Error("Archivo mayor a 500 KB. Reduzca el tamaño del PDF antes de subir.")
     }
     const formData = new FormData()
     formData.append("file", file)
@@ -51,10 +52,15 @@ export function DocumentsStep() {
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return
+    if (bySource.length >= MAX_FILES) {
+      setErrors([{ file: "—", message: `Máximo ${MAX_FILES} archivos permitidos.` }])
+      return
+    }
     setUploading(true)
     const newErrors: UploadError[] = []
     let next = [...docs]
-    for (const file of Array.from(files)) {
+    const remaining = MAX_FILES - bySource.length
+    for (const file of Array.from(files).slice(0, remaining)) {
       try {
         const chunks = await ingestFile(file)
         // Re-uploading the same file replaces its chunks
@@ -89,7 +95,7 @@ export function DocumentsStep() {
         Documentos de Soporte
       </h2>
       <p style={{ color: "#5F6368" }}>
-        Adjunte PDFs relevantes para el análisis (opcional, máx. 10 MB por archivo).
+        Adjunte PDFs relevantes para el análisis (opcional). Máx. {MAX_FILES} archivos · 500 KB por archivo.
       </p>
       <input
         ref={fileInputRef}
