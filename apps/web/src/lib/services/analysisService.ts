@@ -1,10 +1,20 @@
 import type { AnalysisCaseDTO } from "@/lib/schemas/analysis"
 
-/** POST the analysis case to the authenticated Next.js proxy. */
+/**
+ * POST the analysis case directly to the backend (bypasses Vercel's 10s serverless
+ * timeout by calling Render from the browser instead of through a Next.js proxy).
+ */
 export async function submitAnalysis(caseDTO: AnalysisCaseDTO): Promise<Response> {
-  return fetch("/api/proxy/analysis", {
+  const tokenResp = await fetch("/api/token")
+  if (!tokenResp.ok) return tokenResp
+  const { token, backendUrl } = (await tokenResp.json()) as { token: string; backendUrl: string }
+  return fetch(`${backendUrl}/analysis/`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/x-ndjson, application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/x-ndjson, application/json",
+      Authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify(caseDTO),
   })
 }
