@@ -74,6 +74,15 @@ const styles = StyleSheet.create({
   breakdownLabel: { fontSize: 8, color: GRAY },
 })
 
+/* ── Size limits (keeps PDF ≤ 500 KB) ──────────────────────────────── */
+const MAX_STRATEGY   = 400
+const MAX_COT        = 700
+const MAX_ITEM       = 120
+
+function trunc(text: string, max: number) {
+  return text.length > max ? text.slice(0, max) + "…" : text
+}
+
 interface ScenarioPDFProps {
   scenarios: Scenario[]
   scoring?: ScoringResult | null
@@ -154,7 +163,7 @@ function ScenarioPage({ scenario }: { scenario: Scenario }) {
       {/* Strategy */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Estrategia</Text>
-        <Text style={styles.body}>{scenario.strategy}</Text>
+        <Text style={styles.body}>{trunc(scenario.strategy, MAX_STRATEGY)}</Text>
       </View>
 
       {/* Roadmap */}
@@ -164,7 +173,7 @@ function ScenarioPage({ scenario }: { scenario: Scenario }) {
           <View key={step.step} style={styles.roadmapRow}>
             <Text style={[styles.roadmapStep, { color: accent }]}>{step.step}</Text>
             <View style={styles.roadmapContent}>
-              <Text style={styles.roadmapAction}>{step.action}</Text>
+              <Text style={styles.roadmapAction}>{trunc(step.action, MAX_ITEM)}</Text>
               <Text style={styles.roadmapMeta}>{step.timeline} · {step.responsible}</Text>
             </View>
           </View>
@@ -176,10 +185,10 @@ function ScenarioPage({ scenario }: { scenario: Scenario }) {
         <Text style={styles.sectionTitle}>Ventajas y Desventajas</Text>
         <View style={styles.row}>
           <View style={styles.col}>
-            {scenario.pros.map((p, i) => <Text key={i} style={styles.pro}>✓ {p}</Text>)}
+            {scenario.pros.map((p, i) => <Text key={i} style={styles.pro}>✓ {trunc(p, MAX_ITEM)}</Text>)}
           </View>
           <View style={styles.col}>
-            {scenario.cons.map((c, i) => <Text key={i} style={styles.con}>✗ {c}</Text>)}
+            {scenario.cons.map((c, i) => <Text key={i} style={styles.con}>✗ {trunc(c, MAX_ITEM)}</Text>)}
           </View>
         </View>
       </View>
@@ -189,17 +198,17 @@ function ScenarioPage({ scenario }: { scenario: Scenario }) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Puntos de Apalancamiento</Text>
           {scenario.leverage_points.map((lp, i) => (
-            <Text key={i} style={styles.chip}>▸ {lp}</Text>
+            <Text key={i} style={styles.chip}>▸ {trunc(lp, MAX_ITEM)}</Text>
           ))}
         </View>
       )}
 
-      {/* Chain of Thought */}
+      {/* Chain of Thought — truncated to control PDF size */}
       {scenario.chain_of_thought && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Cadena de Razonamiento</Text>
+          <Text style={styles.sectionTitle}>Cadena de Razonamiento (resumen)</Text>
           <View style={styles.cotBox}>
-            <Text style={styles.cotText}>{scenario.chain_of_thought}</Text>
+            <Text style={styles.cotText}>{trunc(scenario.chain_of_thought, MAX_COT)}</Text>
           </View>
         </View>
       )}
