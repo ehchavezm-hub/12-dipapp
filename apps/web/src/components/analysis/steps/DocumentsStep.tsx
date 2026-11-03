@@ -1,17 +1,40 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import { useAnalysisStore } from "@/lib/store/analysisStore"
 
 export function DocumentsStep() {
   const { currentCase, updateCase } = useAnalysisStore()
   const docs = currentCase.support_documents ?? []
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [chunkCounts, setChunkCounts] = useState<Record<string, number>>({})
+  const [uploading, setUploading] = useState(false)
 
-  function handleFiles(files: FileList | null) {
+  async function handleFiles(files: FileList | null) {
     if (!files) return
-    const newFiles = Array.from(files)
-    updateCase({ support_documents: [...docs, ...newFiles] })
+    setUploading(true)
+    const newDocs = [...docs]
+    for (const file of Array.from(files)) {
+      try {
+        const formData = new FormData()
+        formData.append("file", file)
+        const resp = await fetch("/api/proxy/documents/ingest", {
+          method: "POST",
+          body: formData,
+        })
+        if (resp.ok) {
+          const chunks: { content: string; source: string; chunk_index: number }[] = await resp.json()
+          setChunkCounts(prev => ({ ...prev, [file.name]: chunks.length }))
+          newDocs.push(...chunks)
+        } else {
+          newDocs.push(file)
+        }
+      } catch {
+        newDocs.push(file)
+      }
+    }
+    updateCase({ support_documents: newDocs })
+    setUploading(false)
   }
 
   function removeDocument(index: number) {
@@ -39,18 +62,19 @@ export function DocumentsStep() {
       <button
         type="button"
         onClick={() => fileInputRef.current?.click()}
+        disabled={uploading}
         style={{
-          background: "#4285F4",
+          background: uploading ? "#5F6368" : "#4285F4",
           color: "#fff",
           border: "none",
           borderRadius: 4,
           padding: "8px 16px",
-          cursor: "pointer",
+          cursor: uploading ? "default" : "pointer",
           fontFamily: "var(--font-urbanist)",
           width: "fit-content",
         }}
       >
-        Agregar PDFs
+        {uploading ? "Procesando…" : "Agregar PDFs"}
       </button>
       {docs.length > 0 && (
         <ul style={{ listStyle: "none", padding: 0 }}>
@@ -66,7 +90,12 @@ export function DocumentsStep() {
             >
               <span style={{ color: "#34A853" }}>📄</span>
               <span style={{ fontFamily: "var(--font-urbanist)" }}>
-                {doc instanceof File ? doc.name : String(doc)}
+                {doc instanceof File ? doc.name : (doc as { source?: string }).source ?? String(doc)}
+                {doc instanceof File && chunkCounts[doc.name] != null && (
+                  <span style={{ color: "#5F6368", fontSize: 12, marginLeft: 6 }}>
+                    ({chunkCounts[doc.name]} fragmentos)
+                  </span>
+                )}
               </span>
               <button
                 type="button"

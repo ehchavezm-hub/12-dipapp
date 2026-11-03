@@ -77,7 +77,7 @@ export function AnalysisStepper() {
                 width: 28,
                 height: 28,
                 borderRadius: "50%",
-                background: i <= step ? "#4285F4" : "#E8EAED",
+                background: i <= step ? "#4285F4" : "#5F6368",
                 color: i <= step ? "#fff" : "#5F6368",
                 display: "flex",
                 alignItems: "center",
@@ -103,7 +103,7 @@ export function AnalysisStepper() {
                 style={{
                   flex: 1,
                   height: 2,
-                  background: i < step ? "#4285F4" : "#E8EAED",
+                  background: i < step ? "#4285F4" : "#5F6368",
                   marginLeft: 4,
                 }}
               />
@@ -137,7 +137,7 @@ export function AnalysisStepper() {
       <div
         style={{
           background: "#fff",
-          border: "1px solid #E8EAED",
+          border: "1px solid #5F6368",
           borderRadius: 8,
           padding: 24,
           marginBottom: 24,
@@ -153,9 +153,9 @@ export function AnalysisStepper() {
           onClick={prevStep}
           disabled={step === 0}
           style={{
-            background: step === 0 ? "#E8EAED" : "#fff",
+            background: step === 0 ? "#5F6368" : "#fff",
             border: "1px solid #5F6368",
-            color: step === 0 ? "#9AA0A6" : "#5F6368",
+            color: step === 0 ? "#fff" : "#5F6368",
             borderRadius: 4,
             padding: "8px 20px",
             cursor: step === 0 ? "default" : "pointer",
@@ -187,7 +187,7 @@ export function AnalysisStepper() {
             onClick={handleSubmit}
             disabled={isSubmitting}
             style={{
-              background: isSubmitting ? "#E8EAED" : "#34A853",
+              background: isSubmitting ? "#5F6368" : "#34A853",
               border: "none",
               color: "#fff",
               borderRadius: 4,
