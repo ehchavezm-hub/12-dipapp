@@ -20,9 +20,9 @@ const C_LEV     = "#0078C1"   // Blue Medium — punto de apalancamiento
 const C_ROOT    = "#1A1A1A"   // AECOM Black — escenario raíz
 
 /* ── Layout constants ───────────────────────────────────────────────── */
-const COL_W     = 300   // horizontal distance between columns
-const NODE_H    = 80    // vertical step between leaf nodes
-const LEAF_X    = COL_W + 40
+const COL_W     = 280   // horizontal distance between columns
+const NODE_H    = 70    // vertical step between nodes
+const LEAF_X    = COL_W * 2 + 40
 
 /* ── Node factory helpers ───────────────────────────────────────────── */
 function makeNode(
@@ -76,7 +76,7 @@ export function DecisionMap({ scenario }: DecisionMapProps) {
     builtNodes.push(
       makeNode(
         "root",
-        -COL_W,
+        0,
         0,
         <div>
           <div style={{ fontWeight: 700, fontSize: 14 }}>
@@ -91,38 +91,18 @@ export function DecisionMap({ scenario }: DecisionMapProps) {
       )
     )
 
-    /* Pros, cons, leverage points as leaf nodes alongside first step */
-    const allLeaves: { id: string; tag: string; text: string; color: string }[] = [
-      ...scenario.pros.map((p, i) => ({ id: `pro-${i}`, tag: "✓ Ventaja", text: p, color: C_PRO })),
-      ...scenario.cons.map((c, i) => ({ id: `con-${i}`, tag: "✗ Riesgo", text: c, color: C_CON })),
-      ...scenario.leverage_points.map((lp, i) => ({ id: `lev-${i}`, tag: "▸ Palanca", text: lp, color: C_LEV })),
-    ]
+    /* ── Roadmap steps — center column, vertically centered ── */
+    const stepCount  = scenario.roadmap.length
+    const stepsTotal = stepCount * NODE_H
+    const stepsStartY = -(stepsTotal / 2)
 
-    /* Total height for leaf column */
-    const leafColHeight = allLeaves.length * NODE_H
-    const startY = -(leafColHeight / 2)
-
-    allLeaves.forEach(({ id, tag, text, color }, idx) => {
-      const y = startY + idx * NODE_H
-      builtNodes.push(makeNode(id, LEAF_X + COL_W * 1.6, y, leafLabel(tag, text), color, 240))
-      builtEdges.push({
-        id: `edge-root-${id}`,
-        source: "root",
-        target: id,
-        style: { stroke: color, strokeWidth: 1.5, opacity: 0.6 },
-        animated: false,
-      })
-    })
-
-    /* Roadmap steps — vertical spine below/above root */
-    const stepsStartY = leafColHeight / 2 + NODE_H * 1.5
     scenario.roadmap.forEach((step, idx) => {
       const stepId = `step-${step.step}`
-      const y = stepsStartY + idx * (NODE_H + 20)
+      const y = stepsStartY + idx * NODE_H
       builtNodes.push(
         makeNode(
           stepId,
-          -COL_W / 2,
+          COL_W,
           y,
           <div>
             <div style={{ fontWeight: 700, fontSize: 12 }}>
@@ -133,7 +113,7 @@ export function DecisionMap({ scenario }: DecisionMapProps) {
             </div>
           </div>,
           C_ACTION,
-          280,
+          260,
         )
       )
       if (idx === 0) {
@@ -155,10 +135,37 @@ export function DecisionMap({ scenario }: DecisionMapProps) {
       }
     })
 
+    /* ── Leaf nodes — right column, vertically centered ── */
+    const allLeaves: { id: string; tag: string; text: string; color: string }[] = [
+      ...scenario.pros.map((p, i) => ({ id: `pro-${i}`, tag: "✓ Ventaja", text: p, color: C_PRO })),
+      ...scenario.cons.map((c, i) => ({ id: `con-${i}`, tag: "✗ Riesgo", text: c, color: C_CON })),
+      ...scenario.leverage_points.map((lp, i) => ({ id: `lev-${i}`, tag: "▸ Palanca", text: lp, color: C_LEV })),
+    ]
+    const leafTotal = allLeaves.length * NODE_H
+    const leafStartY = -(leafTotal / 2)
+
+    allLeaves.forEach(({ id, tag, text, color }, idx) => {
+      const y = leafStartY + idx * NODE_H
+      builtNodes.push(makeNode(id, LEAF_X, y, leafLabel(tag, text), color, 230))
+      // Connect from last roadmap step (or root if no roadmap)
+      const sourceId = stepCount > 0 ? `step-${stepCount}` : "root"
+      builtEdges.push({
+        id: `edge-${sourceId}-${id}`,
+        source: sourceId,
+        target: id,
+        style: { stroke: color, strokeWidth: 1.2, opacity: 0.5 },
+        animated: false,
+      })
+    })
+
     return { nodes: builtNodes, edges: builtEdges }
   }, [scenario])
 
-  const mapHeight = Math.max(500, (scenario.roadmap.length + scenario.pros.length + scenario.cons.length + scenario.leverage_points.length) * 70 + 160)
+  const totalRows = Math.max(
+    scenario.roadmap.length,
+    scenario.pros.length + scenario.cons.length + scenario.leverage_points.length,
+  )
+  const mapHeight = Math.max(380, totalRows * NODE_H + 120)
 
   return (
     <div>
@@ -183,7 +190,7 @@ export function DecisionMap({ scenario }: DecisionMapProps) {
           nodes={nodes}
           edges={edges}
           fitView
-          fitViewOptions={{ padding: 0.15 }}
+          fitViewOptions={{ padding: 0.08 }}
           proOptions={{ hideAttribution: true }}
           nodesDraggable
           panOnDrag
