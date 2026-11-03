@@ -95,6 +95,7 @@ export const authConfig: NextAuthConfig = {
       clientId: process.env.AUTH_GITHUB_ID ?? process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.AUTH_GITHUB_SECRET ?? process.env.GITHUB_CLIENT_SECRET,
       authorization: { params: { scope: "read:user user:email read:org" } },
+      checks: ["state"],
     }),
   ],
   callbacks: {
