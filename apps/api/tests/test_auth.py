@@ -1,6 +1,7 @@
 """Auth middleware tests — JWT validation and RBAC."""
 import pytest
 from fastapi import HTTPException
+from fastapi.security import HTTPAuthorizationCredentials
 from jose import jwt
 
 from middleware.auth import Role, require_role, validate_token
@@ -50,6 +51,7 @@ async def test_wrong_secret_raises_401():
 async def test_viewer_cannot_access_editor_route():
     """require_role raises 403 when the user's role rank is too low."""
     token = make_test_jwt(role="viewer", secret="test-secret")
+    creds = HTTPAuthorizationCredentials(scheme="Bearer", credentials=token)
     with pytest.raises(HTTPException) as exc:
-        await require_role(Role.EDITOR)(token)
+        await require_role(Role.EDITOR)(credentials=creds)
     assert exc.value.status_code == 403

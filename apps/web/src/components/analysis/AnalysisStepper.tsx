@@ -8,6 +8,7 @@ import { GeopoliticalContextStep } from "@/components/analysis/steps/Geopolitica
 import { ObjectiveStep } from "@/components/analysis/steps/ObjectiveStep"
 import { WeightsStep } from "@/components/analysis/steps/WeightsStep"
 import { DocumentsStep } from "@/components/analysis/steps/DocumentsStep"
+import { useRouter } from "next/navigation"
 
 const STEP_LABELS = [
   "Objetivo",
@@ -28,6 +29,7 @@ const STEPS = [
 export function AnalysisStepper() {
   const { step, nextStep, prevStep, loadExampleCase, currentCase, setSubmitting, isSubmitting } =
     useAnalysisStore()
+  const router = useRouter()
 
   const StepComponent = STEPS[step]
 
@@ -40,6 +42,7 @@ export function AnalysisStepper() {
     setSubmitting(true)
     try {
       await submitAnalysis(parsed.data)
+      router.push("/results/new")
     } finally {
       setSubmitting(false)
     }

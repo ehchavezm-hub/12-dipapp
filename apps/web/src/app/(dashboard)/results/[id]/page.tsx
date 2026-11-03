@@ -11,7 +11,7 @@ export default function ResultsPage() {
   const { streamScenarios, scenarios, isStreaming } = useResultsStore()
 
   useEffect(() => {
-    if (currentCase && Object.keys(currentCase).length > 0) {
+    if (currentCase && Object.keys(currentCase).length > 0 && scenarios.length === 0 && !isStreaming) {
       streamScenarios(currentCase as AnalysisCaseDTO)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

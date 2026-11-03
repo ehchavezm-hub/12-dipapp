@@ -43,7 +43,7 @@ def is_domain_allowed(url: str) -> bool:
     """Return True if the URL's effective domain is in ALLOWED_DOMAINS."""
     try:
         hostname = urlparse(url).hostname or ""
-        hostname = hostname.lower().lstrip("www.")
+        hostname = hostname.lower().removeprefix("www.")
         # Check exact match first, then suffix match for "gov" TLD
         if hostname in ALLOWED_DOMAINS:
             return True

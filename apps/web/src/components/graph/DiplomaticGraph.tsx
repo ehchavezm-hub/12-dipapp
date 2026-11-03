@@ -4,7 +4,7 @@ import type { DiplomaticEdge, DiplomaticNode } from "@dipapp/types"
 import cytoscape from "cytoscape"
 // @ts-expect-error — no types for cytoscape-cose-bilkent
 import coseBilkent from "cytoscape-cose-bilkent"
-import { useEffect, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { useGraphStore } from "@/lib/store/graphStore"
 
 // Register layout once
@@ -62,17 +62,23 @@ export default function DiplomaticGraph({
   const displayNodes = storeNodes.length > 0 ? storeNodes : (initialNodes ?? [])
   const displayEdges = storeEdges.length > 0 ? storeEdges : (initialEdges ?? [])
 
-  // Apply filters
-  const filteredNodes = displayNodes.filter((n) => {
-    if (filters.regions.length > 0 && !filters.regions.includes(n.region)) return false
-    if (n.affinityScore < filters.minAffinityScore) return false
-    if (filters.types.length > 0 && !filters.types.includes(n.type)) return false
-    return true
-  })
-  const filteredNodeIds = new Set(filteredNodes.map((n) => n.id))
-  const filteredEdges = displayEdges.filter(
-    (e) => filteredNodeIds.has(e.source) && filteredNodeIds.has(e.target)
+  // Apply filters (memoized to avoid rebuilding Cytoscape on every render)
+  const filteredNodes = useMemo(
+    () =>
+      displayNodes.filter((n) => {
+        if (filters.regions.length > 0 && !filters.regions.includes(n.region)) return false
+        if (n.affinityScore < filters.minAffinityScore) return false
+        if (filters.types.length > 0 && !filters.types.includes(n.type)) return false
+        return true
+      }),
+    [displayNodes, filters]
   )
+  const filteredEdges = useMemo(() => {
+    const filteredNodeIds = new Set(filteredNodes.map((n) => n.id))
+    return displayEdges.filter(
+      (e) => filteredNodeIds.has(e.source) && filteredNodeIds.has(e.target)
+    )
+  }, [displayEdges, filteredNodes])
 
   // Build / refresh cytoscape
   useEffect(() => {
