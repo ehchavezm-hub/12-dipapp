@@ -7,7 +7,7 @@ from schemas.graph import DiplomaticEdgeSchema, DiplomaticNodeSchema, GraphDataR
 router = APIRouter(prefix="/graph", tags=["graph"])
 
 # ---------------------------------------------------------------------------
-# Seeded data (~50 nodes across all 6 regions)
+# Seeded data (61 nodes across all 6 regions)
 # ---------------------------------------------------------------------------
 
 _NODES: list[DiplomaticNodeSchema] = [
