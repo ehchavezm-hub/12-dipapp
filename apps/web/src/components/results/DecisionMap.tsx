@@ -61,7 +61,7 @@ export function DecisionMap({ scenario }: DecisionMapProps) {
       <div
         style={{
           height: mapHeight,
-          border: "1px solid #e8eaed",
+          border: "1px solid #5F6368",
           borderRadius: 8,
           overflow: "hidden",
         }}
@@ -72,7 +72,7 @@ export function DecisionMap({ scenario }: DecisionMapProps) {
           fitView
           proOptions={{ hideAttribution: true }}
         >
-          <Background color="#e8eaed" />
+          <Background color="#5F6368" />
         </ReactFlow>
       </div>
 
@@ -80,7 +80,7 @@ export function DecisionMap({ scenario }: DecisionMapProps) {
         <details
           style={{
             marginTop: 16,
-            border: "1px solid #e8eaed",
+            border: "1px solid #5F6368",
             borderRadius: 8,
             padding: "8px 16px",
           }}

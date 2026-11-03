@@ -27,7 +27,7 @@ function CircularGauge({ value }: { value: number }) {
           cy={44}
           r={radius}
           fill="none"
-          stroke="#e8eaed"
+          stroke="#5F6368"
           strokeWidth={8}
         />
         <circle
@@ -78,7 +78,7 @@ function ProgressBar({ value, label }: { value: number; label: string }) {
       <div
         style={{
           height: 8,
-          background: "#e8eaed",
+          background: "#5F6368",
           borderRadius: 4,
           overflow: "hidden",
         }}
@@ -102,7 +102,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
     <div
       style={{
         background: "#fff",
-        border: "1px solid #e8eaed",
+        border: "1px solid #5F6368",
         borderRadius: 12,
         padding: 24,
         fontFamily: "var(--font-urbanist)",
@@ -124,7 +124,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
               margin: "0 0 8px",
               fontSize: 20,
               fontWeight: 700,
-              color: "#202124",
+              color: "#5F6368",
             }}
           >
             {scenario.name}
@@ -166,7 +166,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
                 key={i}
                 style={{
                   fontSize: 13,
-                  color: "#202124",
+                  color: "#5F6368",
                   marginBottom: 6,
                   paddingLeft: 16,
                   position: "relative",
@@ -206,7 +206,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
                 key={i}
                 style={{
                   fontSize: 13,
-                  color: "#202124",
+                  color: "#5F6368",
                   marginBottom: 6,
                   paddingLeft: 16,
                   position: "relative",
@@ -250,7 +250,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
                 key={i}
                 style={{
                   background: "#FBBC05",
-                  color: "#202124",
+                  color: "#5F6368",
                   fontSize: 12,
                   fontWeight: 600,
                   padding: "4px 10px",

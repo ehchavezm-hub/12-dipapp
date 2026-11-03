@@ -18,7 +18,7 @@ function SkeletonPlaceholder() {
           key={i}
           style={{
             height: 20,
-            background: "#e8eaed",
+            background: "#5F6368",
             borderRadius: 4,
             marginBottom: 16,
             width: `${90 - i * 10}%`,
@@ -47,7 +47,7 @@ export function ScenarioTabs() {
       <div
         style={{
           display: "flex",
-          borderBottom: "2px solid #e8eaed",
+          borderBottom: "2px solid #5F6368",
           marginBottom: 24,
           gap: 4,
         }}

@@ -43,7 +43,7 @@ export default function ResultsPage() {
               <div
                 style={{
                   height: 8,
-                  background: "#e8eaed",
+                  background: "#5F6368",
                   borderRadius: 4,
                   overflow: "hidden",
                 }}

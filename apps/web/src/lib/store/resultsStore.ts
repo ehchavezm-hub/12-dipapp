@@ -31,56 +31,46 @@ export const useResultsStore = create<ResultsState>((set) => ({
         throw new Error(`HTTP error: ${response.status}`)
       }
 
-      const text = await response.text()
-      const lines = text.split("\n").filter((l) => l.trim() !== "")
-
-      // Try NDJSON: each line is a Scenario
+      const reader = response.body?.getReader()
+      const decoder = new TextDecoder()
       const parsedScenarios: Scenario[] = []
-      let parsedFull = false
+      let buffer = ""
 
-      for (const line of lines) {
+      function processLine(line: string) {
+        if (!line.trim()) return
         try {
           const parsed: unknown = JSON.parse(line)
-          // Check if it's a full ThreeScenariosResult
           if (
             parsed !== null &&
             typeof parsed === "object" &&
             "scenarios" in parsed &&
-            Array.isArray((parsed as ThreeScenariosResult).scenarios) &&
-            (parsed as ThreeScenariosResult).scenarios.length === 3
+            Array.isArray((parsed as ThreeScenariosResult).scenarios)
           ) {
             const full = parsed as ThreeScenariosResult
-            set({
-              scenarios: full.scenarios,
-              metadata: full.analysis_metadata,
-            })
-            parsedFull = true
-            break
-          }
-          // Otherwise treat as individual Scenario
-          if (
-            parsed !== null &&
-            typeof parsed === "object" &&
-            "label" in parsed
-          ) {
+            set({ scenarios: full.scenarios, metadata: full.analysis_metadata })
+          } else if (parsed !== null && typeof parsed === "object" && "label" in parsed) {
             parsedScenarios.push(parsed as Scenario)
             set({ scenarios: [...parsedScenarios] })
           }
         } catch {
-          // Skip unparseable lines
+          // skip unparseable lines
         }
       }
 
-      // If nothing parsed via NDJSON, try the full text as a single JSON object
-      if (!parsedFull && parsedScenarios.length === 0) {
-        try {
-          const full = JSON.parse(text) as ThreeScenariosResult
-          if (full.scenarios && full.scenarios.length === 3) {
-            set({ scenarios: full.scenarios, metadata: full.analysis_metadata })
-          }
-        } catch {
-          // Nothing to do
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split("\n")
+          buffer = lines.pop() ?? ""
+          for (const line of lines) processLine(line)
         }
+        if (buffer) processLine(buffer)
+      } else {
+        // Fallback: buffer entire response
+        const text = await response.clone().text()
+        for (const line of text.split("\n")) processLine(line)
       }
     } finally {
       set({ isStreaming: false })
