@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from routers.documents import router as documents_router
 from routers.graph import router as graph_router
 from schemas.errors import ProblemDetail
 
@@ -61,6 +62,7 @@ _STATUS_TITLES: dict[int, str] = {
 # Routes
 # ---------------------------------------------------------------------------
 app.include_router(graph_router)
+app.include_router(documents_router)
 
 
 @app.get("/health")

@@ -20,6 +20,7 @@ openai
 # Document processing
 pdfplumber
 pytesseract
+tiktoken
 
 # Caching
 upstash-redis
