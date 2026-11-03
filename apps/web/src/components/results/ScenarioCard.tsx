@@ -1,6 +1,7 @@
 "use client"
 
 import type { Scenario } from "@/lib/types/results"
+import { ScenarioExport } from "./ScenarioExport"
 
 interface ScenarioCardProps {
   scenario: Scenario
@@ -300,6 +301,9 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
           </ul>
         </div>
       )}
+      <div style={{ marginTop: 16 }}>
+        <ScenarioExport scenario={scenario} />
+      </div>
     </div>
   )
 }

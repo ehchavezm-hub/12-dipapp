@@ -2,9 +2,10 @@
 from fastapi import APIRouter, Depends
 
 from middleware.auth import JWTClaims, Role, require_role
+from middleware.rate_limit import check_rate_limit
 from schemas.graph import DiplomaticEdgeSchema, DiplomaticNodeSchema, GraphDataResponse
 
-router = APIRouter(prefix="/graph", tags=["graph"])
+router = APIRouter(prefix="/graph", tags=["graph"], dependencies=[Depends(check_rate_limit)])
 
 # ---------------------------------------------------------------------------
 # Seeded data (61 nodes across all 6 regions)

@@ -2,9 +2,10 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 
 from middleware.auth import JWTClaims, Role, require_role
+from middleware.rate_limit import check_rate_limit
 from services.pdf_pipeline import DocumentChunk, ingest_pdf_bytes
 
-router = APIRouter(prefix="/documents", tags=["documents"])
+router = APIRouter(prefix="/documents", tags=["documents"], dependencies=[Depends(check_rate_limit)])
 
 _MAX_BYTES = 10 * 1024 * 1024  # 10 MB
 

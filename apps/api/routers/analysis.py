@@ -2,11 +2,12 @@
 from fastapi import APIRouter, Depends
 
 from middleware.auth import JWTClaims, Role, require_role
+from middleware.rate_limit import check_rate_limit
 from schemas.analysis import AnalysisCaseDTO, ThreeScenariosResult
 from services.llm_orchestrator import orchestrate
 from services.scoring import GeopoliticalScorer
 
-router = APIRouter(prefix="/analysis", tags=["analysis"])
+router = APIRouter(prefix="/analysis", tags=["analysis"], dependencies=[Depends(check_rate_limit)])
 
 
 @router.post("/", response_model=ThreeScenariosResult)
