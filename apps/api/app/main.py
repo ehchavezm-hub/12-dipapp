@@ -1,6 +1,10 @@
 """DipApp FastAPI entry point."""
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+from schemas.errors import ProblemDetail
 
 app = FastAPI(
     title="DipApp API",
@@ -8,6 +12,9 @@ app = FastAPI(
     version="0.1.0",
 )
 
+# ---------------------------------------------------------------------------
+# CORS
+# ---------------------------------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -17,6 +24,41 @@ app.add_middleware(
 )
 
 
+# ---------------------------------------------------------------------------
+# RFC 7807 Problem Details exception handler
+# ---------------------------------------------------------------------------
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException) -> JSONResponse:
+    """Return RFC 7807 Problem Details for all HTTP errors."""
+    problem = ProblemDetail(
+        type=f"https://httpstatuses.com/{exc.status_code}",
+        title=_STATUS_TITLES.get(exc.status_code, "Error"),
+        status=exc.status_code,
+        detail=str(exc.detail),
+    )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=problem.model_dump(),
+        media_type="application/problem+json",
+    )
+
+
+_STATUS_TITLES: dict[int, str] = {
+    400: "Bad Request",
+    401: "Unauthorized",
+    403: "Forbidden",
+    404: "Not Found",
+    405: "Method Not Allowed",
+    409: "Conflict",
+    422: "Unprocessable Entity",
+    429: "Too Many Requests",
+    500: "Internal Server Error",
+}
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
 @app.get("/health")
 async def health_check() -> dict[str, str]:
     """Health check endpoint."""
