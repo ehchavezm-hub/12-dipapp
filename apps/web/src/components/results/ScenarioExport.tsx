@@ -228,11 +228,115 @@ function ScenarioPage({ scenario }: { scenario: Scenario }) {
   )
 }
 
+/* ── Roadmap flow chart page ────────────────────────────────────────── */
+const C_ACTION = "#FF6600"
+const C_PRO    = "#003087"
+const C_CON    = "#E85500"
+const C_LEV    = "#0078C1"
+
+function RoadmapFlowPage({ scenario }: { scenario: Scenario }) {
+  const colorMap: Record<string, string> = { A: C_PRO, B: C_ACTION, C: C_LEV }
+  const accent = colorMap[scenario.label] ?? C_ACTION
+
+  return (
+    <Page size="A4" style={styles.page}>
+      {/* Title */}
+      <View style={{ marginBottom: 16, paddingBottom: 10, borderBottom: `2px solid ${accent}` }}>
+        <Text style={{ fontSize: 14, fontWeight: "bold", color: accent }}>
+          Escenario {scenario.label} — Mapa de Decisión
+        </Text>
+        <Text style={{ fontSize: 10, color: GRAY, marginTop: 2 }}>{scenario.name}</Text>
+      </View>
+
+      {/* Roadmap flow — vertical chain */}
+      <View style={{ marginBottom: 20 }}>
+        <Text style={[styles.sectionTitle, { marginBottom: 10 }]}>Hoja de Ruta</Text>
+        {scenario.roadmap.map((step, idx) => (
+          <View key={step.step}>
+            {/* Step box */}
+            <View style={{
+              flexDirection: "row", backgroundColor: "#FFF3E0",
+              borderLeft: `4px solid ${C_ACTION}`, borderRadius: 4,
+              padding: "10 12", marginBottom: 0,
+            }}>
+              {/* Number circle */}
+              <View style={{
+                width: 24, height: 24, borderRadius: 12,
+                backgroundColor: C_ACTION, alignItems: "center",
+                justifyContent: "center", marginRight: 10, marginTop: 1,
+              }}>
+                <Text style={{ fontSize: 11, fontWeight: "bold", color: "#fff" }}>{step.step}</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 10, fontWeight: "bold", color: DARK }}>
+                  {trunc(step.action, MAX_ITEM)}
+                </Text>
+                <Text style={{ fontSize: 9, color: GRAY, marginTop: 2 }}>
+                  {step.timeline}  ·  {step.responsible}
+                </Text>
+              </View>
+            </View>
+            {/* Arrow connector — only between steps */}
+            {idx < scenario.roadmap.length - 1 && (
+              <View style={{ alignItems: "center", marginVertical: 2 }}>
+                <View style={{ width: 2, height: 10, backgroundColor: C_ACTION }} />
+                <Text style={{ fontSize: 10, color: C_ACTION, lineHeight: 1 }}>▼</Text>
+              </View>
+            )}
+          </View>
+        ))}
+      </View>
+
+      {/* Three-column leaf nodes: Pros | Cons | Leverage */}
+      <View style={{ flexDirection: "row", gap: 10 }}>
+        {/* Pros */}
+        <View style={{ flex: 1, backgroundColor: "#E8F0F8", borderRadius: 4, padding: "10 10" }}>
+          <Text style={{ fontSize: 9, fontWeight: "bold", color: C_PRO, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>
+            ✓ Ventajas
+          </Text>
+          {scenario.pros.map((p, i) => (
+            <Text key={i} style={{ fontSize: 9, color: C_PRO, marginBottom: 4, lineHeight: 1.4 }}>
+              • {trunc(p, MAX_ITEM)}
+            </Text>
+          ))}
+        </View>
+        {/* Cons */}
+        <View style={{ flex: 1, backgroundColor: "#FDE8E0", borderRadius: 4, padding: "10 10" }}>
+          <Text style={{ fontSize: 9, fontWeight: "bold", color: C_CON, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>
+            ✗ Riesgos
+          </Text>
+          {scenario.cons.map((c, i) => (
+            <Text key={i} style={{ fontSize: 9, color: C_CON, marginBottom: 4, lineHeight: 1.4 }}>
+              • {trunc(c, MAX_ITEM)}
+            </Text>
+          ))}
+        </View>
+        {/* Leverage */}
+        <View style={{ flex: 1, backgroundColor: "#E0EEF8", borderRadius: 4, padding: "10 10" }}>
+          <Text style={{ fontSize: 9, fontWeight: "bold", color: C_LEV, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>
+            ▸ Palancas
+          </Text>
+          {scenario.leverage_points.map((lp, i) => (
+            <Text key={i} style={{ fontSize: 9, color: C_LEV, marginBottom: 4, lineHeight: 1.4 }}>
+              • {trunc(lp, MAX_ITEM)}
+            </Text>
+          ))}
+        </View>
+      </View>
+    </Page>
+  )
+}
+
 function FullReportPDF({ scenarios, scoring, generatedAt }: ScenarioPDFProps) {
   return (
     <Document>
       <CoverPage scenarios={scenarios} scoring={scoring} generatedAt={generatedAt} />
-      {scenarios.map(s => <ScenarioPage key={s.label} scenario={s} />)}
+      {scenarios.map(s => (
+        <>
+          <ScenarioPage key={`detail-${s.label}`} scenario={s} />
+          <RoadmapFlowPage key={`flow-${s.label}`} scenario={s} />
+        </>
+      ))}
     </Document>
   )
 }
