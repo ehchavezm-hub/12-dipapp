@@ -12,7 +12,7 @@ os.environ.setdefault("UPSTASH_REDIS_REST_TOKEN", "test-token")
 import pytest
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def local_tiktoken_encoding():
     """Provide a byte-level tiktoken encoding for offline use in specific tests.
 
