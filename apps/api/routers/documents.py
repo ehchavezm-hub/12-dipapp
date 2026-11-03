@@ -19,11 +19,14 @@ async def ingest_document(
     Requires EDITOR role or higher.  Files larger than 10 MB are rejected
     with HTTP 501 until pre-signed URL upload is implemented.
     """
-    data = await file.read()
+    data = await file.read(_MAX_BYTES + 1)
     if len(data) > _MAX_BYTES:
         # Placeholder — R2/S3 not configured yet
         raise HTTPException(
             status_code=501,
             detail="Files >10MB: pre-signed URL not yet implemented",
         )
-    return await ingest_pdf_bytes(data, filename=file.filename or "upload.pdf")
+    try:
+        return await ingest_pdf_bytes(data, filename=file.filename or "upload.pdf")
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc

@@ -21,13 +21,16 @@ class DocumentChunk:
 
 async def extract_text_pdfplumber(data: bytes) -> str:
     """Open with pdfplumber, concatenate all page text."""
-    text_parts: list[str] = []
-    with pdfplumber.open(io.BytesIO(data)) as pdf:
-        for page in pdf.pages:
-            page_text = page.extract_text()
-            if page_text:
-                text_parts.append(page_text)
-    return "\n".join(text_parts)
+    try:
+        text_parts: list[str] = []
+        with pdfplumber.open(io.BytesIO(data)) as pdf:
+            for page in pdf.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    text_parts.append(page_text)
+        return "\n".join(text_parts)
+    except Exception:
+        return ""  # Let OCR fallback handle it; corrupt PDF handled upstream
 
 
 async def extract_text_ocr(data: bytes) -> str:
@@ -81,7 +84,7 @@ def sanitize_chunks(chunks: list[DocumentChunk]) -> list[DocumentChunk]:
     3. Remove lines matching r"(?i)ignore\\s+(previous|all)\\s+instructions"
     """
     _injection_pattern = re.compile(r"(?i)ignore\s+(previous|all)\s+instructions")
-    _nonprintable_pattern = re.compile(r"[\x00-\x08\x0b-\x0c\x0e-\x1f]")
+    _nonprintable_pattern = re.compile(r"[\x00-\x08\x0b-\x1f]")
 
     result: list[DocumentChunk] = []
     for chunk in chunks:
@@ -114,9 +117,9 @@ async def ingest_pdf_bytes(data: bytes, filename: str) -> list[DocumentChunk]:
     if not text.strip():
         text = await extract_text_ocr(data)
 
-    # If still empty, return single empty-ish chunk only if there really is no text
+    # If still empty after both extractors, the PDF is likely corrupt/unreadable
     if not text.strip():
-        return [DocumentChunk(content="", source=filename, chunk_index=0)]
+        raise ValueError(f"Could not extract text from PDF: {filename!r} (corrupt or image-only with no OCR)")
 
     # Chunk the text
     raw_chunks = chunk_text(text)

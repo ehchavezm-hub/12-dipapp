@@ -12,18 +12,18 @@ os.environ.setdefault("UPSTASH_REDIS_REST_TOKEN", "test-token")
 import pytest
 
 
-@pytest.fixture(autouse=True, scope="session")
-def mock_tiktoken_encoding(session_mocker=None):
-    """Provide a local byte-level tiktoken encoding so tests run offline.
+@pytest.fixture(scope="session")
+def local_tiktoken_encoding():
+    """Provide a byte-level tiktoken encoding for offline use in specific tests.
 
     cl100k_base normally requires downloading a ~2 MB file from
     openaipublic.blob.core.windows.net, which is not reachable in CI.
-    This fixture patches tiktoken.get_encoding at the package level so any
-    module that calls it during the test session gets a minimal byte-level
-    encoding instead.  All token-count assertions remain meaningful: ASCII
-    text produces one token per byte, which is an upper bound on real token
-    counts, so a chunk that satisfies ``len <= 1500`` here will also satisfy
-    it with the real cl100k_base encoder.
+    This fixture patches tiktoken.get_encoding only for tests that request it,
+    rather than globally contaminating the whole test session.
+
+    ASCII text produces one token per byte with this encoding — an upper bound
+    on real token counts — so a chunk satisfying ``len <= 1500`` here also
+    satisfies it with the real cl100k_base encoder.
     """
     import tiktoken
     from tiktoken import Encoding
@@ -33,7 +33,6 @@ def mock_tiktoken_encoding(session_mocker=None):
         r"| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s+(?!\S)|\s+"
     )
 
-    # Byte-level BPE: rank each single byte as itself; no merge rules.
     _byte_ranks: dict[bytes, int] = {bytes([i]): i for i in range(256)}
 
     _local_enc = Encoding(
@@ -47,3 +46,5 @@ def mock_tiktoken_encoding(session_mocker=None):
     tiktoken.get_encoding = lambda _name: _local_enc
     yield _local_enc
     tiktoken.get_encoding = _original
+
+
