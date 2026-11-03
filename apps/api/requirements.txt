@@ -1,0 +1,33 @@
+# Core
+fastapi==0.111.*
+uvicorn[standard]
+
+# Data validation
+pydantic[email]>=2.7
+pydantic-settings
+
+# HTTP
+httpx
+
+# Auth
+python-jose[cryptography]
+
+# LLM / AI
+instructor
+anthropic
+openai
+
+# Document processing
+pdfplumber
+pytesseract
+
+# Caching
+upstash-redis
+
+# Reliability
+tenacity
+
+# Dev / test
+pytest>=8.3
+pytest-asyncio>=0.24
+pytest-cov
