@@ -4,19 +4,43 @@ import GraphFilters from "@/components/graph/GraphFilters"
 import NodeSheet from "@/components/graph/NodeSheet"
 import { fetchGraphData } from "@/lib/services/graphService"
 import type { DiplomaticEdge, DiplomaticNode } from "@dipapp/types"
+import { createHmac } from "crypto"
+import { redirect } from "next/navigation"
 
-// Server Component — fetches graph data with session token for SSR
+/** Create a backend-compatible HS256 JWT from the session's user claims. */
+function createBackendToken(role: string, sub: string): string {
+  const secret = process.env.NEXTAUTH_SECRET ?? ""
+  const now = Math.floor(Date.now() / 1000)
+  const payload = { sub, role, githubId: sub, iat: now, exp: now + 300 }
+  const b64url = (data: string) =>
+    Buffer.from(data).toString("base64").replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_")
+  const header = b64url(JSON.stringify({ alg: "HS256", typ: "JWT" }))
+  const body = b64url(JSON.stringify(payload))
+  const signingInput = `${header}.${body}`
+  const sig = createHmac("sha256", secret)
+    .update(signingInput)
+    .digest("base64")
+    .replace(/=/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+  return `${signingInput}.${sig}`
+}
+
+// Server Component — fetches graph data with session JWT for SSR
 export default async function GraphPage() {
+  const session = await auth()
+  if (!session) redirect("/login")
+
   let initialNodes: DiplomaticNode[] = []
   let initialEdges: DiplomaticEdge[] = []
   let error: string | null = null
 
   try {
-    const session = await auth()
-    // The session token for backend auth — fall back gracefully when not signed in
-    // In production, you'd pass session?.accessToken or a signed JWT here
-    const token = process.env.DIPAPP_SERVICE_TOKEN ?? ""
-    const data = await fetchGraphData(token || undefined)
+    const token = createBackendToken(
+      session.user?.role ?? "viewer",
+      session.user?.email ?? ""
+    )
+    const data = await fetchGraphData(token)
     initialNodes = data.nodes
     initialEdges = data.edges
   } catch (err) {

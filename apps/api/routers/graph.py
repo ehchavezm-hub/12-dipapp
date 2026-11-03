@@ -68,6 +68,23 @@ _NODES: list[DiplomaticNodeSchema] = [
     DiplomaticNodeSchema(id="d-rep-un-fra", type="diplomat", label="France UN Representative", region="americas", affinityScore=84.0, clusterId="cluster-intl"),
     DiplomaticNodeSchema(id="d-rep-wto-usa", type="diplomat", label="US WTO Representative", region="europe", affinityScore=79.0, clusterId="cluster-intl"),
     DiplomaticNodeSchema(id="d-rep-wto-chn", type="diplomat", label="China WTO Representative", region="europe", affinityScore=42.0, clusterId="cluster-intl"),
+
+    # Africa (4 nodes)
+    DiplomaticNodeSchema(id="c-zaf", type="country", label="South Africa", region="africa", affinityScore=62.0, clusterId="cluster-africa"),
+    DiplomaticNodeSchema(id="o-au", type="organization", label="African Union", region="africa", affinityScore=65.0, clusterId="cluster-africa"),
+    DiplomaticNodeSchema(id="e-usa-zaf", type="embassy", label="US Embassy Pretoria", region="africa", affinityScore=63.0, clusterId="cluster-africa"),
+    DiplomaticNodeSchema(id="d-amb-usa-zaf", type="diplomat", label="US Ambassador to South Africa", region="africa", affinityScore=64.0, clusterId="cluster-africa"),
+
+    # Middle East (4 nodes)
+    DiplomaticNodeSchema(id="c-uae", type="country", label="United Arab Emirates", region="middle_east", affinityScore=70.0, clusterId="cluster-me"),
+    DiplomaticNodeSchema(id="o-arableague", type="organization", label="Arab League", region="middle_east", affinityScore=58.0, clusterId="cluster-me"),
+    DiplomaticNodeSchema(id="e-usa-uae", type="embassy", label="US Embassy Abu Dhabi", region="middle_east", affinityScore=71.0, clusterId="cluster-me"),
+    DiplomaticNodeSchema(id="d-amb-usa-uae", type="diplomat", label="US Ambassador to UAE", region="middle_east", affinityScore=72.0, clusterId="cluster-me"),
+
+    # Oceania (3 nodes)
+    DiplomaticNodeSchema(id="c-aus", type="country", label="Australia", region="oceania", affinityScore=82.0, clusterId="cluster-oceania"),
+    DiplomaticNodeSchema(id="o-apec", type="organization", label="APEC", region="oceania", affinityScore=73.0, clusterId="cluster-oceania"),
+    DiplomaticNodeSchema(id="e-usa-aus", type="embassy", label="US Embassy Canberra", region="oceania", affinityScore=83.0, clusterId="cluster-oceania"),
 ]
 
 _EDGES: list[DiplomaticEdgeSchema] = [
@@ -110,6 +127,24 @@ _EDGES: list[DiplomaticEdgeSchema] = [
     DiplomaticEdgeSchema(source="e-usa-chl", target="c-chl", type="bilateral_treaty", weight=0.74, treatyLevel=2),
     DiplomaticEdgeSchema(source="e-gbr-chn", target="c-chn", type="bilateral_treaty", weight=0.48, treatyLevel=3),
     DiplomaticEdgeSchema(source="e-chn-per", target="c-per", type="trade_agreement", weight=0.52, treatyLevel=3),
+
+    # Africa edges
+    DiplomaticEdgeSchema(source="c-usa", target="c-zaf", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-zaf", target="o-au", type="un_vote_alignment", weight=0.75, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-chn", target="c-zaf", type="trade_agreement", weight=0.58, treatyLevel=3),
+    DiplomaticEdgeSchema(source="e-usa-zaf", target="c-zaf", type="bilateral_treaty", weight=0.61, treatyLevel=2),
+
+    # Middle East edges
+    DiplomaticEdgeSchema(source="c-usa", target="c-uae", type="bilateral_treaty", weight=0.74, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-uae", target="o-arableague", type="un_vote_alignment", weight=0.68, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-chn", target="c-uae", type="trade_agreement", weight=0.62, treatyLevel=3),
+    DiplomaticEdgeSchema(source="e-usa-uae", target="c-uae", type="bilateral_treaty", weight=0.73, treatyLevel=1),
+
+    # Oceania edges
+    DiplomaticEdgeSchema(source="c-usa", target="c-aus", type="bilateral_treaty", weight=0.88, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-aus", target="c-jpn", type="bilateral_treaty", weight=0.76, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-aus", target="o-apec", type="trade_agreement", weight=0.80, treatyLevel=1),
+    DiplomaticEdgeSchema(source="e-usa-aus", target="c-aus", type="bilateral_treaty", weight=0.87, treatyLevel=1),
 ]
 
 

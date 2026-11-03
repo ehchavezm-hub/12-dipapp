@@ -18,7 +18,7 @@ class DiplomaticEdgeSchema(BaseModel):
     target: str
     type: Literal["bilateral_treaty", "trade_agreement", "un_vote_alignment", "dispute"]
     weight: float
-    treatyLevel: int  # 1, 2, or 3
+    treatyLevel: Literal[1, 2, 3]
 
 
 class GraphDataResponse(BaseModel):
