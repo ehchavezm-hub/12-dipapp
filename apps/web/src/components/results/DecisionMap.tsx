@@ -1,112 +1,230 @@
 "use client"
 
-import { useMemo } from "react"
-import { ReactFlow, Background, type Node, type Edge } from "@xyflow/react"
+import { useMemo, useState } from "react"
+import {
+  ReactFlow,
+  Background,
+  Controls,
+  MiniMap,
+  type Node,
+  type Edge,
+} from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 import type { Scenario } from "@/lib/types/results"
 
-const STEP_COLORS = ["#34A853", "#FBBC05", "#4285F4"]
+/* ── Semantic colours ───────────────────────────────────────────────── */
+const C_ACTION  = "#4285F4"   // blue  — acción clave (roadmap step)
+const C_PRO     = "#34A853"   // green — favorable
+const C_CON     = "#EA4335"   // red   — fricción / riesgo
+const C_LEV     = "#FBBC05"   // amber — punto de apalancamiento
+const C_ROOT    = "#202124"   // dark  — escenario raíz
+
+/* ── Layout constants ───────────────────────────────────────────────── */
+const COL_W     = 300   // horizontal distance between columns
+const NODE_H    = 80    // vertical step between leaf nodes
+const STEP_X    = 0
+const LEAF_X    = COL_W + 40
+
+/* ── Node factory helpers ───────────────────────────────────────────── */
+function makeNode(
+  id: string,
+  x: number,
+  y: number,
+  label: React.ReactNode,
+  bg: string,
+  width = 260,
+): Node {
+  return {
+    id,
+    position: { x, y },
+    data: { label },
+    style: {
+      background: bg,
+      border: "none",
+      borderRadius: 8,
+      width,
+      padding: "8px 12px",
+      color: "#fff",
+      fontSize: 12,
+      lineHeight: 1.4,
+    },
+  }
+}
+
+function leafLabel(tag: string, text: string) {
+  return (
+    <div>
+      <span style={{ fontWeight: 700, opacity: 0.75, fontSize: 10, textTransform: "uppercase" }}>
+        {tag}{" "}
+      </span>
+      {text}
+    </div>
+  )
+}
 
 interface DecisionMapProps {
   scenario: Scenario
 }
 
 export function DecisionMap({ scenario }: DecisionMapProps) {
+  const [showCoT, setShowCoT] = useState(false)
+
   const { nodes, edges } = useMemo(() => {
-    const builtNodes: Node[] = scenario.roadmap.map((step, idx) => ({
-      id: `step-${step.step}`,
-      position: { x: 0, y: idx * 130 },
-      data: {
-        label: (
-          <div style={{ textAlign: "left", padding: "4px 8px" }}>
-            <div
-              style={{
-                fontWeight: 700,
-                fontSize: 13,
-                color: "#fff",
-                marginBottom: 2,
-              }}
-            >
+    const builtNodes: Node[] = []
+    const builtEdges: Edge[] = []
+
+    /* Root node — scenario header */
+    builtNodes.push(
+      makeNode(
+        "root",
+        -COL_W,
+        0,
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 14 }}>
+            Escenario {scenario.label} — {scenario.name}
+          </div>
+          <div style={{ opacity: 0.8, fontSize: 11, marginTop: 2 }}>
+            Score {scenario.score_total.toFixed(1)} · Viabilidad {scenario.viability_score.toFixed(1)}
+          </div>
+        </div>,
+        C_ROOT,
+        280,
+      )
+    )
+
+    /* Pros, cons, leverage points as leaf nodes alongside first step */
+    const allLeaves: { id: string; tag: string; text: string; color: string }[] = [
+      ...scenario.pros.map((p, i) => ({ id: `pro-${i}`, tag: "✓ Ventaja", text: p, color: C_PRO })),
+      ...scenario.cons.map((c, i) => ({ id: `con-${i}`, tag: "✗ Riesgo", text: c, color: C_CON })),
+      ...scenario.leverage_points.map((lp, i) => ({ id: `lev-${i}`, tag: "▸ Palanca", text: lp, color: C_LEV })),
+    ]
+
+    /* Total height for leaf column */
+    const leafColHeight = allLeaves.length * NODE_H
+    const startY = -(leafColHeight / 2)
+
+    allLeaves.forEach(({ id, tag, text, color }, idx) => {
+      const y = startY + idx * NODE_H
+      builtNodes.push(makeNode(id, LEAF_X + COL_W * 1.6, y, leafLabel(tag, text), color, 240))
+      builtEdges.push({
+        id: `edge-root-${id}`,
+        source: "root",
+        target: id,
+        style: { stroke: color, strokeWidth: 1.5, opacity: 0.6 },
+        animated: false,
+      })
+    })
+
+    /* Roadmap steps — vertical spine below/above root */
+    const stepsStartY = leafColHeight / 2 + NODE_H * 1.5
+    scenario.roadmap.forEach((step, idx) => {
+      const stepId = `step-${step.step}`
+      const y = stepsStartY + idx * (NODE_H + 20)
+      builtNodes.push(
+        makeNode(
+          stepId,
+          -COL_W / 2,
+          y,
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 12 }}>
               {step.step}. {step.action}
             </div>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.85)" }}>
+            <div style={{ opacity: 0.8, fontSize: 10, marginTop: 2 }}>
               {step.timeline} · {step.responsible}
             </div>
-          </div>
-        ),
-      },
-      style: {
-        background: STEP_COLORS[idx % 3],
-        border: "none",
-        borderRadius: 8,
-        width: 320,
-        padding: 4,
-      },
-    }))
-
-    const builtEdges: Edge[] = scenario.roadmap.slice(0, -1).map((step) => ({
-      id: `edge-${step.step}-${step.step + 1}`,
-      source: `step-${step.step}`,
-      target: `step-${step.step + 1}`,
-      style: { stroke: "#5F6368" },
-    }))
+          </div>,
+          C_ACTION,
+          280,
+        )
+      )
+      if (idx === 0) {
+        builtEdges.push({
+          id: "edge-root-step1",
+          source: "root",
+          target: stepId,
+          style: { stroke: C_ACTION, strokeWidth: 2 },
+          animated: true,
+        })
+      } else {
+        builtEdges.push({
+          id: `edge-step-${step.step - 1}-${step.step}`,
+          source: `step-${step.step - 1}`,
+          target: stepId,
+          style: { stroke: C_ACTION, strokeWidth: 2 },
+          animated: true,
+        })
+      }
+    })
 
     return { nodes: builtNodes, edges: builtEdges }
-  }, [scenario.roadmap])
+  }, [scenario])
 
-  const mapHeight = Math.max(300, scenario.roadmap.length * 130 + 60)
+  const mapHeight = Math.max(500, (scenario.roadmap.length + scenario.pros.length + scenario.cons.length + scenario.leverage_points.length) * 70 + 160)
 
   return (
     <div>
-      <div
-        style={{
-          height: mapHeight,
-          border: "1px solid #5F6368",
-          borderRadius: 8,
-          overflow: "hidden",
-        }}
-      >
+      {/* Legend */}
+      <div style={{ display: "flex", gap: 16, marginBottom: 10, flexWrap: "wrap" }}>
+        {[
+          { color: C_ACTION, label: "Acción clave (hoja de ruta)" },
+          { color: C_PRO,    label: "Ventaja" },
+          { color: C_CON,    label: "Riesgo / fricción" },
+          { color: C_LEV,    label: "Punto de apalancamiento" },
+        ].map(({ color, label }) => (
+          <div key={label} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#5F6368" }}>
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: color, display: "inline-block" }} />
+            {label}
+          </div>
+        ))}
+      </div>
+
+      {/* React Flow tree */}
+      <div style={{ height: mapHeight, border: "1px solid #DADCE0", borderRadius: 8, overflow: "hidden" }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
           fitView
+          fitViewOptions={{ padding: 0.15 }}
           proOptions={{ hideAttribution: true }}
+          nodesDraggable
+          panOnDrag
+          zoomOnScroll
         >
-          <Background color="#5F6368" />
+          <Background color="#F1F3F4" gap={20} />
+          <Controls showInteractive={false} />
+          <MiniMap
+            nodeColor={(n) => (n.style?.background as string) ?? "#5F6368"}
+            maskColor="rgba(241,243,244,0.7)"
+            style={{ background: "#fff", border: "1px solid #DADCE0" }}
+          />
         </ReactFlow>
       </div>
 
+      {/* CoT toggle */}
       {scenario.chain_of_thought && (
-        <details
-          style={{
-            marginTop: 16,
-            border: "1px solid #5F6368",
-            borderRadius: 8,
-            padding: "8px 16px",
-          }}
-        >
-          <summary
+        <div style={{ marginTop: 12 }}>
+          <button
+            type="button"
+            onClick={() => setShowCoT((v) => !v)}
             style={{
-              cursor: "pointer",
-              fontWeight: 600,
-              color: "#5F6368",
-              fontSize: 13,
+              background: "none", border: "1px solid #DADCE0", borderRadius: 6,
+              padding: "6px 14px", fontSize: 12, color: "#5F6368", cursor: "pointer",
+              fontFamily: "var(--font-urbanist)", display: "flex", alignItems: "center", gap: 6,
             }}
           >
-            Cadena de razonamiento
-          </summary>
-          <p
-            style={{
-              marginTop: 8,
-              fontSize: 13,
-              color: "#5F6368",
-              lineHeight: 1.6,
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            {scenario.chain_of_thought}
-          </p>
-        </details>
+            <span style={{ color: "#FBBC05", fontWeight: 700 }}>⚙</span>
+            {showCoT ? "Ocultar" : "Ver"} cadena de razonamiento completa
+          </button>
+          {showCoT && (
+            <div style={{
+              marginTop: 8, background: "#FFF8E1", borderLeft: "3px solid #FBBC05",
+              padding: "12px 16px", borderRadius: 4, fontSize: 12, color: "#3C4043",
+              lineHeight: 1.7, fontStyle: "italic", whiteSpace: "pre-wrap",
+            }}>
+              {scenario.chain_of_thought}
+            </div>
+          )}
+        </div>
       )}
     </div>
   )
