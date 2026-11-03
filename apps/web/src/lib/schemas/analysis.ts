@@ -44,6 +44,15 @@ export const TreatySchema = z.object({
   active: z.boolean(),
 })
 
+export const OUTPUT_LANGUAGE_OPTIONS = [
+  { value: "es", label: "Español" },
+  { value: "en", label: "English" },
+  { value: "pt", label: "Português" },
+  { value: "fr", label: "Français" },
+] as const
+
+export type OutputLanguage = "es" | "en" | "pt" | "fr"
+
 export const AnalysisCaseDTOSchema = z.object({
   target_profiles: z.array(TargetProfileSchema).min(1),
   geopolitical_context: z.object({
@@ -68,6 +77,7 @@ export const AnalysisCaseDTOSchema = z.object({
   icj_cases: z.number().int().min(0).max(50).default(0),
   s_affinity: z.number().min(0).max(100).optional(),
   s_interests: z.number().min(0).max(100).optional(),
+  output_language: z.enum(["es", "en", "pt", "fr"]).default("es"),
 })
 
 export type AnalysisCaseDTO = z.infer<typeof AnalysisCaseDTOSchema>

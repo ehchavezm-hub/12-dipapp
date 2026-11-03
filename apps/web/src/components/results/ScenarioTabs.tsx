@@ -1,8 +1,14 @@
 "use client"
 
+import dynamic from "next/dynamic"
 import { useResultsStore } from "@/lib/store/resultsStore"
 import { ScenarioCard } from "./ScenarioCard"
 import { DecisionMap } from "./DecisionMap"
+
+const ScenarioExport = dynamic(
+  () => import("./ScenarioExport").then((m) => m.ScenarioExport),
+  { ssr: false, loading: () => <span style={{ fontSize: 13, color: "#5F6368" }}>Preparando PDF…</span> }
+)
 
 const TAB_LABELS: Record<"A" | "B" | "C", string> = {
   A: "A — Óptima",
@@ -37,12 +43,19 @@ function SkeletonPlaceholder() {
 }
 
 export function ScenarioTabs() {
-  const { scenarios, activeTab, isStreaming, setActiveTab } = useResultsStore()
+  const { scenarios, activeTab, isStreaming, scoring, setActiveTab } = useResultsStore()
 
   const activeScenario = scenarios.find((s) => s.label === activeTab) ?? null
 
   return (
     <div>
+      {/* Export full report button */}
+      {scenarios.length === 3 && (
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+          <ScenarioExport scenarios={scenarios} scoring={scoring} />
+        </div>
+      )}
+
       {/* Tab bar */}
       <div
         style={{

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useAnalysisStore } from "@/lib/store/analysisStore"
 import { useResultsStore } from "@/lib/store/resultsStore"
-import { AnalysisCaseDTOSchema, DEFAULT_SCORING_WEIGHTS } from "@/lib/schemas/analysis"
+import { AnalysisCaseDTOSchema, DEFAULT_SCORING_WEIGHTS, OUTPUT_LANGUAGE_OPTIONS, type OutputLanguage } from "@/lib/schemas/analysis"
 import { TargetProfileStep } from "@/components/analysis/steps/TargetProfileStep"
 import { GeopoliticalContextStep } from "@/components/analysis/steps/GeopoliticalContextStep"
 import { ObjectiveStep } from "@/components/analysis/steps/ObjectiveStep"
@@ -90,6 +90,7 @@ export function AnalysisStepper() {
   const [showHelp, setShowHelp] = useState(false)
 
   const StepComponent = STEPS[step]
+  const language = (currentCase.output_language ?? "es") as OutputLanguage
 
   /**
    * Validate and hand off to /results/new, which performs the single LLM request.
@@ -128,6 +129,26 @@ export function AnalysisStepper() {
         fontFamily: "var(--font-urbanist)",
       }}
     >
+      {/* Language selector */}
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+        <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#5F6368", fontFamily: "var(--font-urbanist)" }}>
+          🌐 Idioma de salida:
+          <select
+            value={language}
+            onChange={(e) => updateCase({ output_language: e.target.value as OutputLanguage })}
+            style={{
+              border: "1px solid #DADCE0", borderRadius: 4, padding: "4px 8px",
+              fontFamily: "var(--font-urbanist)", fontSize: 13, color: "#202124",
+              background: "#fff", cursor: "pointer",
+            }}
+          >
+            {OUTPUT_LANGUAGE_OPTIONS.map(({ value, label }) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+
       {/* Progress indicator */}
       <div
         style={{

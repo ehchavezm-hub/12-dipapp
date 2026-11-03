@@ -7,11 +7,17 @@ export interface GraphFilters {
   types: DiplomaticNode["type"][]
 }
 
+export interface PathRequest {
+  source: string
+  target: string
+}
+
 interface GraphStore {
   nodes: DiplomaticNode[]
   edges: DiplomaticEdge[]
   selectedNode: DiplomaticNode | null
   highlightedPath: string[]
+  pathRequest: PathRequest | null
   filters: GraphFilters
   setNodes: (nodes: DiplomaticNode[]) => void
   setEdges: (edges: DiplomaticEdge[]) => void
@@ -19,6 +25,8 @@ interface GraphStore {
   clearSelection: () => void
   setFilters: (filters: Partial<GraphFilters>) => void
   setHighlightedPath: (path: string[]) => void
+  requestPath: (source: string, target: string) => void
+  clearPath: () => void
 }
 
 const DEFAULT_FILTERS: GraphFilters = {
@@ -32,6 +40,7 @@ export const useGraphStore = create<GraphStore>((set) => ({
   edges: [],
   selectedNode: null,
   highlightedPath: [],
+  pathRequest: null,
   filters: DEFAULT_FILTERS,
 
   setNodes: (nodes) => set({ nodes }),
@@ -41,4 +50,6 @@ export const useGraphStore = create<GraphStore>((set) => ({
   setFilters: (filters) =>
     set((state) => ({ filters: { ...state.filters, ...filters } })),
   setHighlightedPath: (path) => set({ highlightedPath: path }),
+  requestPath: (source, target) => set({ pathRequest: { source, target } }),
+  clearPath: () => set({ pathRequest: null, highlightedPath: [] }),
 }))

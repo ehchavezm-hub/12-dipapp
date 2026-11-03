@@ -3,14 +3,6 @@
 import dynamic from "next/dynamic"
 import type { Scenario } from "@/lib/types/results"
 
-// @react-pdf/renderer is ~500 kB and browser-only: load it on demand, client-side.
-const ScenarioExport = dynamic(
-  () => import("./ScenarioExport").then((m) => m.ScenarioExport),
-  {
-    ssr: false,
-    loading: () => <span style={{ color: "#5F6368", fontSize: 14 }}>Preparando exportación…</span>,
-  }
-)
 
 interface ScenarioCardProps {
   scenario: Scenario
@@ -274,6 +266,38 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
         </div>
       )}
 
+      {/* Chain of Thought */}
+      {scenario.chain_of_thought && (
+        <div style={{ marginBottom: 20 }}>
+          <div
+            style={{
+              fontSize: 12,
+              fontWeight: 700,
+              color: "#5F6368",
+              marginBottom: 8,
+              textTransform: "uppercase",
+              letterSpacing: 1,
+            }}
+          >
+            Cadena de Razonamiento
+          </div>
+          <div
+            style={{
+              background: "#FFF8E1",
+              borderLeft: "3px solid #FBBC05",
+              padding: "12px 16px",
+              borderRadius: 2,
+              fontSize: 13,
+              color: "#3C4043",
+              lineHeight: 1.7,
+              fontStyle: "italic",
+            }}
+          >
+            {scenario.chain_of_thought}
+          </div>
+        </div>
+      )}
+
       {/* Sources */}
       {scenario.sources.length > 0 && (
         <div>
@@ -298,7 +322,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
                   rel="noopener noreferrer"
                   style={{ color: "#4285F4", textDecoration: "none" }}
                 >
-                  {source.title}
+                  [{i + 1}] {source.title}
                 </a>
                 {source.date && (
                   <span style={{ color: "#5F6368", marginLeft: 8 }}>
@@ -310,9 +334,6 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
           </ul>
         </div>
       )}
-      <div style={{ marginTop: 16 }}>
-        <ScenarioExport scenario={scenario} />
-      </div>
     </div>
   )
 }

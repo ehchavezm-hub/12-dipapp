@@ -1,6 +1,7 @@
 "use client"
 
 import type { DiplomaticNode, GeopoliticRegion } from "@dipapp/types"
+import { useState } from "react"
 import { useGraphStore } from "@/lib/store/graphStore"
 
 const ALL_REGIONS: GeopoliticRegion[] = [
@@ -43,7 +44,17 @@ const TYPE_COLORS: Record<DiplomaticNode["type"], string> = {
 }
 
 export default function GraphFilters() {
-  const { filters, setFilters } = useGraphStore()
+  const { filters, setFilters, nodes, requestPath, clearPath } = useGraphStore()
+  const [pathSrc, setPathSrc] = useState("")
+  const [pathTgt, setPathTgt] = useState("")
+  const [pathError, setPathError] = useState("")
+
+  function handleFindPath() {
+    if (!pathSrc || !pathTgt) { setPathError("Selecciona nodo origen y destino"); return }
+    if (pathSrc === pathTgt) { setPathError("Origen y destino deben ser distintos"); return }
+    setPathError("")
+    requestPath(pathSrc, pathTgt)
+  }
 
   const toggleRegion = (region: GeopoliticRegion) => {
     const current = filters.regions
@@ -141,6 +152,63 @@ export default function GraphFilters() {
             )
           })}
         </div>
+      </div>
+
+      {/* Dijkstra shortest path */}
+      <div>
+        <p className="text-xs font-semibold text-brand-gray uppercase tracking-wide mb-2">
+          Camino más corto (Dijkstra)
+        </p>
+        <div className="flex gap-2 items-end flex-wrap">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-brand-gray">Origen</label>
+            <select
+              value={pathSrc}
+              onChange={(e) => setPathSrc(e.target.value)}
+              className="border border-brand-gray/30 rounded px-2 py-1 text-xs text-brand-gray bg-white"
+              style={{ minWidth: 140 }}
+            >
+              <option value="">— seleccionar —</option>
+              {nodes.map((n) => (
+                <option key={n.id} value={n.id}>{n.label} ({n.id})</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-brand-gray">Destino</label>
+            <select
+              value={pathTgt}
+              onChange={(e) => setPathTgt(e.target.value)}
+              className="border border-brand-gray/30 rounded px-2 py-1 text-xs text-brand-gray bg-white"
+              style={{ minWidth: 140 }}
+            >
+              <option value="">— seleccionar —</option>
+              {nodes.filter((n) => n.id !== pathSrc).map((n) => (
+                <option key={n.id} value={n.id}>{n.label} ({n.id})</option>
+              ))}
+            </select>
+          </div>
+          <button
+            type="button"
+            onClick={handleFindPath}
+            disabled={!pathSrc || !pathTgt}
+            className="px-3 py-1 rounded text-xs font-semibold text-white"
+            style={{ background: pathSrc && pathTgt ? "#4285F4" : "#9AA0A6", cursor: pathSrc && pathTgt ? "pointer" : "default" }}
+          >
+            Trazar ruta
+          </button>
+          <button
+            type="button"
+            onClick={() => { clearPath(); setPathSrc(""); setPathTgt(""); setPathError("") }}
+            className="px-3 py-1 rounded text-xs font-semibold text-brand-gray border border-brand-gray/30"
+          >
+            Limpiar
+          </button>
+        </div>
+        {pathError && <p className="text-xs text-[#EA4335] mt-1">{pathError}</p>}
+        <p className="text-xs text-brand-gray mt-1">
+          El camino resaltado en rojo es la ruta de menor costo entre los nodos seleccionados.
+        </p>
       </div>
     </div>
   )

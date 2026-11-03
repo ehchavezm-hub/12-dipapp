@@ -67,6 +67,16 @@ class SupportDocument(BaseModel):
     chunk_index: int = Field(default=0, ge=0)
 
 
+OutputLanguage = Literal["es", "en", "pt", "fr"]
+
+LANGUAGE_NAMES: dict[str, str] = {
+    "es": "Spanish",
+    "en": "English",
+    "pt": "Portuguese",
+    "fr": "French",
+}
+
+
 class AnalysisCaseDTO(BaseModel):
     target_profiles: list[TargetProfile] = Field(min_length=1)
     geopolitical_context: GeopoliticalContext
@@ -82,6 +92,8 @@ class AnalysisCaseDTO(BaseModel):
     # falls back to a neutral 50.
     s_affinity: float | None = Field(default=None, ge=0, le=100)
     s_interests: float | None = Field(default=None, ge=0, le=100)
+    # Output language for LLM-generated text
+    output_language: OutputLanguage = "es"
 
 
 class RoadmapStep(BaseModel):

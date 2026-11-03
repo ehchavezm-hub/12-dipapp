@@ -62,6 +62,8 @@ export default function DiplomaticGraph({
     setHighlightedPath,
     setNodes,
     setEdges,
+    pathRequest,
+    clearPath,
   } = useGraphStore()
 
   // Seed the store from initial (SSR) data on mount
@@ -268,17 +270,13 @@ export default function DiplomaticGraph({
     setHighlightedPath(pathIds)
   }
 
-  // Expose the method via a data attribute for testing / programmatic access
+  // React to Zustand pathRequest — run Dijkstra when source+target are set
   useEffect(() => {
-    if (containerRef.current) {
-      // Store reference to allow parent access if needed
-      ;(
-        containerRef.current as HTMLDivElement & {
-          highlightShortestPath?: (s: string, t: string) => void
-        }
-      ).highlightShortestPath = highlightShortestPath
-    }
-  })
+    if (!pathRequest) return
+    highlightShortestPath(pathRequest.source, pathRequest.target)
+    clearPath()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathRequest])
 
   return (
     <div

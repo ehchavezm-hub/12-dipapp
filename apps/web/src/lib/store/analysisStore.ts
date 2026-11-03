@@ -31,6 +31,7 @@ export const EXAMPLE_CASE: AnalysisCaseDTO = {
   scoring_weights: { ...DEFAULT_SCORING_WEIGHTS },
   analysis_period_years: 10,
   support_documents: [],
+  output_language: "es" as const,
   treaties: [
     { level: 1, active: true },  // Alianza, paz y límites
     { level: 2, active: true },  // TLC vigente

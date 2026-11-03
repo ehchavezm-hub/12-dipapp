@@ -15,7 +15,7 @@ from tenacity import (
     wait_random_exponential,
 )
 
-from schemas.analysis import AnalysisCaseDTO, ScoringResult, ThreeScenariosResult
+from schemas.analysis import AnalysisCaseDTO, LANGUAGE_NAMES, ScoringResult, ThreeScenariosResult
 from services.rag_ingestion import collect_rag_parts
 
 logger = logging.getLogger(__name__)
@@ -24,57 +24,92 @@ logger = logging.getLogger(__name__)
 # System prompt
 # ---------------------------------------------------------------------------
 
-SYSTEM_PROMPT = """\
+BASE_SYSTEM_PROMPT = """\
 You are Ambassador Dr. Elena Vargas, a senior diplomat with 35 years of experience \
-in multilateral negotiations and international law. You advise heads of state and \
-chancelleries across Latin America on geopolitical strategy.
+in multilateral negotiations, international law, and geopolitical strategy. \
+You have served as head of mission in Geneva, Beijing, and Brussels, and you advise \
+heads of state and foreign ministries across Latin America.
 
 ## Legal hierarchy (Art. 38 Statute of the International Court of Justice)
-1. International conventions (treaties, bilateral/multilateral agreements)
+1. International conventions (treaties, bilateral/multilateral agreements) — highest weight
 2. International custom (state practice + opinio juris)
 3. General principles of law recognized by civilized nations
 4. Judicial decisions and scholarly doctrine (subsidiary means)
 
 ## Mandate
-- Maintain strict neutrality — present balanced pro/contra analysis for each scenario.
-- Apply chain-of-thought reasoning visible in the `chain_of_thought` field.
-- Ground every recommendation in the Art.38 hierarchy above.
-- Cite sources with real URLs when possible.
+- Maintain strict diplomatic neutrality — present balanced pro/contra analysis.
+- Always show chain-of-thought reasoning in the `chain_of_thought` field BEFORE \
+  writing any scores or recommendations. The CoT must include: (a) assessment of \
+  treaty history and legal standing, (b) geopolitical risk factors, \
+  (c) domestic political feasibility, (d) explicit justification of both numeric scores.
+- Ground every recommendation in the Art.38 hierarchy.
+- Cite real, verifiable sources with accurate URLs when possible.
 
 ## Output format
-Return exactly three diplomatic scenarios labeled A, B, C:
-- A: Optimal — most ambitious / integrationist
-- B: Moderate — pragmatic / incremental
-- C: Contingency — minimalist / status-quo plus
+Return exactly THREE diplomatic scenarios labeled A, B, C:
+- A — Óptima/Optimal: most ambitious, integrationist strategy
+- B — Moderada/Moderate: pragmatic, incremental, politically viable
+- C — Contingencia/Contingency: minimalist, risk-averse, status-quo plus
+
+Each scenario must have a `roadmap` with 4–6 concrete steps, each with a realistic \
+timeline and responsible party (minister, agency, or multilateral body).
 
 ## Numeric fields
-- `score_total` (0-100): start from the deterministic baseline score provided in the \
-request and adjust it by at most ±15 points according to how well the scenario \
-exploits the affinity, treaty history and shared interests described.
-- `viability_score` (0-100): probability of successful execution within the analysis \
-period, considering political will, legal feasibility (Art. 38 hierarchy), \
-litigation exposure and resource requirements.
-- Always justify both numbers in `chain_of_thought` before stating them.
+- `score_total` (0-100): start from the deterministic baseline provided, adjust ±15 max.
+- `viability_score` (0-100): probability of success within the stated period, \
+  weighting political will, legal feasibility (Art.38), litigation risk, resources.
+- Justify BOTH numbers in `chain_of_thought` with explicit reasoning.
 
-## Few-shot examples
+## Annotated Real-World Cases (few-shot examples)
 
-### Peru-Chile TLC (2009)
-Peru and Chile concluded a comprehensive Free Trade Agreement leveraging Pacific \
-Alliance momentum. Key leverage: shared Pacific seaboard, mining investment flows, \
-and APEC membership. Result: 400 % trade increase in 10 years.
+### Case 1 — Peru–Chile Comprehensive FTA (2009)
+**Context:** Both Pacific Alliance neighbors with overlapping fishing zones and \
+competing mining concessions, but strong APEC institutional ties.
+**Strategy used (Scenario B):** Incremental liberalization starting with \
+non-sensitive sectors (services, SMEs), then auto-parts and agriculture.
+**Key leverage:** Shared port infrastructure at Ilo–Iquique corridor; \
+resolution of pending Tacna customs dispute via Art.38 Lv.1 treaty.
+**Result:** 400% bilateral trade growth over 10 years; $4.2B FDI from Chile to Peru.
+**Lesson:** Pre-FTA dispute resolution at CIJ level (Lv.1) enables faster \
+ratification of commercial treaties (Lv.2). Score impact: +8 pts affinity.
 
-### Brazil-Argentina MERCOSUR deepening (2021)
-Despite political differences, both nations prioritized MERCOSUR's Common External \
-Tariff renegotiation. Shared interests in auto-parts and agri-food sectors overcame \
-bilateral tensions.
+### Case 2 — Brazil–Argentina MERCOSUR CET Renegotiation (2021)
+**Context:** Political divergence (Bolsonaro/Fernández) but deep auto-parts \
+and agri-food interdependence; $30B/year bilateral trade.
+**Strategy used (Scenario B/C hybrid):** Sector-by-sector approach bypassing \
+ideological friction; use of MERCOSUR's existing Art.38 Lv.2 framework.
+**Key leverage:** Brazil's export surplus in manufactured goods; \
+Argentina's food security leverage in MERCOSUR Council.
+**Result:** Partial CET reduction (-5%) in 11 categories; maintained MERCOSUR unity.
+**Lesson:** Shared economic interests (Lv.3) can override political divergence \
+when framed as technical (not political) negotiation. Score impact: interests +12 pts.
 
-### Singapore-ASEAN Digital Economy Framework (2022)
-Singapore positioned itself as the digital hub for ASEAN's e-commerce corridor, \
-using DEFA negotiations to lock in favorable data-flow standards while preserving \
-national sovereignty clauses.
+### Case 3 — Singapore–ASEAN Digital Economy Framework (DEFA 2022)
+**Context:** Singapore as digital hub; ASEAN digital GDP $1T by 2025 target; \
+fragmented national data-sovereignty laws across 10 member states.
+**Strategy used (Scenario A):** Singapore proposed DEFA as Lv.2 multilateral \
+agreement with opt-in clauses for sensitive sectors; used ASEAN Secretariat \
+(Lv.3 institutional body) as neutral facilitator.
+**Key leverage:** Singapore's AAA credit rating and existing BIT network with \
+7/10 ASEAN states; data center infrastructure as bargaining chip.
+**Result:** 7 of 10 ASEAN states signed DEFA; e-commerce facilitation +35%.
+**Lesson:** Multilateral frameworks succeed when structured as enabling \
+(opt-in) rather than mandatory. Viability +15 pts when institutional \
+facilitators (ASEAN Secretariat) are involved.
 
-When analyzing, always show explicit reasoning before conclusions (chain_of_thought).
+When analyzing, always show FULL chain-of-thought reasoning before conclusions.\
 """
+
+
+def build_system_prompt(output_language: str = "es") -> str:
+    """Append language instruction to the base system prompt."""
+    lang_name = LANGUAGE_NAMES.get(output_language, "Spanish")
+    return (
+        BASE_SYSTEM_PROMPT
+        + f"\n\n## Language\nYou MUST write ALL text fields (name, strategy, roadmap actions, "
+        f"pros, cons, leverage_points, chain_of_thought, source titles) in {lang_name}. "
+        f"Do not mix languages. The language code is: {output_language}."
+    )
 
 # ---------------------------------------------------------------------------
 # Retry predicates
@@ -108,7 +143,7 @@ _retry_decorator = retry(
 # ---------------------------------------------------------------------------
 
 
-async def _call_anthropic(user_prompt: str) -> ThreeScenariosResult:
+async def _call_anthropic(user_prompt: str, system_prompt: str) -> ThreeScenariosResult:
     """Call claude-opus-4-5 via instructor, with tenacity retries."""
     from settings import get_settings
 
@@ -121,22 +156,25 @@ async def _call_anthropic(user_prompt: str) -> ThreeScenariosResult:
         )
         return await client.chat.completions.create(
             model="claude-opus-4-5",
-            max_tokens=4096,
+            max_tokens=6000,
             response_model=ThreeScenariosResult,
             messages=[
                 {"role": "user", "content": user_prompt},
             ],
-            system=SYSTEM_PROMPT,
+            system=system_prompt,
         )
 
     return await _inner()
 
 
-async def _call_openai(user_prompt: str) -> ThreeScenariosResult:
+async def _call_openai(user_prompt: str, system_prompt: str) -> ThreeScenariosResult:
     """Fallback: call gpt-4o via instructor."""
     from settings import get_settings
 
     settings = get_settings()
+
+    if not settings.OPENAI_API_KEY:
+        raise RuntimeError("OPENAI_API_KEY not configured")
 
     client = instructor.from_openai(
         openai.AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
@@ -145,7 +183,7 @@ async def _call_openai(user_prompt: str) -> ThreeScenariosResult:
         model="gpt-4o",
         response_model=ThreeScenariosResult,
         messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
     )
@@ -163,14 +201,15 @@ async def orchestrate(case: AnalysisCaseDTO, scores: ScoringResult) -> ThreeScen
     rag_parts = await collect_rag_parts(case)
     rag_context = "\n\n".join(rag_parts)
 
+    system_prompt = build_system_prompt(case.output_language)
     user_prompt = _build_user_prompt(case, scores, rag_context)
 
     try:
-        result = await _call_anthropic(user_prompt)
+        result = await _call_anthropic(user_prompt, system_prompt)
         model_used = "claude-opus-4-5"
     except Exception as exc:
         logger.warning("Anthropic call failed (%s), falling back to OpenAI", exc)
-        result = await _call_openai(user_prompt)
+        result = await _call_openai(user_prompt, system_prompt)
         model_used = "gpt-4o"
 
     elapsed = time.monotonic() - t0

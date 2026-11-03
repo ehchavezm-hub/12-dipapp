@@ -23,6 +23,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
             Nuevo análisis
           </Link>
         )}
+        {role === "superadmin" && (
+          <Link href="/admin" className="text-sm text-brand-gray hover:text-brand-blue">
+            Admin
+          </Link>
+        )}
         {session?.user && (
           <span className="ml-auto text-xs text-brand-gray">
             {session.user.githubLogin || session.user.email} · {role}
