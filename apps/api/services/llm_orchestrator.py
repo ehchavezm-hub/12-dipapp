@@ -158,7 +158,7 @@ async def _call_anthropic(user_prompt: str, system_prompt: str) -> ThreeScenario
         )
         return await client.chat.completions.create(
             model="claude-opus-4-5",
-            max_tokens=6000,
+            max_tokens=8192,
             response_model=ThreeScenariosResult,
             messages=[
                 {"role": "user", "content": user_prompt},
@@ -198,6 +198,8 @@ async def _call_openai(user_prompt: str, system_prompt: str) -> ThreeScenariosRe
 
 async def orchestrate(case: AnalysisCaseDTO, scores: ScoringResult) -> ThreeScenariosResult:
     """Build RAG context, call Anthropic, fall back to OpenAI on failure."""
+    from settings import get_settings
+    settings = get_settings()
     t0 = time.monotonic()
 
     rag_parts = await collect_rag_parts(case)
@@ -210,7 +212,9 @@ async def orchestrate(case: AnalysisCaseDTO, scores: ScoringResult) -> ThreeScen
         result = await _call_anthropic(user_prompt, system_prompt)
         model_used = "claude-opus-4-5"
     except Exception as exc:
-        logger.warning("Anthropic call failed (%s), falling back to OpenAI", exc)
+        logger.warning("Anthropic call failed (%s)", exc)
+        if not settings.OPENAI_API_KEY:
+            raise  # re-raise original error; no point calling OpenAI without key
         result = await _call_openai(user_prompt, system_prompt)
         model_used = "gpt-4o"
 
@@ -260,9 +264,10 @@ def _build_user_prompt(
         ]
 
     prompt_parts += [
-        "Please provide three diplomatic scenarios (A, B, C) as specified. "
-        "For each scenario, include a detailed chain_of_thought that shows your "
-        "reasoning step by step before arriving at the strategy.",
+        "Provide three diplomatic scenarios (A=Optimal, B=Moderate, C=Contingency). "
+        "Be concise: strategy ≤120 words, chain_of_thought ≤150 words, "
+        "roadmap 4-5 steps max, pros/cons/leverage 3 items each. "
+        "Cite 2-3 real sources per scenario.",
     ]
 
     return "\n".join(prompt_parts)
