@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useAnalysisStore } from "@/lib/store/analysisStore"
+import { useAnalysisStore, PRESET_CASES } from "@/lib/store/analysisStore"
 import { useResultsStore } from "@/lib/store/resultsStore"
 import { AnalysisCaseDTOSchema, DEFAULT_SCORING_WEIGHTS, OUTPUT_LANGUAGE_OPTIONS, type OutputLanguage } from "@/lib/schemas/analysis"
 import { TargetProfileStep } from "@/components/analysis/steps/TargetProfileStep"
@@ -87,6 +87,7 @@ export function AnalysisStepper() {
   const resetResults = useResultsStore((s) => s.reset)
   const router = useRouter()
   const [issues, setIssues] = useState<string[]>([])
+  const [showPresets, setShowPresets] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
 
   const StepComponent = STEPS[step]
@@ -250,20 +251,50 @@ export function AnalysisStepper() {
         </div>
       )}
 
-      {/* Example case button on step 0 + help button */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 16, alignItems: "center" }}>
+      {/* Example case picker on step 0 + help button */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 16, alignItems: "flex-start" }}>
         {step === 0 && (
-          <button
-            type="button"
-            onClick={loadExampleCase}
-            style={{
-              background: "none", border: "1px solid #FF6600", color: "#FF6600",
-              borderRadius: 4, padding: "6px 14px", cursor: "pointer",
-              fontFamily: "var(--font-urbanist)", fontSize: 14,
-            }}
-          >
-            Cargar Caso de Ejemplo
-          </button>
+          <div style={{ position: "relative" }}>
+            <button
+              type="button"
+              onClick={() => setShowPresets(v => !v)}
+              style={{
+                background: "none", border: "1px solid #FF6600", color: "#FF6600",
+                borderRadius: 4, padding: "6px 14px", cursor: "pointer",
+                fontFamily: "var(--font-urbanist)", fontSize: 14,
+                display: "flex", alignItems: "center", gap: 6,
+              }}
+            >
+              Cargar Caso de Ejemplo
+              <span style={{ fontSize: 10 }}>{showPresets ? "▲" : "▼"}</span>
+            </button>
+            {showPresets && (
+              <div style={{
+                position: "absolute", top: "100%", left: 0, zIndex: 50,
+                background: "#fff", border: "1px solid #E0E0E0", borderRadius: 6,
+                boxShadow: "0 4px 16px rgba(0,0,0,0.12)", minWidth: 340, marginTop: 4,
+              }}>
+                {PRESET_CASES.map((preset, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => { loadExampleCase(idx); setShowPresets(false) }}
+                    style={{
+                      display: "block", width: "100%", textAlign: "left",
+                      padding: "10px 14px", background: "none", border: "none",
+                      cursor: "pointer", borderBottom: idx < PRESET_CASES.length - 1 ? "1px solid #F2F2F2" : "none",
+                      fontFamily: "var(--font-urbanist)",
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "#FFF3E0")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "none")}
+                  >
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "#1A1A1A" }}>{preset.label}</div>
+                    <div style={{ fontSize: 11, color: "#6D6E71", marginTop: 2 }}>{preset.tag}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         )}
         <button
           type="button"
