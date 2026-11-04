@@ -4,6 +4,7 @@ import {
   Document, Page, Text, View, StyleSheet, PDFDownloadLink, Link,
 } from "@react-pdf/renderer"
 import type { Scenario, ScoringResult } from "@/lib/types/results"
+import type { AnalysisCaseDTO } from "@/lib/schemas/analysis"
 
 const ORANGE   = "#FF6600"   // AECOM Orange — primary CTA
 const ENG_BLUE = "#003087"   // Engineering Blue — pros / scenario A
@@ -87,9 +88,9 @@ const C_CON    = RED
 const C_LEV    = MED_BLUE
 
 /* ── Size limits (keeps PDF ≤ 500 KB) ──────────────────────────────── */
-const MAX_STRATEGY   = 900
-const MAX_COT        = 1400
-const MAX_ITEM       = 220
+const MAX_STRATEGY   = 1200
+const MAX_COT        = 3000
+const MAX_ITEM       = 280
 
 function trunc(text: string, max: number) {
   return text.length > max ? text.slice(0, max) + "…" : text
@@ -99,6 +100,105 @@ interface ScenarioPDFProps {
   scenarios: Scenario[]
   scoring?: ScoringResult | null
   generatedAt?: string
+  analysisCase?: Partial<AnalysisCaseDTO>
+}
+
+const OBJECTIVE_TYPE_LABELS: Record<string, string> = {
+  trade: "Comercio / TLC",
+  security: "Seguridad / Defensa",
+  environment: "Medio Ambiente",
+  humanitarian: "Humanitario",
+  political: "Político / Diplomático",
+  cultural: "Cultural / Educativo",
+  technology: "Tecnología / Innovación",
+  infrastructure: "Infraestructura",
+  other: "Otro",
+}
+
+function CasePage({ analysisCase }: { analysisCase: Partial<AnalysisCaseDTO> }) {
+  const targets = analysisCase.target_profiles ?? []
+  const geo = analysisCase.geopolitical_context
+  const obj = analysisCase.diplomatic_objective
+  const period = analysisCase.analysis_period_years
+  const docCount = analysisCase.support_documents?.length ?? 0
+
+  return (
+    <Page size="A4" style={styles.page}>
+      {/* Header */}
+      <View style={{ marginBottom: 20, paddingBottom: 12, borderBottom: `2px solid ${ORANGE}` }}>
+        <Text style={{ fontSize: 10, color: GRAY, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 4 }}>
+          Datos del Caso Analizado
+        </Text>
+        <Text style={{ fontSize: 20, fontWeight: "bold", color: DARK }}>Contexto y Parámetros de Entrada</Text>
+      </View>
+
+      {/* Targets */}
+      <View style={[styles.section, { backgroundColor: "#F2F2F2", padding: "12 14", borderRadius: 4 }]}>
+        <Text style={styles.sectionTitle}>Contraparte(s) Diplomática(s)</Text>
+        {targets.map((t) => (
+          <View key={t.id} style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+            <Text style={{ fontSize: 13, fontWeight: "bold", color: DARK, marginRight: 8 }}>{t.name}</Text>
+            <Text style={{ fontSize: 10, color: GRAY }}>({t.country_code})</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Objective */}
+      {obj && (
+        <View style={[styles.section, { backgroundColor: "#FFF3E0", borderLeft: `4px solid ${ORANGE}`, padding: "12 14", borderRadius: 4 }]}>
+          <Text style={styles.sectionTitle}>Objetivo Diplomático</Text>
+          <Text style={{ fontSize: 10, fontWeight: "bold", color: ORANGE, marginBottom: 4 }}>
+            Tipo: {OBJECTIVE_TYPE_LABELS[obj.type] ?? obj.type}
+          </Text>
+          <Text style={[styles.body, { lineHeight: 1.7 }]}>{obj.description}</Text>
+        </View>
+      )}
+
+      {/* Geopolitical Context */}
+      {geo && (
+        <View style={[styles.section, { backgroundColor: "#E8EEF8", borderLeft: `4px solid ${ENG_BLUE}`, padding: "12 14", borderRadius: 4 }]}>
+          <Text style={styles.sectionTitle}>Contexto Geopolítico</Text>
+          <Text style={{ fontSize: 10, fontWeight: "bold", color: ENG_BLUE, marginBottom: 4 }}>Región: {geo.region}</Text>
+          <Text style={[styles.body, { lineHeight: 1.7 }]}>{geo.description}</Text>
+        </View>
+      )}
+
+      {/* Meta row */}
+      <View style={{ flexDirection: "row", gap: 10, marginTop: 8 }}>
+        <View style={{ flex: 1, backgroundColor: LIGHT, padding: "10 12", borderRadius: 4 }}>
+          <Text style={{ fontSize: 20, fontWeight: "bold", color: DARK }}>{period ?? "—"}</Text>
+          <Text style={{ fontSize: 9, color: GRAY }}>Período de análisis (años)</Text>
+        </View>
+        <View style={{ flex: 1, backgroundColor: LIGHT, padding: "10 12", borderRadius: 4 }}>
+          <Text style={{ fontSize: 20, fontWeight: "bold", color: DARK }}>{docCount}</Text>
+          <Text style={{ fontSize: 9, color: GRAY }}>Documentos de apoyo</Text>
+        </View>
+        <View style={{ flex: 1, backgroundColor: LIGHT, padding: "10 12", borderRadius: 4 }}>
+          <Text style={{ fontSize: 20, fontWeight: "bold", color: DARK }}>{targets.length}</Text>
+          <Text style={{ fontSize: 9, color: GRAY }}>Contrapartes analizadas</Text>
+        </View>
+      </View>
+    </Page>
+  )
+}
+
+function ChainOfThoughtPage({ scenario }: { scenario: Scenario }) {
+  const colorMap: Record<string, string> = { A: ENG_BLUE, B: ORANGE, C: MED_BLUE }
+  const accent = colorMap[scenario.label] ?? ORANGE
+
+  return (
+    <Page size="A4" style={styles.page}>
+      <View style={{ marginBottom: 16, paddingBottom: 10, borderBottom: `2px solid ${accent}` }}>
+        <Text style={{ fontSize: 14, fontWeight: "bold", color: accent }}>
+          Escenario {scenario.label} — Cadena de Razonamiento
+        </Text>
+        <Text style={{ fontSize: 10, color: GRAY, marginTop: 2 }}>{scenario.name}</Text>
+      </View>
+      <View style={[styles.cotBox, { borderLeftColor: accent }]}>
+        <Text style={styles.cotText}>{scenario.chain_of_thought ?? "(No disponible)"}</Text>
+      </View>
+    </Page>
+  )
 }
 
 function CoverPage({ scenarios, scoring, generatedAt }: ScenarioPDFProps) {
@@ -212,16 +312,6 @@ function ScenarioPage({ scenario }: { scenario: Scenario }) {
           {scenario.leverage_points.map((lp, i) => (
             <Text key={i} style={styles.chip}>▸ {trunc(lp, MAX_ITEM)}</Text>
           ))}
-        </View>
-      )}
-
-      {/* Chain of Thought — truncated to control PDF size */}
-      {scenario.chain_of_thought && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Cadena de Razonamiento (resumen)</Text>
-          <View style={styles.cotBox}>
-            <Text style={styles.cotText}>{trunc(scenario.chain_of_thought, MAX_COT)}</Text>
-          </View>
         </View>
       )}
 
@@ -450,13 +540,15 @@ function ComparativePage({ scenarios, scoring }: { scenarios: Scenario[]; scorin
   )
 }
 
-function FullReportPDF({ scenarios, scoring, generatedAt }: ScenarioPDFProps) {
+function FullReportPDF({ scenarios, scoring, generatedAt, analysisCase }: ScenarioPDFProps) {
   return (
     <Document>
       <CoverPage scenarios={scenarios} scoring={scoring} generatedAt={generatedAt} />
+      {analysisCase && <CasePage analysisCase={analysisCase} />}
       {scenarios.flatMap(s => [
         <ScenarioPage key={`detail-${s.label}`} scenario={s} />,
         <RoadmapFlowPage key={`flow-${s.label}`} scenario={s} />,
+        <ChainOfThoughtPage key={`cot-${s.label}`} scenario={s} />,
       ])}
       <ComparativePage scenarios={scenarios} scoring={scoring} />
     </Document>
@@ -466,16 +558,17 @@ function FullReportPDF({ scenarios, scoring, generatedAt }: ScenarioPDFProps) {
 interface ScenarioExportProps {
   scenarios: Scenario[]
   scoring?: ScoringResult | null
+  analysisCase?: Partial<AnalysisCaseDTO>
 }
 
-export function ScenarioExport({ scenarios, scoring }: ScenarioExportProps) {
+export function ScenarioExport({ scenarios, scoring, analysisCase }: ScenarioExportProps) {
   const generatedAt = new Date().toLocaleDateString("es-PE", {
     year: "numeric", month: "long", day: "numeric",
   })
 
   return (
     <PDFDownloadLink
-      document={<FullReportPDF scenarios={scenarios} scoring={scoring} generatedAt={generatedAt} />}
+      document={<FullReportPDF scenarios={scenarios} scoring={scoring} generatedAt={generatedAt} analysisCase={analysisCase} />}
       fileName={`dipapp-analisis-diplomatico-${new Date().toISOString().slice(0, 10)}.pdf`}
       style={{
         display: "inline-block",

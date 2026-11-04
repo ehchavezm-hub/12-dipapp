@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic"
 import { useResultsStore } from "@/lib/store/resultsStore"
+import { useAnalysisStore } from "@/lib/store/analysisStore"
 import { ScenarioCard } from "./ScenarioCard"
 import { DecisionMap } from "./DecisionMap"
 
@@ -44,6 +45,7 @@ function SkeletonPlaceholder() {
 
 export function ScenarioTabs() {
   const { scenarios, activeTab, isStreaming, scoring, setActiveTab } = useResultsStore()
+  const { currentCase } = useAnalysisStore()
 
   const activeScenario = scenarios.find((s) => s.label === activeTab) ?? null
 
@@ -52,7 +54,7 @@ export function ScenarioTabs() {
       {/* Export full report button */}
       {scenarios.length === 3 && (
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
-          <ScenarioExport scenarios={scenarios} scoring={scoring} />
+          <ScenarioExport scenarios={scenarios} scoring={scoring} analysisCase={currentCase} />
         </div>
       )}
 
