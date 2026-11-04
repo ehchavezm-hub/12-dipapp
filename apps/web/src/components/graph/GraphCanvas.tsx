@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useState, useMemo } from "react"
 import DiplomaticGraph, { type DiplomaticGraphHandle } from "@/components/graph/DiplomaticGraph"
 import NodeSheet from "@/components/graph/NodeSheet"
 import type { DiplomaticEdge, DiplomaticNode } from "@dipapp/types"
@@ -32,56 +32,112 @@ const btnStyle: React.CSSProperties = {
   boxShadow: "0 1px 3px rgba(0,0,0,0.10)",
 }
 
+type Tab = "connected" | "isolated"
+
 interface GraphCanvasProps {
   initialNodes: DiplomaticNode[]
   initialEdges: DiplomaticEdge[]
 }
 
 export default function GraphCanvas({ initialNodes, initialEdges }: GraphCanvasProps) {
-  const graphRef = useRef<DiplomaticGraphHandle>(null)
+  const [activeTab, setActiveTab] = useState<Tab>("connected")
+  const connectedRef = useRef<DiplomaticGraphHandle>(null)
+  const isolatedRef  = useRef<DiplomaticGraphHandle>(null)
+
+  const activeRef = activeTab === "connected" ? connectedRef : isolatedRef
+
+  // Split nodes into connected vs isolated
+  const { connectedNodes, isolatedNodes } = useMemo(() => {
+    const linked = new Set<string>()
+    initialEdges.forEach((e) => { linked.add(e.source); linked.add(e.target) })
+    return {
+      connectedNodes: initialNodes.filter((n) => linked.has(n.id)),
+      isolatedNodes:  initialNodes.filter((n) => !linked.has(n.id)),
+    }
+  }, [initialNodes, initialEdges])
+
+  const tabBase: React.CSSProperties = {
+    padding: "8px 20px",
+    fontSize: 13,
+    fontFamily: "var(--font-urbanist)",
+    border: "1px solid #DADCE0",
+    borderBottom: "none",
+    borderRadius: "6px 6px 0 0",
+    cursor: "pointer",
+    background: "#F8F9FA",
+    color: "#6D6E71",
+  }
+
+  const tabActive: React.CSSProperties = {
+    ...tabBase,
+    background: "#fff",
+    color: "#FF6600",
+    fontWeight: 600,
+    borderColor: "#DADCE0",
+  }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      {/* Controles de zoom — encima del canvas */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <button onClick={() => graphRef.current?.fit()} style={btnStyle} title="Mostrar todos los nodos">
-          ⊡ Ajustar vista
+    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+      {/* Pestañas */}
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 4, borderBottom: "1px solid #DADCE0" }}>
+        <button
+          onClick={() => setActiveTab("connected")}
+          style={activeTab === "connected" ? tabActive : tabBase}
+        >
+          🌐 Red diplomática
+          <span style={{ marginLeft: 8, fontSize: 11, background: "#FF6600", color: "#fff", borderRadius: 10, padding: "1px 7px" }}>
+            {connectedNodes.length}
+          </span>
         </button>
-        <button onClick={() => graphRef.current?.zoomIn()} style={btnStyle} title="Acercar">
-          ＋ Acercar
+        <button
+          onClick={() => setActiveTab("isolated")}
+          style={activeTab === "isolated" ? tabActive : tabBase}
+        >
+          🗺️ Países sin vinculación
+          <span style={{ marginLeft: 8, fontSize: 11, background: "#6D6E71", color: "#fff", borderRadius: 10, padding: "1px 7px" }}>
+            {isolatedNodes.length}
+          </span>
         </button>
-        <button onClick={() => graphRef.current?.zoomOut()} style={btnStyle} title="Alejar">
-          － Alejar
-        </button>
+
+        {/* Controles zoom — alineados a la derecha */}
+        <div style={{ marginLeft: "auto", display: "flex", gap: 6, paddingBottom: 4 }}>
+          <button onClick={() => activeRef.current?.fit()} style={btnStyle}>⊡ Ajustar</button>
+          <button onClick={() => activeRef.current?.zoomIn()} style={btnStyle}>＋</button>
+          <button onClick={() => activeRef.current?.zoomOut()} style={btnStyle}>－</button>
+        </div>
       </div>
 
-      {/* Canvas */}
-      <div style={{ position: "relative", minHeight: 560 }}>
-        <DiplomaticGraph ref={graphRef} initialNodes={initialNodes} initialEdges={initialEdges} />
-        <NodeSheet />
+      {/* Canvas — solo se muestra el activo, el otro queda montado pero oculto */}
+      <div style={{ border: "1px solid #DADCE0", borderTop: "none", borderRadius: "0 6px 6px 6px", overflow: "hidden" }}>
+        <div style={{ display: activeTab === "connected" ? "block" : "none", position: "relative", minHeight: 540 }}>
+          <DiplomaticGraph ref={connectedRef} initialNodes={connectedNodes} initialEdges={initialEdges} />
+          <NodeSheet />
+        </div>
+        <div style={{ display: activeTab === "isolated" ? "block" : "none", position: "relative", minHeight: 540 }}>
+          <DiplomaticGraph ref={isolatedRef} initialNodes={isolatedNodes} initialEdges={[]} />
+          <NodeSheet />
+        </div>
       </div>
 
-      {/* Leyenda — debajo y fuera del canvas */}
+      {/* Leyenda — debajo del canvas */}
       <div style={{
         display: "flex",
         flexWrap: "wrap",
-        gap: "12px 24px",
+        gap: "10px 20px",
         padding: "10px 16px",
         borderTop: "1px solid #E0E0E0",
-        marginTop: 4,
+        marginTop: 8,
       }}>
         <span style={{ fontSize: 11, fontWeight: 600, color: "#6D6E71", textTransform: "uppercase", letterSpacing: "0.06em", alignSelf: "center", fontFamily: "var(--font-urbanist)" }}>
           Nodos
         </span>
         {NODE_LEGEND.map(({ color, label }) => (
           <span key={label} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#424242", fontFamily: "var(--font-urbanist)" }}>
-            <span style={{ width: 12, height: 12, borderRadius: "50%", background: color, flexShrink: 0, display: "inline-block", border: "1.5px solid #fff", boxShadow: "0 0 0 1px rgba(0,0,0,0.12)" }} />
+            <span style={{ width: 12, height: 12, borderRadius: "50%", background: color, flexShrink: 0, display: "inline-block", boxShadow: "0 0 0 1px rgba(0,0,0,0.12)" }} />
             {label}
           </span>
         ))}
-
         <span style={{ width: 1, background: "#E0E0E0", alignSelf: "stretch", display: "inline-block", margin: "0 4px" }} />
-
         <span style={{ fontSize: 11, fontWeight: 600, color: "#6D6E71", textTransform: "uppercase", letterSpacing: "0.06em", alignSelf: "center", fontFamily: "var(--font-urbanist)" }}>
           Relaciones
         </span>
