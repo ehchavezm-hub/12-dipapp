@@ -178,9 +178,8 @@ function DiplomaticGraph({
             "target-arrow-color": (ele: cytoscape.EdgeSingular) =>
               EDGE_COLOR[ele.data("edgeType") as DiplomaticEdge["type"]] ?? "#6D6E71",
             "target-arrow-shape": "triangle",
-            "curve-style": "unbundled-bezier",
-            "control-point-distances": [60] as unknown as number,
-            "control-point-weights": [0.5] as unknown as number,
+            "curve-style": "bezier",
+            "control-point-step-size": 20,
             width: (ele: cytoscape.EdgeSingular) =>
               (ele.data("weight") as number) * 3,
             opacity: 0.7,
