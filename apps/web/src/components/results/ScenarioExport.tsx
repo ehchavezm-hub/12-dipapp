@@ -75,9 +75,9 @@ const styles = StyleSheet.create({
 })
 
 /* ── Size limits (keeps PDF ≤ 500 KB) ──────────────────────────────── */
-const MAX_STRATEGY   = 400
-const MAX_COT        = 700
-const MAX_ITEM       = 120
+const MAX_STRATEGY   = 900
+const MAX_COT        = 1400
+const MAX_ITEM       = 220
 
 function trunc(text: string, max: number) {
   return text.length > max ? text.slice(0, max) + "…" : text
@@ -327,6 +327,120 @@ function RoadmapFlowPage({ scenario }: { scenario: Scenario }) {
   )
 }
 
+/* ── Comparative summary page ───────────────────────────────────────── */
+function ComparativePage({ scenarios, scoring }: { scenarios: Scenario[]; scoring?: ScoringResult | null }) {
+  const colColors = [C_PRO, C_ACTION, C_LEV]
+
+  return (
+    <Page size="A4" style={styles.page}>
+      {/* Title */}
+      <View style={{ marginBottom: 16, paddingBottom: 10, borderBottom: `2px solid ${C_ACTION}` }}>
+        <Text style={{ fontSize: 16, fontWeight: "bold", color: DARK }}>Comparativa de Escenarios</Text>
+        <Text style={{ fontSize: 10, color: GRAY, marginTop: 2 }}>
+          Análisis comparativo — Score · Viabilidad · Riesgo
+        </Text>
+      </View>
+
+      {/* Score comparison bar chart (rect widths) */}
+      <View style={{ marginBottom: 20 }}>
+        <Text style={[styles.sectionTitle, { marginBottom: 8 }]}>Score vs. Viabilidad</Text>
+        {scenarios.map((s, i) => (
+          <View key={s.label} style={{ marginBottom: 10 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 3 }}>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colColors[i], width: 24 }}>{s.label}</Text>
+              <Text style={{ fontSize: 10, color: DARK, flex: 1 }}>{s.name}</Text>
+            </View>
+            {/* Score bar */}
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 2 }}>
+              <Text style={{ fontSize: 8, color: GRAY, width: 60 }}>Score</Text>
+              <View style={{ flex: 1, backgroundColor: "#F2F2F2", borderRadius: 2, height: 10 }}>
+                <View style={{ width: `${s.score_total}%` as unknown as number, backgroundColor: colColors[i], borderRadius: 2, height: 10 }} />
+              </View>
+              <Text style={{ fontSize: 9, fontWeight: "bold", color: colColors[i], width: 36, textAlign: "right" }}>
+                {s.score_total.toFixed(1)}
+              </Text>
+            </View>
+            {/* Viability bar */}
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={{ fontSize: 8, color: GRAY, width: 60 }}>Viabilidad</Text>
+              <View style={{ flex: 1, backgroundColor: "#F2F2F2", borderRadius: 2, height: 10 }}>
+                <View style={{ width: `${s.viability_score}%` as unknown as number, backgroundColor: "#6D6E71", borderRadius: 2, height: 10 }} />
+              </View>
+              <Text style={{ fontSize: 9, fontWeight: "bold", color: GRAY, width: 36, textAlign: "right" }}>
+                {s.viability_score.toFixed(1)}
+              </Text>
+            </View>
+          </View>
+        ))}
+      </View>
+
+      {/* Side-by-side strategy summary */}
+      <View style={{ marginBottom: 20 }}>
+        <Text style={[styles.sectionTitle, { marginBottom: 8 }]}>Estrategias en Paralelo</Text>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          {scenarios.map((s, i) => (
+            <View key={s.label} style={{
+              flex: 1, borderTop: `3px solid ${colColors[i]}`,
+              paddingTop: 8, backgroundColor: "#FAFAFA", padding: "8 8",
+            }}>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colColors[i], marginBottom: 4 }}>
+                {s.label} — {s.name}
+              </Text>
+              <Text style={{ fontSize: 9, color: DARK, lineHeight: 1.5 }}>
+                {trunc(s.strategy, 300)}
+              </Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      {/* Scoring table */}
+      {scoring && (
+        <View style={{ marginBottom: 16 }}>
+          <Text style={[styles.sectionTitle, { marginBottom: 8 }]}>Score Determinístico Pre-LLM</Text>
+          <View style={{ flexDirection: "row", gap: 6 }}>
+            {[
+              { label: "Afinidad",  val: scoring.breakdown.affinity },
+              { label: "Historial", val: scoring.breakdown.history },
+              { label: "Intereses", val: scoring.breakdown.interests },
+              { label: "Total",     val: scoring.score_total },
+            ].map(({ label, val }) => (
+              <View key={label} style={{ flex: 1, backgroundColor: LIGHT, padding: "8 10", borderRadius: 4 }}>
+                <Text style={{ fontSize: 16, fontWeight: "bold", color: DARK }}>{val.toFixed(1)}</Text>
+                <Text style={{ fontSize: 8, color: GRAY }}>{label}</Text>
+              </View>
+            ))}
+          </View>
+          {scoring.litigation_penalty > 0 && (
+            <Text style={{ fontSize: 9, color: RED, marginTop: 6 }}>
+              Penalización CIJ/CPA: −{scoring.litigation_penalty.toFixed(1)} pts
+            </Text>
+          )}
+        </View>
+      )}
+
+      {/* Recommendation */}
+      <View style={{ backgroundColor: "#FFF3E0", borderLeft: `3px solid ${C_ACTION}`, padding: "10 12", borderRadius: 4 }}>
+        <Text style={{ fontSize: 10, fontWeight: "bold", color: C_ACTION, marginBottom: 4 }}>
+          Recomendación del Sistema
+        </Text>
+        {(() => {
+          const best = scenarios.reduce((a, b) =>
+            (a.score_total * 0.4 + a.viability_score * 0.6) > (b.score_total * 0.4 + b.viability_score * 0.6) ? a : b
+          )
+          return (
+            <Text style={{ fontSize: 10, color: DARK, lineHeight: 1.5 }}>
+              El sistema recomienda el Escenario {best.label} — {best.name} como punto de partida,
+              con índice compuesto (40% Score + 60% Viabilidad) de {(best.score_total * 0.4 + best.viability_score * 0.6).toFixed(1)}.
+              Priorizar viabilidad política en el corto plazo con ruta de escalamiento hacia escenarios más ambiciosos.
+            </Text>
+          )
+        })()}
+      </View>
+    </Page>
+  )
+}
+
 function FullReportPDF({ scenarios, scoring, generatedAt }: ScenarioPDFProps) {
   return (
     <Document>
@@ -337,6 +451,7 @@ function FullReportPDF({ scenarios, scoring, generatedAt }: ScenarioPDFProps) {
           <RoadmapFlowPage key={`flow-${s.label}`} scenario={s} />
         </>
       ))}
+      <ComparativePage scenarios={scenarios} scoring={scoring} />
     </Document>
   )
 }

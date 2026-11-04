@@ -265,9 +265,9 @@ def _build_user_prompt(
 
     prompt_parts += [
         "Provide three diplomatic scenarios (A=Optimal, B=Moderate, C=Contingency). "
-        "Be concise: strategy ≤120 words, chain_of_thought ≤150 words, "
-        "roadmap 4-5 steps max, pros/cons/leverage 3 items each. "
-        "Cite 2-3 real sources per scenario.",
+        "Be thorough: strategy 150-200 words, chain_of_thought 200-280 words covering all 4 points (a-d), "
+        "roadmap 5-6 concrete steps with realistic timelines, pros/cons/leverage 4 items each. "
+        "Cite 3-4 real verifiable sources per scenario with accurate dates.",
     ]
 
     return "\n".join(prompt_parts)
