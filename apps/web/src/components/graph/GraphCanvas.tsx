@@ -41,9 +41,9 @@ export default function GraphCanvas({ initialNodes, initialEdges }: GraphCanvasP
   const graphRef = useRef<DiplomaticGraphHandle>(null)
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      {/* Toolbar — fuera del canvas */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      {/* Controles de zoom — encima del canvas */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <button onClick={() => graphRef.current?.fit()} style={btnStyle} title="Mostrar todos los nodos">
           ⊡ Ajustar vista
         </button>
@@ -53,32 +53,44 @@ export default function GraphCanvas({ initialNodes, initialEdges }: GraphCanvasP
         <button onClick={() => graphRef.current?.zoomOut()} style={btnStyle} title="Alejar">
           － Alejar
         </button>
-
-        <div style={{ width: 1, height: 24, background: "#E0E0E0", margin: "0 4px" }} />
-
-        {/* Leyenda nodos */}
-        {NODE_LEGEND.map(({ color, label }) => (
-          <span key={label} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "#424242", fontFamily: "var(--font-urbanist)" }}>
-            <span style={{ width: 12, height: 12, borderRadius: "50%", background: color, flexShrink: 0, display: "inline-block" }} />
-            {label}
-          </span>
-        ))}
-
-        <div style={{ width: 1, height: 24, background: "#E0E0E0", margin: "0 4px" }} />
-
-        {/* Leyenda aristas */}
-        {EDGE_LEGEND.map(({ color, label }) => (
-          <span key={label} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "#424242", fontFamily: "var(--font-urbanist)" }}>
-            <span style={{ width: 20, height: 3, background: color, flexShrink: 0, display: "inline-block", borderRadius: 2 }} />
-            {label}
-          </span>
-        ))}
       </div>
 
       {/* Canvas */}
       <div style={{ position: "relative", minHeight: 560 }}>
         <DiplomaticGraph ref={graphRef} initialNodes={initialNodes} initialEdges={initialEdges} />
         <NodeSheet />
+      </div>
+
+      {/* Leyenda — debajo y fuera del canvas */}
+      <div style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "12px 24px",
+        padding: "10px 16px",
+        borderTop: "1px solid #E0E0E0",
+        marginTop: 4,
+      }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "#6D6E71", textTransform: "uppercase", letterSpacing: "0.06em", alignSelf: "center", fontFamily: "var(--font-urbanist)" }}>
+          Nodos
+        </span>
+        {NODE_LEGEND.map(({ color, label }) => (
+          <span key={label} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#424242", fontFamily: "var(--font-urbanist)" }}>
+            <span style={{ width: 12, height: 12, borderRadius: "50%", background: color, flexShrink: 0, display: "inline-block", border: "1.5px solid #fff", boxShadow: "0 0 0 1px rgba(0,0,0,0.12)" }} />
+            {label}
+          </span>
+        ))}
+
+        <span style={{ width: 1, background: "#E0E0E0", alignSelf: "stretch", display: "inline-block", margin: "0 4px" }} />
+
+        <span style={{ fontSize: 11, fontWeight: 600, color: "#6D6E71", textTransform: "uppercase", letterSpacing: "0.06em", alignSelf: "center", fontFamily: "var(--font-urbanist)" }}>
+          Relaciones
+        </span>
+        {EDGE_LEGEND.map(({ color, label }) => (
+          <span key={label} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#424242", fontFamily: "var(--font-urbanist)" }}>
+            <span style={{ width: 22, height: 3, background: color, flexShrink: 0, display: "inline-block", borderRadius: 2 }} />
+            {label}
+          </span>
+        ))}
       </div>
     </div>
   )
