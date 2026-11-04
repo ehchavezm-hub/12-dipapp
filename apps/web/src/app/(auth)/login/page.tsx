@@ -25,11 +25,24 @@ export default function LoginPage() {
 
           <button
             onClick={() => signIn("github", { callbackUrl: "/graph" })}
-            className="w-full flex items-center justify-center gap-3 rounded-lg px-5 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90 active:opacity-80"
-            style={{ backgroundColor: "#24292F" }}
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 12,
+              backgroundColor: "#24292F",
+              color: "#ffffff",
+              border: "none",
+              borderRadius: 8,
+              padding: "12px 20px",
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
           >
             <GitHubIcon />
-            Sign in with GitHub
+            Iniciar sesión con GitHub
           </button>
         </div>
 
