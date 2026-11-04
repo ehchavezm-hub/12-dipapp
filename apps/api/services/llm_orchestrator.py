@@ -123,7 +123,7 @@ async def _call_anthropic(user_prompt: str, system_prompt: str) -> ThreeScenario
         )
         return await client.chat.completions.create(
             model="claude-opus-4-5",
-            max_tokens=8192,
+            max_tokens=16000,
             response_model=ThreeScenariosResult,
             messages=[
                 {"role": "user", "content": user_prompt},
