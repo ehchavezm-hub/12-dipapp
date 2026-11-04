@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useRef } from "react"
 import { useAnalysisStore } from "@/lib/store/analysisStore"
 
 const OBJECTIVE_TYPES = [
@@ -13,7 +14,16 @@ const PERIOD_OPTIONS: Array<5 | 10 | 20> = [5, 10, 20]
 
 export function ObjectiveStep() {
   const { currentCase, updateCase } = useAnalysisStore()
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
   const objective = currentCase.diplomatic_objective ?? { type: "", description: "" }
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto"
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + "px"
+    }
+  }, [objective.description])
   const period = currentCase.analysis_period_years ?? 10
 
   return (
@@ -53,6 +63,7 @@ export function ObjectiveStep() {
           Descripción del Objetivo
         </label>
         <textarea
+          ref={textareaRef}
           id="obj-description"
           value={objective.description}
           onChange={(e) => {

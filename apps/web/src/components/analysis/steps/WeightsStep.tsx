@@ -46,11 +46,56 @@ export function WeightsStep() {
     updateCase({ scoring_weights: vals })
   }
 
+  const LEGEND = [
+    {
+      key: "Afinidad",
+      range: "0.0 – 1.0",
+      desc: "Peso del score de afinidad geopolítica global (votos ONU, alianzas, ideología). Valor alto → la cercanía política pesa más en el resultado final.",
+    },
+    {
+      key: "Historial",
+      range: "0.0 – 1.0",
+      desc: "Peso del historial de acuerdos bilaterales (tratados Nivel 1-3 menos litigios CIJ). Valor alto → los antecedentes diplomáticos y legales pesan más.",
+    },
+    {
+      key: "Intereses",
+      range: "0.0 – 1.0",
+      desc: "Peso de los intereses mutuos (comercio, diáspora, energía, seguridad). Valor alto → la interdependencia económica y social pesa más.",
+    },
+  ]
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <h2 style={{ color: "#6D6E71", fontFamily: "var(--font-urbanist)" }}>
         Pesos de Puntuación
       </h2>
+
+      {/* Legend */}
+      <div style={{
+        background: "#F8F9FA",
+        border: "1px solid #E0E0E0",
+        borderRadius: 6,
+        padding: "12px 16px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+      }}>
+        <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "#6D6E71", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          Guía de pesos — deben sumar 1.0
+        </p>
+        {LEGEND.map(({ key, range, desc }) => (
+          <div key={key} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+            <div style={{
+              minWidth: 80, fontWeight: 700, fontSize: 13,
+              color: "#FF6600", fontFamily: "var(--font-urbanist)",
+            }}>
+              {key}
+              <div style={{ fontWeight: 400, fontSize: 11, color: "#9E9E9E" }}>{range}</div>
+            </div>
+            <p style={{ margin: 0, fontSize: 13, color: "#424242", lineHeight: 1.5 }}>{desc}</p>
+          </div>
+        ))}
+      </div>
 
       <div>
         <label htmlFor="w_affinity" style={{ display: "block", marginBottom: 4 }}>

@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useRef } from "react"
 import { useAnalysisStore } from "@/lib/store/analysisStore"
 import type { Treaty } from "@/lib/schemas/analysis"
 
@@ -24,7 +25,16 @@ function clampCount(raw: string, max: number): number {
 
 export function GeopoliticalContextStep() {
   const { currentCase, updateCase } = useAnalysisStore()
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
   const context = currentCase.geopolitical_context ?? { region: "", description: "" }
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto"
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + "px"
+    }
+  }, [context.description])
   const treaties = currentCase.treaties ?? []
   const icjCases = currentCase.icj_cases ?? 0
 
@@ -66,6 +76,7 @@ export function GeopoliticalContextStep() {
           Descripción
         </label>
         <textarea
+          ref={textareaRef}
           id="geo-description"
           value={context.description}
           onChange={(e) => {
