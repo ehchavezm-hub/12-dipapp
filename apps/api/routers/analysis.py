@@ -49,6 +49,13 @@ async def run_analysis(
         result = await orchestrate(case, scores)
     except Exception as exc:
         logger.error("LLM orchestration failed for sub=%s: %s", claims["sub"], exc)
+        msg = str(exc)
+        if "not configured" in msg:
+            # Configuration error — retrying won't help
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=f"Server configuration error: {msg}. Contact the administrator.",
+            ) from exc
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="LLM providers unavailable — please retry in a few moments",

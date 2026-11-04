@@ -98,3 +98,14 @@ app.include_router(analysis_router)
 async def health_check() -> dict[str, str]:
     """Health check endpoint."""
     return {"status": "ok", "service": "dipapp-api"}
+
+
+@app.get("/health/config")
+async def config_check() -> dict[str, object]:
+    """Non-sensitive config check: which API keys are set (never exposes values)."""
+    return {
+        "status": "ok",
+        "anthropic_key_set": bool(_settings.ANTHROPIC_API_KEY),
+        "openai_key_set": bool(_settings.OPENAI_API_KEY),
+        "allowed_origins": _settings.ALLOWED_ORIGINS,
+    }
