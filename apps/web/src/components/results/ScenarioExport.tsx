@@ -89,7 +89,6 @@ const C_LEV    = MED_BLUE
 
 /* ── Size limits (keeps PDF ≤ 500 KB) ──────────────────────────────── */
 const MAX_STRATEGY   = 1200
-const MAX_COT        = 3000
 const MAX_ITEM       = 280
 
 function trunc(text: string, max: number) {
