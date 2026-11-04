@@ -68,13 +68,15 @@ export function GeopoliticalContextStep() {
         <textarea
           id="geo-description"
           value={context.description}
-          onChange={(e) =>
+          onChange={(e) => {
+            e.target.style.height = "auto"
+            e.target.style.height = e.target.scrollHeight + "px"
             updateCase({
               geopolitical_context: { ...context, description: e.target.value },
             })
-          }
+          }}
           rows={4}
-          style={INPUT_STYLE}
+          style={{ ...INPUT_STYLE, overflow: "hidden", resize: "none" }}
         />
       </div>
 

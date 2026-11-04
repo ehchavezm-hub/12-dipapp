@@ -55,17 +55,21 @@ export function ObjectiveStep() {
         <textarea
           id="obj-description"
           value={objective.description}
-          onChange={(e) =>
+          onChange={(e) => {
+            e.target.style.height = "auto"
+            e.target.style.height = e.target.scrollHeight + "px"
             updateCase({
               diplomatic_objective: { ...objective, description: e.target.value },
             })
-          }
+          }}
           rows={4}
           style={{
             border: "1px solid #6D6E71",
             borderRadius: 4,
             padding: "8px 12px",
             width: "100%",
+            overflow: "hidden",
+            resize: "none",
           }}
         />
       </div>
