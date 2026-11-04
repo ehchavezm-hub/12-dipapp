@@ -1,15 +1,40 @@
 "use client"
 
+import { useState } from "react"
 import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
+  const router = useRouter()
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+
+  async function handleCredentials(e: React.FormEvent) {
+    e.preventDefault()
+    setError("")
+    setLoading(true)
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    })
+    setLoading(false)
+    if (result?.ok) {
+      router.push("/graph")
+    } else {
+      setError("Email o contraseña incorrectos.")
+    }
+  }
+
   return (
     <main style={{
       minHeight: "100vh",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      backgroundColor: "#ffffff",
+      backgroundColor: "#f5f5f5",
       fontFamily: "system-ui, sans-serif",
     }}>
       <div style={{ width: "100%", maxWidth: 420, padding: "0 24px" }}>
@@ -31,13 +56,11 @@ export default function LoginPage() {
           padding: 32,
           boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
         }}>
-          <h2 style={{ fontSize: 20, fontWeight: 600, color: "#000000", margin: "0 0 8px 0" }}>
+          <h2 style={{ fontSize: 20, fontWeight: 600, color: "#000000", margin: "0 0 24px 0" }}>
             Iniciar sesión
           </h2>
-          <p style={{ fontSize: 14, color: "#666666", margin: "0 0 32px 0" }}>
-            Accede con tu cuenta de GitHub.
-          </p>
 
+          {/* GitHub button */}
           <button
             onClick={() => signIn("github", { callbackUrl: "/graph" })}
             style={{
@@ -55,6 +78,7 @@ export default function LoginPage() {
               fontWeight: 600,
               cursor: "pointer",
               outline: "none",
+              marginBottom: 24,
             }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="#ffffff">
@@ -62,6 +86,97 @@ export default function LoginPage() {
             </svg>
             Iniciar sesión con GitHub
           </button>
+
+          {/* Divider */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+            <div style={{ flex: 1, height: 1, backgroundColor: "#e0e0e0" }} />
+            <span style={{ fontSize: 13, color: "#999999", whiteSpace: "nowrap" }}>o con credenciales</span>
+            <div style={{ flex: 1, height: 1, backgroundColor: "#e0e0e0" }} />
+          </div>
+
+          {/* Credentials form */}
+          <form onSubmit={handleCredentials}>
+            {error && (
+              <div style={{
+                backgroundColor: "#fff0f0",
+                border: "1px solid #ffcccc",
+                borderRadius: 8,
+                padding: "10px 14px",
+                marginBottom: 16,
+                fontSize: 14,
+                color: "#cc0000",
+              }}>
+                {error}
+              </div>
+            )}
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: "block", fontSize: 14, fontWeight: 500, color: "#333333", marginBottom: 6 }}>
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="usuario@empresa.com"
+                required
+                style={{
+                  width: "100%",
+                  boxSizing: "border-box",
+                  border: "1px solid #d0d0d0",
+                  borderRadius: 8,
+                  padding: "12px 14px",
+                  fontSize: 15,
+                  color: "#000000",
+                  backgroundColor: "#ffffff",
+                  outline: "none",
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ display: "block", fontSize: 14, fontWeight: 500, color: "#333333", marginBottom: 6 }}>
+                Contraseña
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                style={{
+                  width: "100%",
+                  boxSizing: "border-box",
+                  border: "1px solid #d0d0d0",
+                  borderRadius: 8,
+                  padding: "12px 14px",
+                  fontSize: 15,
+                  color: "#000000",
+                  backgroundColor: "#ffffff",
+                  outline: "none",
+                }}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                width: "100%",
+                backgroundColor: loading ? "#aaaaaa" : "#1a73e8",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: 8,
+                padding: "14px 20px",
+                fontSize: 15,
+                fontWeight: 600,
+                cursor: loading ? "not-allowed" : "pointer",
+                outline: "none",
+              }}
+            >
+              {loading ? "Verificando..." : "Entrar"}
+            </button>
+          </form>
         </div>
 
         <p style={{ marginTop: 24, textAlign: "center", fontSize: 12, color: "#999999" }}>

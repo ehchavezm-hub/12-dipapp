@@ -1,5 +1,7 @@
 import NextAuth from "next-auth"
 import GitHub from "next-auth/providers/github"
+import Credentials from "next-auth/providers/credentials"
+import bcrypt from "bcryptjs"
 import type { NextAuthConfig } from "next-auth"
 import type { Role } from "@dipapp/types"
 
@@ -26,6 +28,29 @@ declare module "@auth/core/jwt" {
 
 type GitHubOrg = { login: string }
 type GitHubTeam = { slug: string; organization: { login: string } }
+
+// ---------------------------------------------------------------------------
+// Credentials users — parsed from DIPAPP_USERS env var
+// Format: email:password:role,email2:password2:role2
+// Passwords can be plain text or bcrypt hashes (recommended)
+// ---------------------------------------------------------------------------
+interface CredentialUser {
+  email: string
+  password: string
+  role: Role
+}
+
+function parseCredentialUsers(): CredentialUser[] {
+  const raw = process.env.DIPAPP_USERS ?? ""
+  if (!raw) return []
+  return raw.split(",").flatMap((entry) => {
+    const parts = entry.trim().split(":")
+    if (parts.length < 3) return []
+    const [email, password, role] = parts
+    if (!email || !password || !role) return []
+    return [{ email: email.trim(), password: password.trim(), role: role.trim() as Role }]
+  })
+}
 
 const REQUIRED_ORG = process.env.GITHUB_ORG // e.g. "cosapi-dipapp"
 
@@ -97,6 +122,30 @@ export const authConfig: NextAuthConfig = {
       authorization: { params: { scope: "read:user user:email read:org" } },
       checks: ["state"],
     }),
+    Credentials({
+      name: "Credenciales",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Contraseña", type: "password" },
+      },
+      async authorize(credentials) {
+        const email = credentials?.email as string | undefined
+        const password = credentials?.password as string | undefined
+        if (!email || !password) return null
+
+        const users = parseCredentialUsers()
+        const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase())
+        if (!user) return null
+
+        // Support both plain text (dev) and bcrypt hashes (production)
+        const isValid = user.password.startsWith("$2")
+          ? await bcrypt.compare(password, user.password)
+          : password === user.password
+
+        if (!isValid) return null
+        return { id: email, email, name: email.split("@")[0], role: user.role }
+      },
+    }),
   ],
   callbacks: {
     async signIn({ account, profile }) {
@@ -107,12 +156,18 @@ export const authConfig: NextAuthConfig = {
       const orgs = await fetchGitHubList<GitHubOrg>("https://api.github.com/user/orgs", accessToken)
       return isAllowedToSignIn(login, orgs)
     },
-    async jwt({ token, account, profile }) {
-      // On initial sign in, account and profile are available
+    async jwt({ token, account, profile, user }) {
+      // Credentials login — role is already set on the user object
+      if (account?.type === "credentials" && user) {
+        token.role = (user as { role?: Role }).role ?? "viewer"
+        token.githubLogin = ""
+        token.login = token.email ?? ""
+        return token
+      }
+
+      // GitHub OAuth login
       if (account?.access_token && profile) {
         const accessToken = account.access_token
-
-        // Get the actual GitHub login from the profile (not derived from display name)
         const githubProfile = profile as { login?: string }
         const login = githubProfile.login ?? token.email?.split("@")[0] ?? ""
 
