@@ -149,6 +149,8 @@ export const authConfig: NextAuthConfig = {
   ],
   callbacks: {
     async signIn({ account, profile }) {
+      // Credentials users always allowed (already validated in authorize())
+      if (account?.type === "credentials") return true
       if (!REQUIRED_ORG) return true
       const accessToken = account?.access_token
       if (!accessToken) return false
