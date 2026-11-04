@@ -13,21 +13,23 @@ if (typeof window !== "undefined") {
 }
 
 // ---------------------------------------------------------------------------
-// Color maps (Google Material palette)
+// Visual theme — dark background, degree-sized nodes, glow, affinity colors
 // ---------------------------------------------------------------------------
 
-const NODE_COLOR: Record<DiplomaticNode["type"], string> = {
-  country: "#FF6600",
-  organization: "#003087",
-  embassy: "#0078C1",
-  diplomat: "#6D6E71",
+/** Returns a color interpolated by affinity score (0-100):
+ *  low → coral, mid → amber, high → cyan */
+function affinityColor(score: number): string {
+  if (score >= 70) return "#00E5CC"   // teal/cyan — high affinity
+  if (score >= 45) return "#FFB300"   // amber    — medium
+  return "#FF5252"                    // coral    — low
 }
 
+const ORG_COLOR   = "#7B61FF"  // purple for organizations
 const EDGE_COLOR: Record<DiplomaticEdge["type"], string> = {
-  bilateral_treaty: "#003087",
-  trade_agreement: "#FF6600",
-  un_vote_alignment: "#0078C1",
-  dispute: "#E85500",
+  bilateral_treaty:  "#00E5CC",
+  trade_agreement:   "#FFB300",
+  un_vote_alignment: "#64B5F6",
+  dispute:           "#FF5252",
 }
 
 /**
@@ -150,62 +152,94 @@ function DiplomaticGraph({
         {
           selector: "node",
           style: {
-            "background-color": (ele: cytoscape.NodeSingular) =>
-              NODE_COLOR[ele.data("nodeType") as DiplomaticNode["type"]] ?? "#6D6E71",
-            label: "data(label)",
-            "font-size": 10,
-            "font-family": fontFamily,
-            color: "#000000",
-            "text-valign": "bottom",
-            "text-margin-y": 4,
-            width: (ele: cytoscape.NodeSingular) => {
+            "background-color": (ele: cytoscape.NodeSingular) => {
               const t = ele.data("nodeType") as DiplomaticNode["type"]
-              return t === "country" ? 36 : t === "organization" ? 28 : 18
+              if (t === "organization") return ORG_COLOR
+              return affinityColor(ele.data("affinityScore") as number ?? 50)
+            },
+            label: "data(label)",
+            "font-size": (ele: cytoscape.NodeSingular) => {
+              const deg = ele.degree(false)
+              return Math.max(8, Math.min(14, 8 + deg * 0.4))
+            },
+            "font-family": fontFamily,
+            "font-weight": "600",
+            color: "#E0F7F4",
+            "text-valign": "bottom",
+            "text-margin-y": 5,
+            "text-outline-color": "#0A1628",
+            "text-outline-width": 2,
+            width: (ele: cytoscape.NodeSingular) => {
+              const deg = ele.degree(false)
+              const base = ele.data("nodeType") === "organization" ? 24 : 14
+              return Math.max(base, Math.min(60, base + deg * 3.5))
             },
             height: (ele: cytoscape.NodeSingular) => {
-              const t = ele.data("nodeType") as DiplomaticNode["type"]
-              return t === "country" ? 36 : t === "organization" ? 28 : 18
+              const deg = ele.degree(false)
+              const base = ele.data("nodeType") === "organization" ? 24 : 14
+              return Math.max(base, Math.min(60, base + deg * 3.5))
             },
             "border-width": 2,
-            "border-color": "#fff",
+            "border-color": (ele: cytoscape.NodeSingular) => {
+              const t = ele.data("nodeType") as DiplomaticNode["type"]
+              if (t === "organization") return "#B39DFF"
+              return affinityColor(ele.data("affinityScore") as number ?? 50)
+            },
+            "border-opacity": 0.6,
+            "background-opacity": 0.85,
+            // Glow
+            "shadow-blur": 18,
+            "shadow-color": (ele: cytoscape.NodeSingular) => {
+              const t = ele.data("nodeType") as DiplomaticNode["type"]
+              if (t === "organization") return ORG_COLOR
+              return affinityColor(ele.data("affinityScore") as number ?? 50)
+            },
+            "shadow-opacity": 0.7,
+            "shadow-offset-x": 0,
+            "shadow-offset-y": 0,
           },
         },
         {
           selector: "edge",
           style: {
             "line-color": (ele: cytoscape.EdgeSingular) =>
-              EDGE_COLOR[ele.data("edgeType") as DiplomaticEdge["type"]] ?? "#6D6E71",
+              EDGE_COLOR[ele.data("edgeType") as DiplomaticEdge["type"]] ?? "#64B5F6",
             "target-arrow-color": (ele: cytoscape.EdgeSingular) =>
-              EDGE_COLOR[ele.data("edgeType") as DiplomaticEdge["type"]] ?? "#6D6E71",
+              EDGE_COLOR[ele.data("edgeType") as DiplomaticEdge["type"]] ?? "#64B5F6",
             "target-arrow-shape": "triangle",
+            "arrow-scale": 0.8,
             "curve-style": "bezier",
             "control-point-step-size": 20,
             width: (ele: cytoscape.EdgeSingular) =>
-              (ele.data("weight") as number) * 3,
-            opacity: 0.7,
+              Math.max(0.5, (ele.data("weight") as number) * 2),
+            opacity: 0.45,
           },
         },
         {
           selector: "node.highlighted",
           style: {
-            "border-color": "#E85500",
-            "border-width": 4,
+            "border-color": "#FFFFFF",
+            "border-width": 3,
+            "shadow-opacity": 1,
+            "shadow-blur": 28,
           },
         },
         {
           selector: "edge.highlighted",
           style: {
-            "line-color": "#E85500",
-            "target-arrow-color": "#E85500",
-            opacity: 1,
-            width: 4,
+            "line-color": "#FFFFFF",
+            "target-arrow-color": "#FFFFFF",
+            opacity: 0.9,
+            width: 3,
           },
         },
         {
           selector: "node:selected",
           style: {
-            "border-color": "#FF6600",
-            "border-width": 4,
+            "border-color": "#FFFFFF",
+            "border-width": 3,
+            "shadow-blur": 30,
+            "shadow-opacity": 1,
           },
         },
       ],
@@ -303,8 +337,8 @@ function DiplomaticGraph({
   return (
     <div
       ref={containerRef}
-      className="w-full h-full rounded-lg border border-brand-gray/30 bg-white"
-      style={{ minHeight: 500 }}
+      className="w-full h-full rounded-lg"
+      style={{ minHeight: 500, background: "#0A1628" }}
       aria-label="Diplomatic relations graph"
     />
   )

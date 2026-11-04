@@ -6,17 +6,17 @@ import NodeSheet from "@/components/graph/NodeSheet"
 import type { DiplomaticEdge, DiplomaticNode } from "@dipapp/types"
 
 const NODE_LEGEND = [
-  { color: "#FF6600", label: "País" },
-  { color: "#003087", label: "Organización internacional" },
-  { color: "#0078C1", label: "Embajada" },
-  { color: "#6D6E71", label: "Diplomático" },
+  { color: "#00E5CC", label: "País — afinidad alta" },
+  { color: "#FFB300", label: "País — afinidad media" },
+  { color: "#FF5252", label: "País — afinidad baja" },
+  { color: "#7B61FF", label: "Organización internacional" },
 ]
 
 const EDGE_LEGEND = [
-  { color: "#003087", label: "Tratado bilateral" },
-  { color: "#FF6600", label: "Acuerdo comercial" },
-  { color: "#0078C1", label: "Alineación ONU" },
-  { color: "#E85500", label: "Disputa" },
+  { color: "#00E5CC", label: "Tratado bilateral" },
+  { color: "#FFB300", label: "Acuerdo comercial" },
+  { color: "#64B5F6", label: "Alineación ONU" },
+  { color: "#FF5252", label: "Disputa" },
 ]
 
 const btnStyle: React.CSSProperties = {
