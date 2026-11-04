@@ -14,7 +14,7 @@ const NODE_LEGEND = [
 
 const EDGE_LEGEND = [
   { color: "#00E5CC", label: "Tratado bilateral" },
-  { color: "#FFB300", label: "Acuerdo comercial" },
+  { color: "#4CAF50", label: "Acuerdo comercial" },
   { color: "#64B5F6", label: "Alineación ONU" },
   { color: "#FF5252", label: "Disputa" },
 ]

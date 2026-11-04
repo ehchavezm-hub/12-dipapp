@@ -16,8 +16,6 @@ const ALL_REGIONS: GeopoliticRegion[] = [
 const ALL_TYPES: DiplomaticNode["type"][] = [
   "country",
   "organization",
-  "embassy",
-  "diplomat",
 ]
 
 const REGION_LABELS: Record<GeopoliticRegion, string> = {

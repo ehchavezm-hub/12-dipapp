@@ -67,13 +67,19 @@ class SupportDocument(BaseModel):
     chunk_index: int = Field(default=0, ge=0)
 
 
-OutputLanguage = Literal["es", "en", "pt", "fr"]
+OutputLanguage = Literal["es", "en", "zh", "hi", "ar", "pt", "fr", "bn", "ru", "ur"]
 
 LANGUAGE_NAMES: dict[str, str] = {
     "es": "Spanish",
     "en": "English",
+    "zh": "Mandarin Chinese",
+    "hi": "Hindi",
+    "ar": "Arabic",
     "pt": "Portuguese",
     "fr": "French",
+    "bn": "Bengali",
+    "ru": "Russian",
+    "ur": "Urdu",
 }
 
 

@@ -27,7 +27,7 @@ function affinityColor(score: number): string {
 const ORG_COLOR   = "#7B61FF"  // purple for organizations
 const EDGE_COLOR: Record<DiplomaticEdge["type"], string> = {
   bilateral_treaty:  "#00E5CC",
-  trade_agreement:   "#FFB300",
+  trade_agreement:   "#4CAF50",
   un_vote_alignment: "#64B5F6",
   dispute:           "#FF5252",
 }

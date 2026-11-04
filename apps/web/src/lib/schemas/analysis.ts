@@ -47,11 +47,17 @@ export const TreatySchema = z.object({
 export const OUTPUT_LANGUAGE_OPTIONS = [
   { value: "es", label: "Español" },
   { value: "en", label: "English" },
+  { value: "zh", label: "中文" },
+  { value: "hi", label: "हिंदी" },
+  { value: "ar", label: "العربية" },
   { value: "pt", label: "Português" },
   { value: "fr", label: "Français" },
+  { value: "bn", label: "বাংলা" },
+  { value: "ru", label: "Русский" },
+  { value: "ur", label: "اردو" },
 ] as const
 
-export type OutputLanguage = "es" | "en" | "pt" | "fr"
+export type OutputLanguage = "es" | "en" | "zh" | "hi" | "ar" | "pt" | "fr" | "bn" | "ru" | "ur"
 
 export const AnalysisCaseDTOSchema = z.object({
   target_profiles: z.array(TargetProfileSchema).min(1),
@@ -77,7 +83,7 @@ export const AnalysisCaseDTOSchema = z.object({
   icj_cases: z.number().int().min(0).max(50).default(0),
   s_affinity: z.number().min(0).max(100).optional(),
   s_interests: z.number().min(0).max(100).optional(),
-  output_language: z.enum(["es", "en", "pt", "fr"]).default("es"),
+  output_language: z.enum(["es", "en", "zh", "hi", "ar", "pt", "fr", "bn", "ru", "ur"]).default("es"),
   llm_model: z.enum(["claude-haiku-3-5", "claude-sonnet-4-5", "claude-opus-4-5"]).default("claude-haiku-3-5"),
 })
 
