@@ -30,7 +30,12 @@ afterEach(() => vi.unstubAllGlobals())
 
 describe("resultsStore.streamScenarios", () => {
   it("parses the backend's single-JSON response (current FastAPI contract)", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(fullResult))))
+    vi.stubGlobal(
+      "fetch",
+      vi.fn()
+        .mockResolvedValueOnce(new Response(JSON.stringify({ token: "tok", backendUrl: "http://localhost:8000" })))
+        .mockResolvedValueOnce(new Response(JSON.stringify(fullResult))),
+    )
     await useResultsStore.getState().streamScenarios(EXAMPLE_CASE)
     const s = useResultsStore.getState()
     expect(s.scenarios.map((x) => x.label)).toEqual(["A", "B", "C"])
@@ -41,7 +46,12 @@ describe("resultsStore.streamScenarios", () => {
 
   it("parses NDJSON lines (one scenario per line)", async () => {
     const body = [scenario("A"), scenario("B"), scenario("C")].map((x) => JSON.stringify(x)).join("\n")
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(body)))
+    vi.stubGlobal(
+      "fetch",
+      vi.fn()
+        .mockResolvedValueOnce(new Response(JSON.stringify({ token: "tok", backendUrl: "http://localhost:8000" })))
+        .mockResolvedValueOnce(new Response(body)),
+    )
     await useResultsStore.getState().streamScenarios(EXAMPLE_CASE)
     expect(useResultsStore.getState().scenarios).toHaveLength(3)
   })
@@ -66,10 +76,13 @@ describe("resultsStore.streamScenarios", () => {
   })
 
   it("ignores concurrent calls (one LLM request per analysis)", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(fullResult)))
+    const fetchMock = vi.fn().mockImplementation(
+      () => new Response(JSON.stringify(fullResult)),
+    )
     vi.stubGlobal("fetch", fetchMock)
     const store = useResultsStore.getState()
     await Promise.all([store.streamScenarios(EXAMPLE_CASE), store.streamScenarios(EXAMPLE_CASE)])
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    // Call A: 2 fetches (1 token + 1 analysis); Call B: blocked by isStreaming guard
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 })
