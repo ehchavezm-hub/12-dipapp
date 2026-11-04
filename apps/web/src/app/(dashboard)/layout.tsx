@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { auth } from "@/auth"
 import { SignOutButton } from "@/components/ui/SignOutButton"
+import { KeepAlive } from "@/components/ui/KeepAlive"
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
@@ -38,6 +39,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </div>
         )}
       </nav>
+      <KeepAlive />
       {children}
     </div>
   )
