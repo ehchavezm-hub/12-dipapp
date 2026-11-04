@@ -4,7 +4,7 @@ import type { DiplomaticEdge, DiplomaticNode } from "@dipapp/types"
 import cytoscape from "cytoscape"
 // @ts-expect-error — no types for cytoscape-cose-bilkent
 import coseBilkent from "cytoscape-cose-bilkent"
-import { useEffect, useMemo, useRef } from "react"
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "react"
 import { useGraphStore } from "@/lib/store/graphStore"
 
 // Register layout once
@@ -42,15 +42,22 @@ function resolveUrbanistFamily(): string {
   return family ? `${family}, Urbanist, sans-serif` : "Urbanist, sans-serif"
 }
 
+export interface DiplomaticGraphHandle {
+  fit: () => void
+  zoomIn: () => void
+  zoomOut: () => void
+}
+
 interface DiplomaticGraphProps {
   initialNodes?: DiplomaticNode[]
   initialEdges?: DiplomaticEdge[]
 }
 
-export default function DiplomaticGraph({
+const DiplomaticGraph = forwardRef<DiplomaticGraphHandle, DiplomaticGraphProps>(
+function DiplomaticGraph({
   initialNodes,
   initialEdges,
-}: DiplomaticGraphProps) {
+}, ref) {
   const containerRef = useRef<HTMLDivElement>(null)
   const cyRef = useRef<cytoscape.Core | null>(null)
 
@@ -278,63 +285,29 @@ export default function DiplomaticGraph({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathRequest])
 
-  function fitGraph() {
-    cyRef.current?.fit(undefined, 30)
-  }
-
-  function zoomIn() {
-    const cy = cyRef.current
-    if (!cy) return
-    cy.zoom({ level: cy.zoom() * 1.3, renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 } })
-  }
-
-  function zoomOut() {
-    const cy = cyRef.current
-    if (!cy) return
-    cy.zoom({ level: cy.zoom() / 1.3, renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 } })
-  }
-
-  const btnStyle: React.CSSProperties = {
-    background: "#fff",
-    border: "1px solid #DADCE0",
-    borderRadius: 4,
-    padding: "6px 10px",
-    cursor: "pointer",
-    fontSize: 13,
-    fontFamily: "var(--font-urbanist)",
-    color: "#1A1A1A",
-    lineHeight: 1,
-    boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
-  }
+  useImperativeHandle(ref, () => ({
+    fit() { cyRef.current?.fit(undefined, 30) },
+    zoomIn() {
+      const cy = cyRef.current
+      if (!cy) return
+      cy.zoom({ level: cy.zoom() * 1.3, renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 } })
+    },
+    zoomOut() {
+      const cy = cyRef.current
+      if (!cy) return
+      cy.zoom({ level: cy.zoom() / 1.3, renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 } })
+    },
+  }))
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "100%" }}>
-      <div
-        ref={containerRef}
-        className="w-full h-full rounded-lg border border-brand-gray/30 bg-white"
-        style={{ minHeight: 500 }}
-        aria-label="Diplomatic relations graph"
-      />
-      {/* Graph controls */}
-      <div style={{
-        position: "absolute",
-        top: 12,
-        right: 12,
-        display: "flex",
-        flexDirection: "column",
-        gap: 6,
-        zIndex: 10,
-      }}>
-        <button onClick={fitGraph} style={btnStyle} title="Ajustar vista para mostrar todos los nodos">
-          ⊡ Ajustar
-        </button>
-        <button onClick={zoomIn} style={btnStyle} title="Acercar">
-          ＋
-        </button>
-        <button onClick={zoomOut} style={btnStyle} title="Alejar">
-          －
-        </button>
-      </div>
-    </div>
+    <div
+      ref={containerRef}
+      className="w-full h-full rounded-lg border border-brand-gray/30 bg-white"
+      style={{ minHeight: 500 }}
+      aria-label="Diplomatic relations graph"
+    />
   )
-}
+})
+
+DiplomaticGraph.displayName = "DiplomaticGraph"
+export default DiplomaticGraph

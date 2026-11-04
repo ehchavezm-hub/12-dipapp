@@ -1,7 +1,6 @@
 import { auth } from "@/auth"
-import DiplomaticGraph from "@/components/graph/DiplomaticGraph"
+import GraphCanvas from "@/components/graph/GraphCanvas"
 import GraphFilters from "@/components/graph/GraphFilters"
-import NodeSheet from "@/components/graph/NodeSheet"
 import { fetchGraphData } from "@/lib/services/graphService"
 import { createSessionBackendToken } from "@/lib/server/backendToken"
 import type { DiplomaticEdge, DiplomaticNode } from "@dipapp/types"
@@ -45,10 +44,7 @@ export default async function GraphPage() {
 
       <GraphFilters />
 
-      <div className="flex-1 relative" style={{ minHeight: 560 }}>
-        <DiplomaticGraph initialNodes={initialNodes} initialEdges={initialEdges} />
-        <NodeSheet />
-      </div>
+      <GraphCanvas initialNodes={initialNodes} initialEdges={initialEdges} />
     </main>
   )
 }
