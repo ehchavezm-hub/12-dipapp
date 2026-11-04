@@ -41,10 +41,7 @@ interface GraphCanvasProps {
 
 export default function GraphCanvas({ initialNodes, initialEdges }: GraphCanvasProps) {
   const [activeTab, setActiveTab] = useState<Tab>("connected")
-  const connectedRef = useRef<DiplomaticGraphHandle>(null)
-  const isolatedRef  = useRef<DiplomaticGraphHandle>(null)
-
-  const activeRef = activeTab === "connected" ? connectedRef : isolatedRef
+  const graphRef = useRef<DiplomaticGraphHandle>(null)
 
   // Split nodes into connected vs isolated
   const { connectedNodes, isolatedNodes } = useMemo(() => {
@@ -101,20 +98,18 @@ export default function GraphCanvas({ initialNodes, initialEdges }: GraphCanvasP
 
         {/* Controles zoom — alineados a la derecha */}
         <div style={{ marginLeft: "auto", display: "flex", gap: 6, paddingBottom: 4 }}>
-          <button onClick={() => activeRef.current?.fit()} style={btnStyle}>⊡ Ajustar</button>
-          <button onClick={() => activeRef.current?.zoomIn()} style={btnStyle}>＋</button>
-          <button onClick={() => activeRef.current?.zoomOut()} style={btnStyle}>－</button>
+          <button onClick={() => graphRef.current?.fit()} style={btnStyle}>⊡ Ajustar</button>
+          <button onClick={() => graphRef.current?.zoomIn()} style={btnStyle}>＋</button>
+          <button onClick={() => graphRef.current?.zoomOut()} style={btnStyle}>－</button>
         </div>
       </div>
 
-      {/* Canvas — solo se muestra el activo, el otro queda montado pero oculto */}
-      <div style={{ border: "1px solid #DADCE0", borderTop: "none", borderRadius: "0 6px 6px 6px", overflow: "hidden" }}>
-        <div style={{ display: activeTab === "connected" ? "block" : "none", position: "relative", minHeight: 540 }}>
-          <DiplomaticGraph ref={connectedRef} initialNodes={connectedNodes} initialEdges={initialEdges} />
-        </div>
-        <div style={{ display: activeTab === "isolated" ? "block" : "none", position: "relative", minHeight: 540 }}>
-          <DiplomaticGraph ref={isolatedRef} initialNodes={isolatedNodes} initialEdges={[]} />
-        </div>
+      {/* Canvas — solo monta el tab activo para evitar conflictos en el store */}
+      <div style={{ border: "1px solid #DADCE0", borderTop: "none", borderRadius: "0 6px 6px 6px", overflow: "hidden", position: "relative", minHeight: 540 }}>
+        {activeTab === "connected"
+          ? <DiplomaticGraph key="connected" ref={graphRef} initialNodes={connectedNodes} initialEdges={initialEdges} />
+          : <DiplomaticGraph key="isolated"  ref={graphRef} initialNodes={isolatedNodes}  initialEdges={[]} />
+        }
       </div>
 
       {/* NodeSheet fuera de ambos tabs — reacciona al store compartido */}
