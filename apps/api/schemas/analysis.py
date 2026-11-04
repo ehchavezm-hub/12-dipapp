@@ -94,6 +94,8 @@ class AnalysisCaseDTO(BaseModel):
     s_interests: float | None = Field(default=None, ge=0, le=100)
     # Output language for LLM-generated text
     output_language: OutputLanguage = "es"
+    # LLM model selection
+    llm_model: Literal["claude-opus-4-5", "claude-sonnet-4-5", "claude-haiku-3-5"] = "claude-haiku-3-5"
 
 
 class RoadmapStep(BaseModel):

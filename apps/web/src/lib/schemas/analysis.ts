@@ -78,6 +78,7 @@ export const AnalysisCaseDTOSchema = z.object({
   s_affinity: z.number().min(0).max(100).optional(),
   s_interests: z.number().min(0).max(100).optional(),
   output_language: z.enum(["es", "en", "pt", "fr"]).default("es"),
+  llm_model: z.enum(["claude-haiku-3-5", "claude-sonnet-4-5", "claude-opus-4-5"]).default("claude-haiku-3-5"),
 })
 
 export type AnalysisCaseDTO = z.infer<typeof AnalysisCaseDTOSchema>

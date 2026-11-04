@@ -32,6 +32,7 @@ const CASE_PERU_CHINA: AnalysisCaseDTO = {
   analysis_period_years: 10,
   support_documents: [],
   output_language: "es" as const,
+  llm_model: "claude-haiku-3-5" as const,
   treaties: [
     { level: 1, active: true },
     { level: 2, active: true },
@@ -60,6 +61,7 @@ const CASE_PERU_USA: AnalysisCaseDTO = {
   analysis_period_years: 10,
   support_documents: [],
   output_language: "es" as const,
+  llm_model: "claude-haiku-3-5" as const,
   treaties: [
     { level: 1, active: true },
     { level: 2, active: true },
@@ -87,6 +89,7 @@ const CASE_PERU_BOLIVIA: AnalysisCaseDTO = {
   analysis_period_years: 20,
   support_documents: [],
   output_language: "es" as const,
+  llm_model: "claude-haiku-3-5" as const,
   treaties: [
     { level: 1, active: true },
     { level: 2, active: true },
@@ -117,6 +120,7 @@ const CASE_PERU_EU: AnalysisCaseDTO = {
   analysis_period_years: 10,
   support_documents: [],
   output_language: "es" as const,
+  llm_model: "claude-haiku-3-5" as const,
   treaties: [
     { level: 1, active: true },
     { level: 2, active: true },
@@ -149,6 +153,7 @@ const CASE_PERU_AP: AnalysisCaseDTO = {
   analysis_period_years: 5,
   support_documents: [],
   output_language: "es" as const,
+  llm_model: "claude-haiku-3-5" as const,
   treaties: [
     { level: 1, active: true },
     { level: 1, active: true },

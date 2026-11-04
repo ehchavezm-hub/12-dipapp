@@ -92,6 +92,7 @@ export function AnalysisStepper() {
 
   const StepComponent = STEPS[step]
   const language = (currentCase.output_language ?? "es") as OutputLanguage
+  const llmModel = currentCase.llm_model ?? "claude-haiku-3-5"
 
   /**
    * Validate and hand off to /results/new, which performs the single LLM request.
@@ -130,10 +131,10 @@ export function AnalysisStepper() {
         fontFamily: "var(--font-urbanist)",
       }}
     >
-      {/* Language selector */}
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+      {/* Language + Model selectors */}
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 16, marginBottom: 12, flexWrap: "wrap" }}>
         <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#6D6E71", fontFamily: "var(--font-urbanist)" }}>
-          🌐 Idioma de salida:
+          🌐 Idioma:
           <select
             value={language}
             onChange={(e) => updateCase({ output_language: e.target.value as OutputLanguage })}
@@ -146,6 +147,22 @@ export function AnalysisStepper() {
             {OUTPUT_LANGUAGE_OPTIONS.map(({ value, label }) => (
               <option key={value} value={value}>{label}</option>
             ))}
+          </select>
+        </label>
+        <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#6D6E71", fontFamily: "var(--font-urbanist)" }}>
+          🤖 Modelo IA:
+          <select
+            value={llmModel}
+            onChange={(e) => updateCase({ llm_model: e.target.value as "claude-haiku-3-5" | "claude-sonnet-4-5" | "claude-opus-4-5" })}
+            style={{
+              border: "1px solid #DADCE0", borderRadius: 4, padding: "4px 8px",
+              fontFamily: "var(--font-urbanist)", fontSize: 13, color: "#1A1A1A",
+              background: "#fff", cursor: "pointer",
+            }}
+          >
+            <option value="claude-haiku-3-5">Haiku — rápido y económico</option>
+            <option value="claude-sonnet-4-5">Sonnet — equilibrado</option>
+            <option value="claude-opus-4-5">Opus — máxima calidad</option>
           </select>
         </label>
       </div>

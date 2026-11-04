@@ -108,8 +108,8 @@ _retry_decorator = retry(
 # ---------------------------------------------------------------------------
 
 
-async def _call_anthropic(user_prompt: str, system_prompt: str) -> ThreeScenariosResult:
-    """Call claude-opus-4-5 via instructor, with tenacity retries."""
+async def _call_anthropic(user_prompt: str, system_prompt: str, model: str = "claude-haiku-3-5") -> ThreeScenariosResult:
+    """Call Anthropic via instructor, with tenacity retries."""
     from settings import get_settings
 
     settings = get_settings()
@@ -122,7 +122,7 @@ async def _call_anthropic(user_prompt: str, system_prompt: str) -> ThreeScenario
             anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
         )
         return await client.chat.completions.create(
-            model="claude-opus-4-5",
+            model=model,
             max_tokens=16000,
             response_model=ThreeScenariosResult,
             messages=[
@@ -173,13 +173,14 @@ async def orchestrate(case: AnalysisCaseDTO, scores: ScoringResult) -> ThreeScen
     system_prompt = build_system_prompt(case.output_language)
     user_prompt = _build_user_prompt(case, scores, rag_context)
 
+    selected_model = getattr(case, "llm_model", "claude-haiku-3-5")
     try:
-        result = await _call_anthropic(user_prompt, system_prompt)
-        model_used = "claude-opus-4-5"
+        result = await _call_anthropic(user_prompt, system_prompt, model=selected_model)
+        model_used = selected_model
     except Exception as exc:
         logger.warning("Anthropic call failed (%s)", exc)
         if not settings.OPENAI_API_KEY:
-            raise  # re-raise original error; no point calling OpenAI without key
+            raise
         result = await _call_openai(user_prompt, system_prompt)
         model_used = "gpt-4o"
 
