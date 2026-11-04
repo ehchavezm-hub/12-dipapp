@@ -5,6 +5,83 @@ import DiplomaticGraph, { type DiplomaticGraphHandle } from "@/components/graph/
 import NodeSheet from "@/components/graph/NodeSheet"
 import type { DiplomaticEdge, DiplomaticNode } from "@dipapp/types"
 
+function CountrySearch({ nodes, onSelect }: { nodes: DiplomaticNode[]; onSelect: (id: string) => void }) {
+  const [query, setQuery] = useState("")
+  const [open, setOpen] = useState(false)
+
+  const matches = useMemo(() => {
+    if (!query.trim()) return []
+    const q = query.toLowerCase()
+    return nodes
+      .filter((n) => n.label.toLowerCase().includes(q))
+      .slice(0, 12)
+  }, [query, nodes])
+
+  return (
+    <div style={{ position: "relative", display: "inline-block" }}>
+      <input
+        type="text"
+        placeholder="🔍 Buscar país..."
+        value={query}
+        onChange={(e) => { setQuery(e.target.value); setOpen(true) }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        style={{
+          background: "#fff",
+          border: "1px solid #DADCE0",
+          borderRadius: 4,
+          padding: "5px 10px",
+          fontSize: 13,
+          fontFamily: "var(--font-urbanist)",
+          color: "#1A1A1A",
+          width: 170,
+          outline: "none",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.10)",
+        }}
+      />
+      {open && matches.length > 0 && (
+        <div style={{
+          position: "absolute",
+          top: "100%",
+          left: 0,
+          zIndex: 999,
+          background: "#fff",
+          border: "1px solid #DADCE0",
+          borderRadius: 4,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+          minWidth: 180,
+          maxHeight: 280,
+          overflowY: "auto",
+        }}>
+          {matches.map((n) => (
+            <button
+              key={n.id}
+              onMouseDown={() => { onSelect(n.id); setQuery(n.label); setOpen(false) }}
+              style={{
+                display: "block",
+                width: "100%",
+                textAlign: "left",
+                padding: "7px 12px",
+                fontSize: 13,
+                fontFamily: "var(--font-urbanist)",
+                color: "#1A1A1A",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                borderBottom: "1px solid #F0F0F0",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#FFF3EB")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+            >
+              {n.type === "organization" ? "🏛 " : "🌐 "}{n.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 const NODE_LEGEND = [
   { color: "#00E5CC", label: "País — afinidad alta" },
   { color: "#FFB300", label: "País — afinidad media" },
@@ -97,7 +174,11 @@ export default function GraphCanvas({ initialNodes, initialEdges }: GraphCanvasP
         </button>
 
         {/* Controles zoom — alineados a la derecha */}
-        <div style={{ marginLeft: "auto", display: "flex", gap: 6, paddingBottom: 4 }}>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 6, paddingBottom: 4, alignItems: "center" }}>
+          <CountrySearch
+            nodes={connectedNodes}
+            onSelect={(id) => graphRef.current?.focusNode(id)}
+          />
           <button onClick={() => graphRef.current?.fit()} style={btnStyle}>⊡ Ajustar</button>
           <button onClick={() => graphRef.current?.zoomIn()} style={btnStyle}>＋</button>
           <button onClick={() => graphRef.current?.zoomOut()} style={btnStyle}>－</button>

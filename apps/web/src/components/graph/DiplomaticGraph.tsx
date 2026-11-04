@@ -48,6 +48,7 @@ export interface DiplomaticGraphHandle {
   fit: () => void
   zoomIn: () => void
   zoomOut: () => void
+  focusNode: (nodeId: string) => void
 }
 
 interface DiplomaticGraphProps {
@@ -123,6 +124,52 @@ function DiplomaticGraph({
 
     const fontFamily = resolveUrbanistFamily()
 
+    // --- Galaxy/cluster pre-positioning by region ---
+    const W = containerRef.current.offsetWidth  || 1200
+    const H = containerRef.current.offsetHeight || 700
+
+    // Each region gets a center point in the canvas (fractional coords)
+    const REGION_CENTER: Record<string, { x: number; y: number }> = {
+      europe:       { x: W * 0.50, y: H * 0.22 },
+      americas:     { x: W * 0.14, y: H * 0.50 },
+      asia_pacific: { x: W * 0.78, y: H * 0.26 },
+      africa:       { x: W * 0.38, y: H * 0.72 },
+      middle_east:  { x: W * 0.62, y: H * 0.68 },
+      oceania:      { x: W * 0.84, y: H * 0.72 },
+    }
+
+    // Build a degree map for initial spread radius (high-degree = closer to center)
+    const degreeMap: Record<string, number> = {}
+    filteredEdges.forEach((e) => {
+      degreeMap[e.source] = (degreeMap[e.source] ?? 0) + 1
+      degreeMap[e.target] = (degreeMap[e.target] ?? 0) + 1
+    })
+
+    // Index within region for golden-angle spiral
+    const regionCount: Record<string, number> = {}
+
+    function getInitialPos(n: DiplomaticNode) {
+      if (n.type === "organization") {
+        // Organizations cluster near canvas center
+        const orgIdx = regionCount["__org"] ?? 0
+        regionCount["__org"] = orgIdx + 1
+        const angle = orgIdx * 2.3998
+        return { x: W * 0.50 + Math.cos(angle) * 60, y: H * 0.48 + Math.sin(angle) * 60 }
+      }
+      const center = REGION_CENTER[n.region] ?? { x: W * 0.5, y: H * 0.5 }
+      const idx = regionCount[n.region] ?? 0
+      regionCount[n.region] = idx + 1
+      const deg = degreeMap[n.id] ?? 0
+      // Highly connected nodes → tighter to center, loosely connected → outer ring
+      const maxR = 200
+      const r = maxR * (1 - Math.min(deg / 30, 0.85))
+      const angle = idx * 2.3998 // golden angle in radians
+      return {
+        x: center.x + Math.cos(angle) * r,
+        y: center.y + Math.sin(angle) * r,
+      }
+    }
+
     const cy = cytoscape({
       container: containerRef.current,
       elements: [
@@ -136,6 +183,7 @@ function DiplomaticGraph({
             affinityScore: n.affinityScore,
             clusterId: n.clusterId,
           },
+          position: getInitialPos(n),
         })),
         ...filteredEdges.map((e) => ({
           group: "edges" as const,
@@ -246,10 +294,19 @@ function DiplomaticGraph({
       layout: {
         name: "cose-bilkent",
         animate: false,
-        randomize: true,
-        nodeDimensionsIncludeLabels: true,
+        randomize: false,          // keep pre-positioned clusters
+        nodeDimensionsIncludeLabels: false,
         fit: true,
-        padding: 30,
+        padding: 50,
+        nodeRepulsion: 6500,       // push nodes apart within clusters
+        idealEdgeLength: 120,      // longer inter-cluster edges
+        edgeElasticity: 0.08,
+        nestingFactor: 0.1,
+        gravity: 0.08,             // gentle gravity keeps clusters cohesive
+        gravityRange: 1.2,
+        tilingPaddingVertical: 10,
+        tilingPaddingHorizontal: 10,
+        numIter: 2500,
       } as cytoscape.LayoutOptions,
       userZoomingEnabled: true,
       userPanningEnabled: true,
@@ -331,6 +388,20 @@ function DiplomaticGraph({
       const cy = cyRef.current
       if (!cy) return
       cy.zoom({ level: cy.zoom() / 1.3, renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 } })
+    },
+    focusNode(nodeId: string) {
+      const cy = cyRef.current
+      if (!cy) return
+      const node = cy.getElementById(nodeId)
+      if (!node.length) return
+      cy.animate({ center: { eles: node }, zoom: 2.5 }, { duration: 600 })
+      node.select()
+      // Trigger tap event to open NodeSheet
+      const data = node.data() as {
+        id: string; label: string; nodeType: DiplomaticNode["type"]
+        region: DiplomaticNode["region"]; affinityScore: number; clusterId: string
+      }
+      selectNode({ id: data.id, label: data.label, type: data.nodeType, region: data.region, affinityScore: data.affinityScore, clusterId: data.clusterId })
     },
   }))
 
