@@ -32,15 +32,26 @@ it("weights default to the spec values 0.40 / 0.35 / 0.25", () => {
   expect(screen.getByLabelText("Intereses")).toHaveValue(0.25)
 })
 
-it("Load Example Case populates all required fields", async () => {
+it("Load Example Case dropdown shows preset options", async () => {
   render(<AnalysisStepper />)
   await userEvent.click(screen.getByText("Cargar Caso de Ejemplo"))
-  expect(screen.getByDisplayValue(/Peru/i)).toBeInTheDocument()
+  // Dropdown should appear with the first preset
+  expect(await screen.findByText(/Perú.*China/i)).toBeInTheDocument()
+})
+
+it("Load Example Case loads the first preset on click", async () => {
+  render(<AnalysisStepper />)
+  await userEvent.click(screen.getByText("Cargar Caso de Ejemplo"))
+  const firstOption = await screen.findByText(/Puerto Chancay/i)
+  await userEvent.click(firstOption)
+  // After loading CASE_PERU_CHINA, the target name "China" should appear
+  expect(screen.getByDisplayValue("China")).toBeInTheDocument()
 })
 
 it("example case is a valid AnalysisCaseDTO with a consistent target id", () => {
   expect(AnalysisCaseDTOSchema.safeParse(EXAMPLE_CASE).success).toBe(true)
-  expect(EXAMPLE_CASE.target_profiles[0]).toMatchObject({ id: "c-per", country_code: "PE" })
+  // PRESET_CASES[0] = CASE_PERU_CHINA: target is China (CN)
+  expect(EXAMPLE_CASE.target_profiles[0]).toMatchObject({ id: "c-chn", country_code: "CN" })
 })
 
 describe("AnalysisStepper submit", () => {

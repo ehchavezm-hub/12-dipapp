@@ -1,7 +1,7 @@
 "use client"
 
+import { useState } from "react"
 import type { Scenario } from "@/lib/types/results"
-
 
 interface ScenarioCardProps {
   scenario: Scenario
@@ -99,6 +99,8 @@ function ProgressBar({ value, label }: { value: number; label: string }) {
 }
 
 export function ScenarioCard({ scenario }: ScenarioCardProps) {
+  const [showCoT, setShowCoT] = useState(false)
+
   return (
     <div
       style={{
@@ -251,11 +253,14 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
                 key={i}
                 style={{
                   background: "#0078C1",
-                  color: "#6D6E71",
+                  color: "#ffffff",
                   fontSize: 12,
                   fontWeight: 600,
                   padding: "4px 10px",
                   borderRadius: 20,
+                  maxWidth: 320,
+                  overflowWrap: "break-word" as const,
+                  display: "inline-block",
                 }}
               >
                 {point}
@@ -265,35 +270,47 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
         </div>
       )}
 
-      {/* Chain of Thought */}
+      {/* Chain of Thought — collapsible */}
       {scenario.chain_of_thought && (
         <div style={{ marginBottom: 20 }}>
-          <div
+          <button
+            type="button"
+            onClick={() => setShowCoT(v => !v)}
             style={{
+              background: "none",
+              border: "1px solid #DADCE0",
+              borderRadius: 6,
+              padding: "6px 14px",
               fontSize: 12,
-              fontWeight: 700,
               color: "#6D6E71",
+              cursor: "pointer",
+              fontFamily: "var(--font-urbanist)",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
               marginBottom: 8,
-              textTransform: "uppercase",
-              letterSpacing: 1,
             }}
           >
-            Cadena de Razonamiento
-          </div>
-          <div
-            style={{
-              background: "#FFF3E0",
-              borderLeft: "3px solid #0078C1",
-              padding: "12px 16px",
-              borderRadius: 2,
-              fontSize: 13,
-              color: "#1A1A1A",
-              lineHeight: 1.7,
-              fontStyle: "italic",
-            }}
-          >
-            {scenario.chain_of_thought}
-          </div>
+            <span style={{ color: "#0078C1", fontWeight: 700 }}>⚙</span>
+            {showCoT ? "Ocultar" : "Ver"} cadena de razonamiento
+          </button>
+          {showCoT && (
+            <div
+              style={{
+                background: "#FFF3E0",
+                borderLeft: "3px solid #0078C1",
+                padding: "12px 16px",
+                borderRadius: 2,
+                fontSize: 13,
+                color: "#1A1A1A",
+                lineHeight: 1.7,
+                fontStyle: "italic",
+                whiteSpace: "pre-wrap",
+              }}
+            >
+              {scenario.chain_of_thought}
+            </div>
+          )}
         </div>
       )}
 

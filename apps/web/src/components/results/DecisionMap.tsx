@@ -97,7 +97,9 @@ export function DecisionMap({ scenario }: DecisionMapProps) {
     const stepsStartY = -(stepsTotal / 2)
 
     scenario.roadmap.forEach((step, idx) => {
-      const stepId = `step-${step.step}`
+      // Use positional idx for node IDs to avoid off-by-one when LLM
+      // returns non-consecutive step numbers (e.g. 0-based or with gaps)
+      const stepId = `step-idx-${idx}`
       const y = stepsStartY + idx * NODE_H
       builtNodes.push(
         makeNode(
@@ -118,7 +120,7 @@ export function DecisionMap({ scenario }: DecisionMapProps) {
       )
       if (idx === 0) {
         builtEdges.push({
-          id: "edge-root-step1",
+          id: "edge-root-step0",
           source: "root",
           target: stepId,
           style: { stroke: C_ACTION, strokeWidth: 2 },
@@ -126,8 +128,8 @@ export function DecisionMap({ scenario }: DecisionMapProps) {
         })
       } else {
         builtEdges.push({
-          id: `edge-step-${step.step - 1}-${step.step}`,
-          source: `step-${step.step - 1}`,
+          id: `edge-step-${idx - 1}-${idx}`,
+          source: `step-idx-${idx - 1}`,
           target: stepId,
           style: { stroke: C_ACTION, strokeWidth: 2 },
           animated: true,
@@ -148,7 +150,7 @@ export function DecisionMap({ scenario }: DecisionMapProps) {
       const y = leafStartY + idx * NODE_H
       builtNodes.push(makeNode(id, LEAF_X, y, leafLabel(tag, text), color, 230))
       // Connect from last roadmap step (or root if no roadmap)
-      const sourceId = stepCount > 0 ? `step-${stepCount}` : "root"
+      const sourceId = stepCount > 0 ? `step-idx-${stepCount - 1}` : "root"
       builtEdges.push({
         id: `edge-${sourceId}-${id}`,
         source: sourceId,

@@ -108,7 +108,10 @@ async def test_analysis_editor_role_returns_200():
             )
 
     assert res.status_code == 200
-    data = res.json()
+    # Endpoint returns NDJSON; last line is the full AnalysisResponse
+    import json as _json
+    lines = [l for l in res.text.strip().split("\n") if l.strip()]
+    data = _json.loads(lines[-1])
     assert "scenarios" in data
     assert len(data["scenarios"]) == 3
     labels = [s["label"] for s in data["scenarios"]]
@@ -126,7 +129,10 @@ async def test_analysis_response_includes_deterministic_scoring():
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
             res = await c.post("/analysis/", json=payload, headers={"Authorization": f"Bearer {token}"})
     assert res.status_code == 200
-    scoring = res.json()["scoring"]
+    import json as _json
+    lines = [l for l in res.text.strip().split("\n") if l.strip()]
+    full = _json.loads(lines[-1])
+    scoring = full["scoring"]
     # Peru seed affinity 62, one level-1 treaty -> 100, neutral interests 50, one ICJ case -15
     expected = 0.40 * 62 + 0.35 * 100 + 0.25 * 50 - 15
     assert scoring["score_total"] == pytest.approx(expected, abs=0.01)

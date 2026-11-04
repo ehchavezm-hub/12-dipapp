@@ -24,9 +24,15 @@ function isScenario(value: unknown): value is Scenario {
     isObject(value) &&
     (value.label === "A" || value.label === "B" || value.label === "C") &&
     typeof value.name === "string" &&
+    typeof value.strategy === "string" &&
     typeof value.score_total === "number" &&
     typeof value.viability_score === "number" &&
-    Array.isArray(value.roadmap)
+    Array.isArray(value.roadmap) &&
+    Array.isArray(value.pros) &&
+    Array.isArray(value.cons) &&
+    Array.isArray(value.leverage_points) &&
+    Array.isArray(value.sources) &&
+    typeof value.chain_of_thought === "string"
   )
 }
 

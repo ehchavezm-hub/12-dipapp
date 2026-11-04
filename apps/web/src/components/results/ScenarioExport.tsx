@@ -1,16 +1,22 @@
 "use client"
+import React from "react"
 import {
   Document, Page, Text, View, StyleSheet, PDFDownloadLink, Link,
 } from "@react-pdf/renderer"
 import type { Scenario, ScoringResult } from "@/lib/types/results"
 
-const BLUE = "#FF6600"
-const GREEN = "#003087"
-const YELLOW = "#0078C1"
-const RED = "#E85500"
-const GRAY = "#6D6E71"
-const LIGHT = "#F2F2F2"
-const DARK = "#1A1A1A"
+const ORANGE   = "#FF6600"   // AECOM Orange — primary CTA
+const ENG_BLUE = "#003087"   // Engineering Blue — pros / scenario A
+const MED_BLUE = "#0078C1"   // Blue Medium — leverage / scenario C
+const RED      = "#E85500"   // Orange Deep — risk / cons
+const GRAY     = "#6D6E71"
+const LIGHT    = "#F2F2F2"
+const DARK     = "#1A1A1A"
+
+// Keep legacy aliases so existing code compiles without mass-renaming
+const BLUE   = ORANGE
+const GREEN  = ENG_BLUE
+const YELLOW = MED_BLUE
 
 const styles = StyleSheet.create({
   page: { padding: 48, fontFamily: "Helvetica", backgroundColor: "#FFFFFF" },
@@ -74,6 +80,12 @@ const styles = StyleSheet.create({
   breakdownLabel: { fontSize: 8, color: GRAY },
 })
 
+/* ── Roadmap flow colours ───────────────────────────────────────────── */
+const C_ACTION = ORANGE
+const C_PRO    = ENG_BLUE
+const C_CON    = RED
+const C_LEV    = MED_BLUE
+
 /* ── Size limits (keeps PDF ≤ 500 KB) ──────────────────────────────── */
 const MAX_STRATEGY   = 900
 const MAX_COT        = 1400
@@ -111,9 +123,9 @@ function CoverPage({ scenarios, scoring, generatedAt }: ScenarioPDFProps) {
               </View>
             ))}
           </View>
-          {scoring.litigation_penalty > 0 && (
+          {scoring.litigation_penalty < 0 && (
             <Text style={{ fontSize: 9, color: RED, marginTop: 6 }}>
-              Penalización por litigios CIJ/CPA/CIADI: −{scoring.litigation_penalty.toFixed(1)} pts
+              Penalización por litigios CIJ/CPA/CIADI: {scoring.litigation_penalty.toFixed(1)} pts
             </Text>
           )}
         </View>
@@ -229,11 +241,6 @@ function ScenarioPage({ scenario }: { scenario: Scenario }) {
 }
 
 /* ── Roadmap flow chart page ────────────────────────────────────────── */
-const C_ACTION = "#FF6600"
-const C_PRO    = "#003087"
-const C_CON    = "#E85500"
-const C_LEV    = "#0078C1"
-
 function RoadmapFlowPage({ scenario }: { scenario: Scenario }) {
   const colorMap: Record<string, string> = { A: C_PRO, B: C_ACTION, C: C_LEV }
   const accent = colorMap[scenario.label] ?? C_ACTION
@@ -350,11 +357,12 @@ function ComparativePage({ scenarios, scoring }: { scenarios: Scenario[]; scorin
               <Text style={{ fontSize: 10, fontWeight: "bold", color: colColors[i], width: 24 }}>{s.label}</Text>
               <Text style={{ fontSize: 10, color: DARK, flex: 1 }}>{s.name}</Text>
             </View>
-            {/* Score bar */}
+            {/* Score bar — use nested Views with flex ratio to avoid % cast hack */}
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 2 }}>
               <Text style={{ fontSize: 8, color: GRAY, width: 60 }}>Score</Text>
-              <View style={{ flex: 1, backgroundColor: "#F2F2F2", borderRadius: 2, height: 10 }}>
-                <View style={{ width: `${s.score_total}%` as unknown as number, backgroundColor: colColors[i], borderRadius: 2, height: 10 }} />
+              <View style={{ flex: 1, flexDirection: "row", backgroundColor: "#F2F2F2", borderRadius: 2, height: 10 }}>
+                <View style={{ flex: Math.min(100, Math.max(0, s.score_total)), backgroundColor: colColors[i], borderRadius: 2, height: 10 }} />
+                <View style={{ flex: Math.max(0, 100 - s.score_total) }} />
               </View>
               <Text style={{ fontSize: 9, fontWeight: "bold", color: colColors[i], width: 36, textAlign: "right" }}>
                 {s.score_total.toFixed(1)}
@@ -363,8 +371,9 @@ function ComparativePage({ scenarios, scoring }: { scenarios: Scenario[]; scorin
             {/* Viability bar */}
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Text style={{ fontSize: 8, color: GRAY, width: 60 }}>Viabilidad</Text>
-              <View style={{ flex: 1, backgroundColor: "#F2F2F2", borderRadius: 2, height: 10 }}>
-                <View style={{ width: `${s.viability_score}%` as unknown as number, backgroundColor: "#6D6E71", borderRadius: 2, height: 10 }} />
+              <View style={{ flex: 1, flexDirection: "row", backgroundColor: "#F2F2F2", borderRadius: 2, height: 10 }}>
+                <View style={{ flex: Math.min(100, Math.max(0, s.viability_score)), backgroundColor: "#6D6E71", borderRadius: 2, height: 10 }} />
+                <View style={{ flex: Math.max(0, 100 - s.viability_score) }} />
               </View>
               <Text style={{ fontSize: 9, fontWeight: "bold", color: GRAY, width: 36, textAlign: "right" }}>
                 {s.viability_score.toFixed(1)}
@@ -411,9 +420,9 @@ function ComparativePage({ scenarios, scoring }: { scenarios: Scenario[]; scorin
               </View>
             ))}
           </View>
-          {scoring.litigation_penalty > 0 && (
+          {scoring.litigation_penalty < 0 && (
             <Text style={{ fontSize: 9, color: RED, marginTop: 6 }}>
-              Penalización CIJ/CPA: −{scoring.litigation_penalty.toFixed(1)} pts
+              Penalización CIJ/CPA: {scoring.litigation_penalty.toFixed(1)} pts
             </Text>
           )}
         </View>
@@ -445,12 +454,10 @@ function FullReportPDF({ scenarios, scoring, generatedAt }: ScenarioPDFProps) {
   return (
     <Document>
       <CoverPage scenarios={scenarios} scoring={scoring} generatedAt={generatedAt} />
-      {scenarios.map(s => (
-        <>
-          <ScenarioPage key={`detail-${s.label}`} scenario={s} />
-          <RoadmapFlowPage key={`flow-${s.label}`} scenario={s} />
-        </>
-      ))}
+      {scenarios.flatMap(s => [
+        <ScenarioPage key={`detail-${s.label}`} scenario={s} />,
+        <RoadmapFlowPage key={`flow-${s.label}`} scenario={s} />,
+      ])}
       <ComparativePage scenarios={scenarios} scoring={scoring} />
     </Document>
   )
