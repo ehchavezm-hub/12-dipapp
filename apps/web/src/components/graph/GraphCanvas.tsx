@@ -111,13 +111,14 @@ export default function GraphCanvas({ initialNodes, initialEdges }: GraphCanvasP
       <div style={{ border: "1px solid #DADCE0", borderTop: "none", borderRadius: "0 6px 6px 6px", overflow: "hidden" }}>
         <div style={{ display: activeTab === "connected" ? "block" : "none", position: "relative", minHeight: 540 }}>
           <DiplomaticGraph ref={connectedRef} initialNodes={connectedNodes} initialEdges={initialEdges} />
-          <NodeSheet />
         </div>
         <div style={{ display: activeTab === "isolated" ? "block" : "none", position: "relative", minHeight: 540 }}>
           <DiplomaticGraph ref={isolatedRef} initialNodes={isolatedNodes} initialEdges={[]} />
-          <NodeSheet />
         </div>
       </div>
+
+      {/* NodeSheet fuera de ambos tabs — reacciona al store compartido */}
+      <NodeSheet allEdges={initialEdges} />
 
       {/* Leyenda — debajo del canvas */}
       <div style={{
