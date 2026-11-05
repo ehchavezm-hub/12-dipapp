@@ -112,6 +112,37 @@ function DiplomaticGraph({
     )
   }, [displayEdges, filteredNodes])
 
+  /**
+   * Annotate each edge with rendering metadata:
+   *   - `bidirectional`: true when the reverse edge also exists
+   *   - `parallelIndex` / `parallelTotal`: position among parallel edges
+   *     between the same unordered pair (for curvature spread)
+   */
+  const annotatedEdges = useMemo(() => {
+    // Build a set of directed pairs for bidirectionality check
+    const directedPairs = new Set(filteredEdges.map((e) => `${e.source}→${e.target}`))
+
+    // Group edges by unordered pair key to compute parallel offsets
+    const groups = new Map<string, DiplomaticEdge[]>()
+    filteredEdges.forEach((e) => {
+      const key = [e.source, e.target].sort().join("↔")
+      if (!groups.has(key)) groups.set(key, [])
+      groups.get(key)!.push(e)
+    })
+
+    return filteredEdges.map((e) => {
+      const key = [e.source, e.target].sort().join("↔")
+      const group = groups.get(key)!
+      const idx = group.indexOf(e)
+      return {
+        edge: e,
+        bidirectional: directedPairs.has(`${e.target}→${e.source}`),
+        parallelIndex: idx,
+        parallelTotal: group.length,
+      }
+    })
+  }, [filteredEdges])
+
   // Build / refresh cytoscape
   useEffect(() => {
     if (!containerRef.current) return
@@ -140,7 +171,7 @@ function DiplomaticGraph({
 
     // Build a degree map for initial spread radius (high-degree = closer to center)
     const degreeMap: Record<string, number> = {}
-    filteredEdges.forEach((e) => {
+    annotatedEdges.forEach(({ edge: e }) => {
       degreeMap[e.source] = (degreeMap[e.source] ?? 0) + 1
       degreeMap[e.target] = (degreeMap[e.target] ?? 0) + 1
     })
@@ -185,16 +216,28 @@ function DiplomaticGraph({
           },
           position: getInitialPos(n),
         })),
-        ...filteredEdges.map((e) => ({
-          group: "edges" as const,
-          data: {
-            id: `${e.source}-${e.target}-${e.type}`,
-            source: e.source,
-            target: e.target,
-            edgeType: e.type,
-            weight: e.weight,
-          },
-        })),
+        ...annotatedEdges.map(({ edge: e, bidirectional, parallelIndex, parallelTotal }) => {
+          // Spread parallel edges: index 0 → slight left curve, 1 → right, etc.
+          // Offset in pixels; centre-pair gets ~0 offset.
+          const spread = 40
+          const offset = parallelTotal === 1
+            ? 0
+            : (parallelIndex - (parallelTotal - 1) / 2) * spread
+
+          return {
+            group: "edges" as const,
+            data: {
+              id: `${e.source}-${e.target}-${e.type}`,
+              source: e.source,
+              target: e.target,
+              edgeType: e.type,
+              weight: e.weight,
+              bidirectional,
+              parallelOffset: offset,
+              parallelTotal,
+            },
+          }
+        }),
       ],
       style: [
         {
@@ -254,14 +297,41 @@ function DiplomaticGraph({
               EDGE_COLOR[ele.data("edgeType") as DiplomaticEdge["type"]] ?? "#64B5F6",
             "target-arrow-color": (ele: cytoscape.EdgeSingular) =>
               EDGE_COLOR[ele.data("edgeType") as DiplomaticEdge["type"]] ?? "#64B5F6",
+            "source-arrow-color": (ele: cytoscape.EdgeSingular) =>
+              EDGE_COLOR[ele.data("edgeType") as DiplomaticEdge["type"]] ?? "#64B5F6",
+            // Bidirectional edges get arrows on both ends
             "target-arrow-shape": "triangle",
-            "arrow-scale": 0.8,
-            "curve-style": "bezier",
-            "control-point-step-size": 20,
+            "source-arrow-shape": (ele: cytoscape.EdgeSingular) =>
+              ele.data("bidirectional") ? "triangle" : "none",
+            "arrow-scale": 0.7,
+            // Use unbundled-bezier so parallel edges don't overlap;
+            // parallelOffset drives the control-point distance
+            "curve-style": (ele: cytoscape.EdgeSingular) =>
+              (ele.data("parallelTotal") as number) > 1 ? "unbundled-bezier" : "bezier",
+            "control-point-distances": (ele: cytoscape.EdgeSingular) =>
+              [ele.data("parallelOffset") as number],
+            "control-point-weights": [0.5],
             width: (ele: cytoscape.EdgeSingular) =>
               Math.max(0.5, (ele.data("weight") as number) * 2),
-            opacity: 0.45,
-          },
+            opacity: 0.50,
+            // Show edge type as a short label on the mid-point
+            label: (ele: cytoscape.EdgeSingular) => {
+              const t = ele.data("edgeType") as DiplomaticEdge["type"]
+              const labels: Record<DiplomaticEdge["type"], string> = {
+                bilateral_treaty:  "🤝",
+                trade_agreement:   "📦",
+                un_vote_alignment: "🗳",
+                dispute:           "⚠",
+              }
+              return labels[t] ?? ""
+            },
+            "font-size": 9,
+            "text-rotation": "autorotate",
+            "text-margin-y": -6,
+            color: "#FFFFFF",
+            "text-opacity": 0.75,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any,
         },
         {
           selector: "node.highlighted",
@@ -346,7 +416,7 @@ function DiplomaticGraph({
       cyRef.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredNodes, filteredEdges])
+  }, [filteredNodes, annotatedEdges])
 
   /**
    * Highlight the shortest path between two nodes using Dijkstra.
