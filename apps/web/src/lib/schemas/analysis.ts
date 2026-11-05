@@ -45,19 +45,19 @@ export const TreatySchema = z.object({
 })
 
 export const OUTPUT_LANGUAGE_OPTIONS = [
-  { value: "es", label: "Español" },
   { value: "en", label: "English" },
   { value: "zh", label: "中文" },
-  { value: "hi", label: "हिंदी" },
-  { value: "ar", label: "العربية" },
-  { value: "pt", label: "Português" },
+  { value: "es", label: "Español" },
   { value: "fr", label: "Français" },
-  { value: "bn", label: "বাংলা" },
+  { value: "pt", label: "Português" },
   { value: "ru", label: "Русский" },
-  { value: "ur", label: "اردو" },
+  { value: "de", label: "Deutsch" },
+  { value: "ja", label: "日本語" },
+  { value: "it", label: "Italiano" },
+  { value: "pl", label: "Polski" },
 ] as const
 
-export type OutputLanguage = "es" | "en" | "zh" | "hi" | "ar" | "pt" | "fr" | "bn" | "ru" | "ur"
+export type OutputLanguage = "en" | "zh" | "es" | "fr" | "pt" | "ru" | "de" | "ja" | "it" | "pl"
 
 export const AnalysisCaseDTOSchema = z.object({
   target_profiles: z.array(TargetProfileSchema).min(1),
