@@ -36,7 +36,7 @@ function CircularGauge({ value }: { value: number }) {
           cy={44}
           r={radius}
           fill="none"
-          stroke="#1A1A1A"
+          stroke="#FF6600"
           strokeWidth={8}
           strokeDasharray={circumference}
           strokeDashoffset={offset}
@@ -48,7 +48,7 @@ function CircularGauge({ value }: { value: number }) {
           y={44}
           textAnchor="middle"
           dominantBaseline="central"
-          style={{ fontSize: 16, fontWeight: 700, fill: "#1A1A1A" }}
+          style={{ fontSize: 16, fontWeight: 700, fill: "#FF6600" }}
         >
           {clamped.toFixed(1)}
         </text>
@@ -72,7 +72,7 @@ function ProgressBar({ value, label }: { value: number; label: string }) {
         }}
       >
         <span>{label}</span>
-        <span style={{ fontWeight: 600, color: "#333333" }}>
+        <span style={{ fontWeight: 600, color: "#003087" }}>
           {clamped.toFixed(1)}%
         </span>
       </div>
@@ -88,7 +88,7 @@ function ProgressBar({ value, label }: { value: number; label: string }) {
           style={{
             height: "100%",
             width: `${clamped}%`,
-            background: "#333333",
+            background: "#003087",
             borderRadius: 4,
             transition: "width 0.4s ease",
           }}
@@ -155,7 +155,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
             style={{
               fontSize: 12,
               fontWeight: 700,
-              color: "#333333",
+              color: "#003087",
               marginBottom: 8,
               textTransform: "uppercase",
               letterSpacing: 1,
@@ -179,7 +179,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
                   style={{
                     position: "absolute",
                     left: 0,
-                    color: "#333333",
+                    color: "#003087",
                     fontWeight: 700,
                   }}
                 >
@@ -195,7 +195,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
             style={{
               fontSize: 12,
               fontWeight: 700,
-              color: "#555555",
+              color: "#E85500",
               marginBottom: 8,
               textTransform: "uppercase",
               letterSpacing: 1,
@@ -219,7 +219,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
                   style={{
                     position: "absolute",
                     left: 0,
-                    color: "#555555",
+                    color: "#E85500",
                     fontWeight: 700,
                   }}
                 >
@@ -252,7 +252,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
               <span
                 key={i}
                 style={{
-                  background: "#555555",
+                  background: "#0078C1",
                   color: "#ffffff",
                   fontSize: 12,
                   fontWeight: 600,
@@ -291,14 +291,14 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
               marginBottom: 8,
             }}
           >
-            <span style={{ color: "#555555", fontWeight: 700 }}>⚙</span>
+            <span style={{ color: "#0078C1", fontWeight: 700 }}>⚙</span>
             {showCoT ? "Ocultar" : "Ver"} cadena de razonamiento
           </button>
           {showCoT && (
             <div
               style={{
-                background: "#F5F5F5",
-                borderLeft: "3px solid #555555",
+                background: "#FFF3E0",
+                borderLeft: "3px solid #0078C1",
                 padding: "12px 16px",
                 borderRadius: 2,
                 fontSize: 13,
@@ -336,7 +336,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
                   href={source.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: "#1A1A1A", textDecoration: "none" }}
+                  style={{ color: "#FF6600", textDecoration: "none" }}
                 >
                   [{i + 1}] {source.title}
                 </a>

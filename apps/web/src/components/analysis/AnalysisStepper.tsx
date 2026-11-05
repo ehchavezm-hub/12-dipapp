@@ -191,7 +191,7 @@ export function AnalysisStepper() {
                 width: 28,
                 height: 28,
                 borderRadius: "50%",
-                background: i <= step ? "#1A1A1A" : "#CCCCCC",
+                background: i <= step ? "#FF6600" : "#6D6E71",
                 color: "#fff",
                 display: "flex",
                 alignItems: "center",
@@ -206,7 +206,7 @@ export function AnalysisStepper() {
             <span
               style={{
                 fontSize: 12,
-                color: i === step ? "#1A1A1A" : "#6D6E71",
+                color: i === step ? "#FF6600" : "#6D6E71",
                 fontWeight: i === step ? 600 : 400,
               }}
             >
@@ -217,7 +217,7 @@ export function AnalysisStepper() {
                 style={{
                   flex: 1,
                   height: 2,
-                  background: i < step ? "#1A1A1A" : "#CCCCCC",
+                  background: i < step ? "#FF6600" : "#6D6E71",
                   marginLeft: 4,
                 }}
               />
@@ -252,14 +252,14 @@ export function AnalysisStepper() {
             </div>
             {STEP_HELP[step].content.map((item) => (
               <div key={item.label} style={{ marginBottom: 14 }}>
-                <div style={{ fontWeight: 600, color: "#1A1A1A", fontSize: 14, marginBottom: 4 }}>{item.label}</div>
+                <div style={{ fontWeight: 600, color: "#FF6600", fontSize: 14, marginBottom: 4 }}>{item.label}</div>
                 <div style={{ color: "#1A1A1A", fontSize: 14, lineHeight: 1.5 }}>{item.desc}</div>
               </div>
             ))}
             <button
               onClick={() => setShowHelp(false)}
               style={{
-                marginTop: 8, background: "#1A1A1A", border: "none", color: "#fff",
+                marginTop: 8, background: "#FF6600", border: "none", color: "#fff",
                 borderRadius: 4, padding: "8px 20px", cursor: "pointer",
                 fontFamily: "var(--font-urbanist)", fontSize: 14,
               }}
@@ -276,7 +276,7 @@ export function AnalysisStepper() {
               type="button"
               onClick={() => setShowPresets(v => !v)}
               style={{
-                background: "none", border: "1px solid #1A1A1A", color: "#1A1A1A",
+                background: "none", border: "1px solid #FF6600", color: "#FF6600",
                 borderRadius: 4, padding: "6px 14px", cursor: "pointer",
                 fontFamily: "var(--font-urbanist)", fontSize: 14,
                 display: "flex", alignItems: "center", gap: 6,
@@ -302,7 +302,7 @@ export function AnalysisStepper() {
                       cursor: "pointer", borderBottom: idx < PRESET_CASES.length - 1 ? "1px solid #F2F2F2" : "none",
                       fontFamily: "var(--font-urbanist)",
                     }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "#F5F5F5")}
+                    onMouseEnter={e => (e.currentTarget.style.background = "#FFF3E0")}
                     onMouseLeave={e => (e.currentTarget.style.background = "none")}
                   >
                     <div style={{ fontSize: 13, fontWeight: 600, color: "#1A1A1A" }}>{preset.label}</div>
@@ -343,8 +343,8 @@ export function AnalysisStepper() {
         <div
           role="alert"
           style={{
-            border: "1px solid #999999",
-            color: "#333333",
+            border: "1px solid #E85500",
+            color: "#E85500",
             borderRadius: 4,
             padding: "12px 16px",
             marginBottom: 16,
@@ -384,7 +384,7 @@ export function AnalysisStepper() {
             type="button"
             onClick={nextStep}
             style={{
-              background: "#1A1A1A",
+              background: "#FF6600",
               border: "none",
               color: "#fff",
               borderRadius: 4,
@@ -401,7 +401,7 @@ export function AnalysisStepper() {
             onClick={handleSubmit}
             disabled={isSubmitting}
             style={{
-              background: isSubmitting ? "#CCCCCC" : "#333333",
+              background: isSubmitting ? "#6D6E71" : "#003087",
               border: "none",
               color: "#fff",
               borderRadius: 4,

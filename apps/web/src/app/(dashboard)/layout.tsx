@@ -14,19 +14,19 @@ export default async function DashboardLayout({ children }: { children: React.Re
         aria-label="Navegación principal"
         className="flex items-center gap-6 px-6 py-3 border-b border-brand-gray/30"
       >
-        <Link href="/graph" className="font-bold text-black">
+        <Link href="/graph" className="font-bold text-brand-blue">
           DipApp
         </Link>
-        <Link href="/graph" className="text-sm text-brand-gray hover:text-black">
+        <Link href="/graph" className="text-sm text-brand-gray hover:text-brand-blue">
           Grafo
         </Link>
         {canAnalyze && (
-          <Link href="/analysis/new" className="text-sm text-brand-gray hover:text-black">
+          <Link href="/analysis/new" className="text-sm text-brand-gray hover:text-brand-blue">
             Nuevo análisis
           </Link>
         )}
         {role === "superadmin" && (
-          <Link href="/admin" className="text-sm text-brand-gray hover:text-black">
+          <Link href="/admin" className="text-sm text-brand-gray hover:text-brand-blue">
             Admin
           </Link>
         )}

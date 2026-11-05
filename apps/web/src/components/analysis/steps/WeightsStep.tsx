@@ -85,7 +85,7 @@ export function WeightsStep() {
       </h2>
 
       <p style={{ margin: 0, fontSize: 12, color: "#9E9E9E" }}>
-        Los tres valores deben sumar <strong style={{ color: "#1A1A1A" }}>exactamente 1.0</strong>. Cada peso indica qué factor influye más en el score diplomático final.
+        Los tres valores deben sumar <strong style={{ color: "#FF6600" }}>exactamente 1.0</strong>. Cada peso indica qué factor influye más en el score diplomático final.
       </p>
 
       {WEIGHTS_META.map(({ id, label, desc, high, low }) => {
@@ -104,11 +104,11 @@ export function WeightsStep() {
               style={inputStyle}
             />
             <div>
-              <label htmlFor={id} style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#1A1A1A", marginBottom: 3 }}>
+              <label htmlFor={id} style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#FF6600", marginBottom: 3 }}>
                 {label} <span style={{ fontWeight: 400, color: "#9E9E9E", fontSize: 11 }}>(0.0 – 1.0)</span>
               </label>
               <p style={{ margin: "0 0 4px", fontSize: 12, color: "#424242", lineHeight: 1.5 }}>{desc}</p>
-              <p style={{ margin: "0 0 2px", fontSize: 11, color: "#333333" }}>
+              <p style={{ margin: "0 0 2px", fontSize: 11, color: "#2E7D32" }}>
                 <strong>▲ Alto:</strong> {high}
               </p>
               <p style={{ margin: 0, fontSize: 11, color: "#6D6E71" }}>
@@ -126,7 +126,7 @@ export function WeightsStep() {
       {!sumsToOne && sum > 0 && (
         <p
           role="alert"
-          style={{ color: "#555555", fontFamily: "var(--font-urbanist)" }}
+          style={{ color: "#E85500", fontFamily: "var(--font-urbanist)" }}
         >
           Los pesos deben sumar 1.0
         </p>
@@ -135,7 +135,7 @@ export function WeightsStep() {
       {errors.w_affinity && (
         <p
           role="alert"
-          style={{ color: "#555555", fontFamily: "var(--font-urbanist)" }}
+          style={{ color: "#E85500", fontFamily: "var(--font-urbanist)" }}
         >
           {errors.w_affinity.message}
         </p>

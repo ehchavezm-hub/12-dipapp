@@ -14,11 +14,11 @@ const config: Config = {
       colors: {
         // AECOM official palette
         brand: {
-          blue:   "#1A1A1A",
-          green:  "#333333",
-          yellow: "#555555",
-          red:    "#333333",
-          gray:   "#6D6E71",
+          blue:   "#FF6600",   // AECOM Orange Primary — acento principal
+          green:  "#003087",   // Engineering Blue — positivo / éxito
+          yellow: "#0078C1",   // Blue Medium — destacado
+          red:    "#E85500",   // Orange Deep — alerta / riesgo
+          gray:   "#6D6E71",   // Gray Corporate — texto secundario
         },
       },
     },

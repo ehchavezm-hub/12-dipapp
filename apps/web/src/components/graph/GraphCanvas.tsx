@@ -77,17 +77,17 @@ function CountrySearch({ nodes, onSelect }: { nodes: DiplomaticNode[]; onSelect:
 }
 
 const NODE_LEGEND = [
-  { color: "#FFFFFF", label: "País — afinidad alta" },
-  { color: "#AAAAAA", label: "País — afinidad media" },
-  { color: "#666666", label: "País — afinidad baja" },
-  { color: "#DDDDDD", label: "Organización internacional" },
+  { color: "#00E5CC", label: "País — afinidad alta" },
+  { color: "#FFB300", label: "País — afinidad media" },
+  { color: "#FF5252", label: "País — afinidad baja" },
+  { color: "#7B61FF", label: "Organización internacional" },
 ]
 
 const EDGE_LEGEND = [
-  { color: "#CCCCCC", label: "Tratado bilateral" },
-  { color: "#999999", label: "Acuerdo comercial" },
-  { color: "#666666", label: "Alineación ONU" },
-  { color: "#FFFFFF", label: "Disputa" },
+  { color: "#00E5CC", label: "Tratado bilateral" },
+  { color: "#4CAF50", label: "Acuerdo comercial" },
+  { color: "#64B5F6", label: "Alineación ONU" },
+  { color: "#FF5252", label: "Disputa" },
 ]
 
 const btnStyle: React.CSSProperties = {
@@ -104,10 +104,10 @@ interface GraphCanvasProps {
 }
 
 const EDGE_TYPE_META: { type: DiplomaticEdge["type"]; label: string; color: string; emoji: string }[] = [
-  { type: "bilateral_treaty",  label: "Bilateral",  color: "#CCCCCC", emoji: "🤝" },
-  { type: "trade_agreement",   label: "Comercial",  color: "#999999", emoji: "📦" },
-  { type: "un_vote_alignment", label: "ONU",        color: "#666666", emoji: "🗳" },
-  { type: "dispute",           label: "Disputa",    color: "#FFFFFF", emoji: "⚠" },
+  { type: "bilateral_treaty",  label: "Bilateral",  color: "#00E5CC", emoji: "🤝" },
+  { type: "trade_agreement",   label: "Comercial",  color: "#4CAF50", emoji: "📦" },
+  { type: "un_vote_alignment", label: "ONU",        color: "#64B5F6", emoji: "🗳" },
+  { type: "dispute",           label: "Disputa",    color: "#FF5252", emoji: "⚠" },
 ]
 
 export default function GraphCanvas({ initialNodes, initialEdges }: GraphCanvasProps) {
@@ -150,19 +150,19 @@ export default function GraphCanvas({ initialNodes, initialEdges }: GraphCanvasP
         flex: 1, minHeight: 0,
         display: "flex", flexDirection: "column",
         // Dark bg fills fullscreen chrome outside the canvas area
-        background: isFullscreen ? "#111111" : "transparent",
+        background: isFullscreen ? "#0A1628" : "transparent",
       }}
     >
       {/* ── Header ──────────────────────────────────────────────────── */}
       <div style={{
         display: "flex", alignItems: "center", gap: 4,
         borderBottom: "1px solid #DADCE0", paddingBottom: 4,
-        background: isFullscreen ? "#1A1A1A" : "transparent",
+        background: isFullscreen ? "#111E34" : "transparent",
         flexShrink: 0,
       }}>
-        <span style={{ padding: "8px 20px", fontSize: 13, fontFamily: "var(--font-urbanist)", fontWeight: 600, color: "#1A1A1A" }}>
+        <span style={{ padding: "8px 20px", fontSize: 13, fontFamily: "var(--font-urbanist)", fontWeight: 600, color: isFullscreen ? "#FF9944" : "#FF6600" }}>
           🌐 Red diplomática
-          <span style={{ marginLeft: 8, fontSize: 11, background: "#1A1A1A", color: "#fff", borderRadius: 10, padding: "1px 7px" }}>
+          <span style={{ marginLeft: 8, fontSize: 11, background: "#FF6600", color: "#fff", borderRadius: 10, padding: "1px 7px" }}>
             {initialNodes.length}
           </span>
         </span>
@@ -186,7 +186,7 @@ export default function GraphCanvas({ initialNodes, initialEdges }: GraphCanvasP
       {/* ── Filter bar ───────────────────────────────────────────────── */}
       <div style={{
         display: "flex", alignItems: "center", gap: 10, padding: "6px 14px",
-        background: isFullscreen ? "#222222" : "#F7F8FA",
+        background: isFullscreen ? "#0E1A2E" : "#F7F8FA",
         borderBottom: "1px solid #DADCE0", flexWrap: "wrap", flexShrink: 0,
       }}>
         <span style={{ fontSize: 11, fontWeight: 600, color: isFullscreen ? "#8899BB" : "#6D6E71", textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: "var(--font-urbanist)" }}>
@@ -220,7 +220,7 @@ export default function GraphCanvas({ initialNodes, initialEdges }: GraphCanvasP
           type="range" min={0} max={1} step={0.05}
           value={minWeight}
           onChange={(e) => setMinWeight(parseFloat(e.target.value))}
-          style={{ width: 100, accentColor: "#1A1A1A", cursor: "pointer" }}
+          style={{ width: 100, accentColor: "#FF6600", cursor: "pointer" }}
         />
         <span style={{ fontSize: 12, color: isFullscreen ? "#AABBCC" : "#424242", fontFamily: "var(--font-urbanist)", minWidth: 28 }}>
           {minWeight.toFixed(2)}
@@ -251,7 +251,7 @@ export default function GraphCanvas({ initialNodes, initialEdges }: GraphCanvasP
         display: "flex", flexWrap: "wrap", gap: "8px 16px",
         padding: "7px 16px",
         borderTop: "1px solid #E0E0E0",
-        background: isFullscreen ? "#222222" : "transparent",
+        background: isFullscreen ? "#0E1A2E" : "transparent",
         flexShrink: 0,
       }}>
         <span style={{ fontSize: 10, fontWeight: 600, color: isFullscreen ? "#8899BB" : "#6D6E71", textTransform: "uppercase", letterSpacing: "0.06em", alignSelf: "center", fontFamily: "var(--font-urbanist)" }}>

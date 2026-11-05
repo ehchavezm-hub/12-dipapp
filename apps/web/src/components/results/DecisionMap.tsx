@@ -13,10 +13,10 @@ import "@xyflow/react/dist/style.css"
 import type { Scenario } from "@/lib/types/results"
 
 /* ── Semantic colours ───────────────────────────────────────────────── */
-const C_ACTION  = "#1A1A1A"   // AECOM Orange — acción clave (roadmap step)
-const C_PRO     = "#333333"   // Engineering Blue — favorable
-const C_CON     = "#555555"   // Orange Deep — fricción / riesgo
-const C_LEV     = "#555555"   // Blue Medium — punto de apalancamiento
+const C_ACTION  = "#FF6600"   // AECOM Orange — acción clave (roadmap step)
+const C_PRO     = "#003087"   // Engineering Blue — favorable
+const C_CON     = "#E85500"   // Orange Deep — fricción / riesgo
+const C_LEV     = "#0078C1"   // Blue Medium — punto de apalancamiento
 const C_ROOT    = "#1A1A1A"   // AECOM Black — escenario raíz
 
 /* ── Layout constants ───────────────────────────────────────────────── */
@@ -220,12 +220,12 @@ export function DecisionMap({ scenario }: DecisionMapProps) {
               fontFamily: "var(--font-urbanist)", display: "flex", alignItems: "center", gap: 6,
             }}
           >
-            <span style={{ color: "#555555", fontWeight: 700 }}>⚙</span>
+            <span style={{ color: "#0078C1", fontWeight: 700 }}>⚙</span>
             {showCoT ? "Ocultar" : "Ver"} cadena de razonamiento completa
           </button>
           {showCoT && (
             <div style={{
-              marginTop: 8, background: "#F5F5F5", borderLeft: "3px solid #555555",
+              marginTop: 8, background: "#FFF3E0", borderLeft: "3px solid #0078C1",
               padding: "12px 16px", borderRadius: 4, fontSize: 12, color: "#1A1A1A",
               lineHeight: 1.7, fontStyle: "italic", whiteSpace: "pre-wrap",
             }}>

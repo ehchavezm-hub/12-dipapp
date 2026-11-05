@@ -19,17 +19,17 @@ if (typeof window !== "undefined") {
 /** Returns a color interpolated by affinity score (0-100):
  *  low → coral, mid → amber, high → cyan */
 function affinityColor(score: number): string {
-  if (score >= 70) return "#FFFFFF"
-  if (score >= 45) return "#AAAAAA"
-  return "#666666"
+  if (score >= 70) return "#00E5CC"   // teal/cyan — high affinity
+  if (score >= 45) return "#FFB300"   // amber    — medium
+  return "#FF5252"                    // coral    — low
 }
 
-const ORG_COLOR   = "#DDDDDD"
+const ORG_COLOR   = "#7B61FF"  // purple for organizations
 const EDGE_COLOR: Record<DiplomaticEdge["type"], string> = {
-  bilateral_treaty:  "#CCCCCC",
-  trade_agreement:   "#999999",
-  un_vote_alignment: "#666666",
-  dispute:           "#FFFFFF",
+  bilateral_treaty:  "#00E5CC",
+  trade_agreement:   "#4CAF50",
+  un_vote_alignment: "#64B5F6",
+  dispute:           "#FF5252",
 }
 
 /**
@@ -275,7 +275,7 @@ function DiplomaticGraph({
             "text-margin-y": 4,
             // Fully-opaque background pad — zero compositing = maximum sharpness
             "text-outline-width": 0,
-            "text-background-color": "#111111",
+            "text-background-color": "#0A1628",
             "text-background-opacity": 1,
             "text-background-padding": "2px",
             "text-background-shape": "roundrectangle",
@@ -292,7 +292,7 @@ function DiplomaticGraph({
             "border-width": 2,
             "border-color": (ele: cytoscape.NodeSingular) => {
               const t = ele.data("nodeType") as DiplomaticNode["type"]
-              if (t === "organization") return "#EEEEEE"
+              if (t === "organization") return "#B39DFF"
               return affinityColor(ele.data("affinityScore") as number ?? 50)
             },
             "border-opacity": 0.6,
@@ -313,11 +313,11 @@ function DiplomaticGraph({
           selector: "edge",
           style: {
             "line-color": (ele: cytoscape.EdgeSingular) =>
-              EDGE_COLOR[ele.data("edgeType") as DiplomaticEdge["type"]] ?? "#999999",
+              EDGE_COLOR[ele.data("edgeType") as DiplomaticEdge["type"]] ?? "#64B5F6",
             "target-arrow-color": (ele: cytoscape.EdgeSingular) =>
-              EDGE_COLOR[ele.data("edgeType") as DiplomaticEdge["type"]] ?? "#999999",
+              EDGE_COLOR[ele.data("edgeType") as DiplomaticEdge["type"]] ?? "#64B5F6",
             "source-arrow-color": (ele: cytoscape.EdgeSingular) =>
-              EDGE_COLOR[ele.data("edgeType") as DiplomaticEdge["type"]] ?? "#999999",
+              EDGE_COLOR[ele.data("edgeType") as DiplomaticEdge["type"]] ?? "#64B5F6",
             // Bidirectional edges get arrows on both ends
             "target-arrow-shape": "triangle",
             "source-arrow-shape": (ele: cytoscape.EdgeSingular) =>
@@ -546,7 +546,7 @@ function DiplomaticGraph({
     <div
       ref={containerRef}
       className="w-full h-full rounded-lg"
-      style={{ minHeight: 500, background: "#111111" }}
+      style={{ minHeight: 500, background: "#0A1628" }}
       aria-label="Diplomatic relations graph"
     />
   )

@@ -3,21 +3,21 @@
 @tailwind utilities;
 
 :root {
-  /* B&W Palette */
-  --color-blue:   #1A1A1A;
-  --color-green:  #333333;
-  --color-yellow: #555555;
-  --color-red:    #333333;
-  --color-gray:   #6D6E71;
+  /* AECOM Official Palette */
+  --color-blue:   #FF6600;   /* AECOM Orange Primary */
+  --color-green:  #003087;   /* Engineering Blue */
+  --color-yellow: #0078C1;   /* Blue Medium */
+  --color-red:    #E85500;   /* Orange Deep */
+  --color-gray:   #6D6E71;   /* Gray Corporate */
 
-  --aecom-orange:        #1A1A1A;
-  --aecom-orange-medium: #333333;
-  --aecom-orange-dark:   #333333;
-  --aecom-orange-deep:   #555555;
-  --aecom-blue-eng:      #333333;
-  --aecom-blue-corp:     #444444;
-  --aecom-blue-medium:   #555555;
-  --aecom-blue-light:    #888888;
+  --aecom-orange:        #FF6600;
+  --aecom-orange-medium: #FF8833;
+  --aecom-orange-dark:   #E85500;
+  --aecom-orange-deep:   #CC4400;
+  --aecom-blue-eng:      #003087;
+  --aecom-blue-corp:     #005A9C;
+  --aecom-blue-medium:   #0078C1;
+  --aecom-blue-light:    #5A9FD4;
   --aecom-black:         #1A1A1A;
   --aecom-gray-dark:     #2E2E2E;
   --aecom-gray-medium:   #555555;

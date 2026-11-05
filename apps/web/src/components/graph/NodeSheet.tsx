@@ -13,9 +13,9 @@ const TYPE_LABELS: Record<string, string> = {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  country:      "#1A1A1A",
-  organization: "#333333",
-  embassy:      "#555555",
+  country:      "#FF6600",
+  organization: "#003087",
+  embassy:      "#0078C1",
   diplomat:     "#6D6E71",
 }
 
@@ -27,14 +27,14 @@ const EDGE_TYPE_LABELS: Record<string, string> = {
 }
 
 const EDGE_TYPE_COLORS: Record<string, string> = {
-  bilateral_treaty:  "#333333",
-  trade_agreement:   "#555555",
-  un_vote_alignment: "#777777",
-  dispute:           "#999999",
+  bilateral_treaty:  "#003087",
+  trade_agreement:   "#FF6600",
+  un_vote_alignment: "#0078C1",
+  dispute:           "#E85500",
 }
 
 function AffinityBar({ score }: { score: number }) {
-  const color = score >= 70 ? "#1A1A1A" : score >= 45 ? "#555555" : "#999999"
+  const color = score >= 70 ? "#003087" : score >= 45 ? "#FF6600" : "#E85500"
   const label = score >= 70 ? "Alta" : score >= 45 ? "Media" : "Baja"
   return (
     <div>
@@ -268,7 +268,7 @@ export default function NodeSheet({ allEdges }: NodeSheetProps) {
                 {orgConns.map((org) => org && (
                   <span key={org.id} style={{
                     padding: "3px 9px", borderRadius: 20,
-                    background: "#333333", color: "#fff",
+                    background: "#003087", color: "#fff",
                     fontSize: 10, fontWeight: 600,
                   }}>
                     {org.label}
