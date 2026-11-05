@@ -159,7 +159,7 @@ function DiplomaticGraph({
     const W = containerRef.current.offsetWidth  || 1200
     const H = containerRef.current.offsetHeight || 700
     const cx = W / 2
-    const cy = H / 2
+    const cY = H / 2   // "cY" avoids conflict with the Cytoscape `cy` instance below
 
     // Build degree map
     const degreeMap: Record<string, number> = {}
@@ -178,11 +178,11 @@ function DiplomaticGraph({
     // Top-5 anchor positions from sketch:
     //   1 = center, 2 = top-left, 3 = top-right, 4 = bottom-right, 5 = bottom-left
     const TOP5: Array<{ x: number; y: number }> = [
-      { x: cx,              y: cy },             // 1 — center
-      { x: cx - W * 0.36,  y: cy - H * 0.32 },  // 2 — top-left
-      { x: cx + W * 0.36,  y: cy - H * 0.32 },  // 3 — top-right
-      { x: cx + W * 0.36,  y: cy + H * 0.32 },  // 4 — bottom-right
-      { x: cx - W * 0.36,  y: cy + H * 0.32 },  // 5 — bottom-left
+      { x: cx,              y: cY },              // 1 — center
+      { x: cx - W * 0.36,  y: cY - H * 0.32 },  // 2 — top-left
+      { x: cx + W * 0.36,  y: cY - H * 0.32 },  // 3 — top-right
+      { x: cx + W * 0.36,  y: cY + H * 0.32 },  // 4 — bottom-right
+      { x: cx - W * 0.36,  y: cY + H * 0.32 },  // 5 — bottom-left
     ]
 
     // Logarithmic spiral galaxy for the remaining nodes
@@ -204,7 +204,7 @@ function DiplomaticGraph({
       const jy = Math.cos(idx * 5.173) * 18
       return {
         x: cx + r * Math.cos(theta) + jx,
-        y: cy + r * Math.sin(theta) * 0.72 + jy, // 0.72 → elliptical galaxy tilt
+        y: cY + r * Math.sin(theta) * 0.72 + jy, // 0.72 → elliptical galaxy tilt
       }
     }
 
