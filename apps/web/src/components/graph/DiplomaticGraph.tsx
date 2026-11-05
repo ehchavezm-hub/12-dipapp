@@ -185,26 +185,24 @@ function DiplomaticGraph({
       { x: cx - W * 0.36,  y: cY + H * 0.32 },  // 5 — bottom-left
     ]
 
-    // Logarithmic spiral galaxy for the remaining nodes
-    // 4 arms, inner radius 130, growing 24px per arm-step; y slightly compressed (0.72)
-    const NUM_ARMS = 4
-    const INNER_R  = 130
-    const ARM_STEP = 24
+    // Fermat (sunflower) spiral for the remaining nodes.
+    // Golden angle (≈137.5°) guarantees uniform coverage with no clustering.
+    // Radius grows with sqrt(idx) → equal-area packing, like seeds in a sunflower.
+    const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5))
+    // Scale factor: each step expands by this many model-units per sqrt-unit.
+    // Larger → more spread; sized relative to canvas so fit looks good.
+    const SPIRAL_SCALE = Math.min(W, H) * 0.065
+    // Start the spiral well outside the TOP-5 anchor cloud
+    const SPIRAL_OFFSET = Math.min(W, H) * 0.38
 
     function getGalaxyPos(rank: number): { x: number; y: number } {
       if (rank < 5) return TOP5[rank]
-      const idx  = rank - 5
-      const arm  = idx % NUM_ARMS
-      const step = Math.floor(idx / NUM_ARMS)
-      const thetaBase = (arm / NUM_ARMS) * 2 * Math.PI + Math.PI / NUM_ARMS
-      const theta = thetaBase + step * 0.30          // spiral twist per step
-      const r     = INNER_R + step * ARM_STEP
-      // Deterministic jitter (no Math.random — reproducible on every render)
-      const jx = Math.sin(idx * 7.391) * 18
-      const jy = Math.cos(idx * 5.173) * 18
+      const idx   = rank - 5
+      const angle = idx * GOLDEN_ANGLE
+      const r     = SPIRAL_OFFSET + Math.sqrt(idx + 1) * SPIRAL_SCALE
       return {
-        x: cx + r * Math.cos(theta) + jx,
-        y: cY + r * Math.sin(theta) * 0.72 + jy, // 0.72 → elliptical galaxy tilt
+        x: cx  + r * Math.cos(angle),
+        y: cY  + r * Math.sin(angle) * 0.65,  // 0.65 → elliptical to match widescreen
       }
     }
 
@@ -262,24 +260,24 @@ function DiplomaticGraph({
             label: "data(label)",
             "font-size": (ele: cytoscape.NodeSingular) => {
               const deg = ele.degree(false)
-              return Math.max(8, Math.min(14, 8 + deg * 0.4))
+              return Math.max(5, Math.min(9, 5 + deg * 0.08))  // 1/5 of original
             },
             "font-family": fontFamily,
             "font-weight": 600,
             color: "#E0F7F4",
             "text-valign": "bottom",
-            "text-margin-y": 5,
+            "text-margin-y": 3,
             "text-outline-color": "#0A1628",
-            "text-outline-width": 2,
+            "text-outline-width": 1,
             width: (ele: cytoscape.NodeSingular) => {
               const deg = ele.degree(false)
-              const base = ele.data("nodeType") === "organization" ? 24 : 14
-              return Math.max(base, Math.min(60, base + deg * 3.5))
+              const base = ele.data("nodeType") === "organization" ? 5 : 3
+              return Math.max(base, Math.min(12, base + deg * 0.7))  // 1/5 of original
             },
             height: (ele: cytoscape.NodeSingular) => {
               const deg = ele.degree(false)
-              const base = ele.data("nodeType") === "organization" ? 24 : 14
-              return Math.max(base, Math.min(60, base + deg * 3.5))
+              const base = ele.data("nodeType") === "organization" ? 5 : 3
+              return Math.max(base, Math.min(12, base + deg * 0.7))  // 1/5 of original
             },
             "border-width": 2,
             "border-color": (ele: cytoscape.NodeSingular) => {
@@ -391,9 +389,9 @@ function DiplomaticGraph({
         cy.nodes().forEach((ele) => {
           const deg = ele.degree(false)
           const isOrg = ele.data("nodeType") === "organization"
-          const base = isOrg ? 24 : 14
-          const screenSz = Math.max(base, Math.min(60, base + deg * 3.5))
-          const screenFs = Math.max(8, Math.min(14, 8 + deg * 0.4))
+          const base = isOrg ? 5 : 3                          // 1/5 of original (24→5, 14→3)
+          const screenSz = Math.max(base, Math.min(12, base + deg * 0.7)) // max 12 (was 60)
+          const screenFs = Math.max(5, Math.min(9, 5 + deg * 0.08))       // labels: 5-9px
           ele.style({
             width:               screenSz / z,
             height:              screenSz / z,
