@@ -175,38 +175,36 @@ function DiplomaticGraph({
     const rankMap: Record<string, number> = {}
     sortedByDegree.forEach((n, i) => { rankMap[n.id] = i })
 
-    // Top-5 anchor positions at W/4 & 3W/4 (not W/6 & 5W/6) so each corner anchor
-    // has canvas space on ALL sides and the phyllotaxis outer ring can surround it.
-    // W/6 & 5W/6 put anchors too close to the actual edges (only 200px clearance),
-    // leaving 3/4 of the surrounding area empty.
+    // Top-5 anchor positions: original 3-col × 2-row grid from sketch.
     const TOP5: Array<{ x: number; y: number }> = [
       { x: W / 2,       y: H / 2       },  // 1 — canvas centre
-      { x: W / 4,       y: H / 3       },  // 2 — upper-left quadrant centre
-      { x: W * 3 / 4,   y: H / 3       },  // 3 — upper-right quadrant centre
-      { x: W * 3 / 4,   y: H * 2 / 3   },  // 4 — lower-right quadrant centre
-      { x: W / 4,       y: H * 2 / 3   },  // 5 — lower-left quadrant centre
+      { x: W / 6,       y: H / 4       },  // 2 — top-left cell centre
+      { x: W * 5 / 6,   y: H / 4       },  // 3 — top-right cell centre
+      { x: W * 5 / 6,   y: H * 3 / 4   },  // 4 — bottom-right cell centre
+      { x: W / 6,       y: H * 3 / 4   },  // 5 — bottom-left cell centre
     ]
 
-    // Full-canvas phyllotaxis (sunflower) scaled to fill the entire viewport.
-    // r = sqrt(rank / N) normalises each node to a radius in [0,1]; multiplied by
-    // the half-width / half-height it fills the canvas right to the edges.
-    // The golden angle keeps the distribution uniform — no stripes or empty zones.
-    // TOP5 nodes override with their grid-corner positions; the outer phyllotaxis
-    // ring naturally places neighbours near those corners (ranks ~175-200 sit at
-    // r ≈ 0.95-1.0, i.e. near the canvas perimeter where the anchors live).
-    const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5))
-    const PAD          = 60                       // px margin from canvas edge
-    const RX           = W / 2 - PAD             // half-width for phyllotaxis
-    const RY           = H / 2 - PAD             // half-height for phyllotaxis
-    const N            = filteredNodes.length + 1 // normalisation denominator
+    // Single Fermat (sunflower) spiral centred at canvas centre.
+    // Golden angle guarantees uniform angular coverage — 197 nodes make ~75
+    // full revolutions, so every direction (including around corner anchors)
+    // is covered multiple times.
+    // SPIRAL_SCALE is set so the outermost node sits ~30 % past the farthest
+    // anchor (corner anchors are at ≈437px from centre); at that radius the
+    // spiral has arms passing near each of the four corners.
+    const GOLDEN_ANGLE  = Math.PI * (3 - Math.sqrt(5))
+    const anchorR       = Math.sqrt((W / 3) ** 2 + (H / 4) ** 2)   // ≈437px
+    const SPIRAL_OFFSET = 20
+    const SPIRAL_SCALE  = (anchorR * 1.30 - SPIRAL_OFFSET) /
+                          Math.sqrt(filteredNodes.length - 4)       // fills to 1.3×anchorR
 
     function getGalaxyPos(rank: number): { x: number; y: number } {
       if (rank < 5) return TOP5[rank]
-      const r     = Math.sqrt(rank / N)           // 0 (centre) → 1 (edge)
-      const angle = rank * GOLDEN_ANGLE
+      const idx   = rank - 5
+      const angle = idx * GOLDEN_ANGLE
+      const r     = SPIRAL_OFFSET + Math.sqrt(idx + 1) * SPIRAL_SCALE
       return {
-        x: W / 2 + r * RX * Math.cos(angle),
-        y: H / 2 + r * RY * Math.sin(angle),
+        x: cx  + r * Math.cos(angle),
+        y: cY  + r * Math.sin(angle) * (H / W),   // elliptical — matches canvas ratio
       }
     }
 
