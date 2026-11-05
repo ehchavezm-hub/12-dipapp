@@ -8436,6 +8436,142 @@ EDGES: list[DiplomaticEdgeSchema] = [
     DiplomaticEdgeSchema(source="c-tls", target="c-phl", type="bilateral_treaty", weight=0.52, treatyLevel=2),
     DiplomaticEdgeSchema(source="c-tls", target="c-ind", type="bilateral_treaty", weight=0.48, treatyLevel=2),
     DiplomaticEdgeSchema(source="c-tls", target="c-kor", type="bilateral_treaty", weight=0.50, treatyLevel=2),
+
+    # ── Fiji ─────────────────────────────────────────────────────────────────
+    DiplomaticEdgeSchema(source="c-fji", target="c-aus", type="bilateral_treaty", weight=0.75, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-fji", target="c-nzl", type="bilateral_treaty", weight=0.72, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-fji", target="c-gbr", type="bilateral_treaty", weight=0.65, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-fji", target="c-chn", type="bilateral_treaty", weight=0.62, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-fji", target="c-ind", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-fji", target="c-usa", type="bilateral_treaty", weight=0.58, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-fji", target="c-jpn", type="bilateral_treaty", weight=0.55, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-fji", target="c-fra", type="bilateral_treaty", weight=0.52, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-fji", target="c-png", type="bilateral_treaty", weight=0.65, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-fji", target="c-slb", type="bilateral_treaty", weight=0.58, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-fji", target="c-van", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-fji", target="c-wsm", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-fji", target="c-ton", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+
+    # ── Papua New Guinea ──────────────────────────────────────────────────────
+    DiplomaticEdgeSchema(source="c-png", target="c-aus", type="bilateral_treaty", weight=0.82, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-png", target="c-nzl", type="bilateral_treaty", weight=0.68, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-png", target="c-chn", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-png", target="c-usa", type="bilateral_treaty", weight=0.55, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-png", target="c-jpn", type="bilateral_treaty", weight=0.58, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-png", target="c-idn", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-png", target="c-gbr", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-png", target="c-fji", type="bilateral_treaty", weight=0.65, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-png", target="c-slb", type="bilateral_treaty", weight=0.68, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-png", target="c-van", type="bilateral_treaty", weight=0.62, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-png", target="c-phl", type="bilateral_treaty", weight=0.52, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-png", target="c-kor", type="bilateral_treaty", weight=0.50, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-png", target="c-ind", type="bilateral_treaty", weight=0.48, treatyLevel=2),
+
+    # ── Solomon Islands ───────────────────────────────────────────────────────
+    DiplomaticEdgeSchema(source="c-slb", target="c-aus", type="bilateral_treaty", weight=0.78, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-slb", target="c-nzl", type="bilateral_treaty", weight=0.68, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-slb", target="c-chn", type="bilateral_treaty", weight=0.72, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-slb", target="c-gbr", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-slb", target="c-usa", type="bilateral_treaty", weight=0.52, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-slb", target="c-jpn", type="bilateral_treaty", weight=0.52, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-slb", target="c-png", type="bilateral_treaty", weight=0.68, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-slb", target="c-fji", type="bilateral_treaty", weight=0.58, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-slb", target="c-van", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-slb", target="c-ind", type="bilateral_treaty", weight=0.42, treatyLevel=2),
+
+    # ── Vanuatu ───────────────────────────────────────────────────────────────
+    DiplomaticEdgeSchema(source="c-van", target="c-aus", type="bilateral_treaty", weight=0.72, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-van", target="c-nzl", type="bilateral_treaty", weight=0.68, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-van", target="c-fra", type="bilateral_treaty", weight=0.68, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-van", target="c-chn", type="bilateral_treaty", weight=0.65, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-van", target="c-gbr", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-van", target="c-usa", type="bilateral_treaty", weight=0.50, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-van", target="c-png", type="bilateral_treaty", weight=0.62, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-van", target="c-fji", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-van", target="c-slb", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-van", target="c-jpn", type="bilateral_treaty", weight=0.48, treatyLevel=2),
+
+    # ── Samoa ─────────────────────────────────────────────────────────────────
+    DiplomaticEdgeSchema(source="c-wsm", target="c-nzl", type="bilateral_treaty", weight=0.80, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-wsm", target="c-aus", type="bilateral_treaty", weight=0.75, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-wsm", target="c-usa", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-wsm", target="c-gbr", type="bilateral_treaty", weight=0.58, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-wsm", target="c-chn", type="bilateral_treaty", weight=0.55, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-wsm", target="c-jpn", type="bilateral_treaty", weight=0.52, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-wsm", target="c-fji", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-wsm", target="c-ton", type="bilateral_treaty", weight=0.65, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-wsm", target="c-png", type="bilateral_treaty", weight=0.55, treatyLevel=2),
+
+    # ── Tonga ─────────────────────────────────────────────────────────────────
+    DiplomaticEdgeSchema(source="c-ton", target="c-nzl", type="bilateral_treaty", weight=0.78, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-ton", target="c-aus", type="bilateral_treaty", weight=0.75, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-ton", target="c-usa", type="bilateral_treaty", weight=0.58, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-ton", target="c-gbr", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-ton", target="c-chn", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-ton", target="c-jpn", type="bilateral_treaty", weight=0.52, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-ton", target="c-wsm", type="bilateral_treaty", weight=0.65, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-ton", target="c-fji", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-ton", target="c-png", type="bilateral_treaty", weight=0.52, treatyLevel=2),
+
+    # ── Palau ─────────────────────────────────────────────────────────────────
+    DiplomaticEdgeSchema(source="c-plw", target="c-usa", type="bilateral_treaty", weight=0.90, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-plw", target="c-jpn", type="bilateral_treaty", weight=0.72, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-plw", target="c-aus", type="bilateral_treaty", weight=0.68, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-plw", target="c-nzl", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-plw", target="c-phl", type="bilateral_treaty", weight=0.58, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-plw", target="c-twn", type="bilateral_treaty", weight=0.68, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-plw", target="c-kor", type="bilateral_treaty", weight=0.52, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-plw", target="c-fsm", type="bilateral_treaty", weight=0.68, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-plw", target="c-mhl", type="bilateral_treaty", weight=0.62, treatyLevel=2),
+
+    # ── Micronesia (FSM) ───────────────────────────────────────────────────────
+    DiplomaticEdgeSchema(source="c-fsm", target="c-usa", type="bilateral_treaty", weight=0.90, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-fsm", target="c-jpn", type="bilateral_treaty", weight=0.72, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-fsm", target="c-aus", type="bilateral_treaty", weight=0.65, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-fsm", target="c-nzl", type="bilateral_treaty", weight=0.58, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-fsm", target="c-plw", type="bilateral_treaty", weight=0.68, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-fsm", target="c-mhl", type="bilateral_treaty", weight=0.65, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-fsm", target="c-phl", type="bilateral_treaty", weight=0.52, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-fsm", target="c-chn", type="bilateral_treaty", weight=0.45, treatyLevel=2),
+
+    # ── Marshall Islands ───────────────────────────────────────────────────────
+    DiplomaticEdgeSchema(source="c-mhl", target="c-usa", type="bilateral_treaty", weight=0.90, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-mhl", target="c-jpn", type="bilateral_treaty", weight=0.68, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-mhl", target="c-aus", type="bilateral_treaty", weight=0.62, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-mhl", target="c-nzl", type="bilateral_treaty", weight=0.58, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-mhl", target="c-fsm", type="bilateral_treaty", weight=0.65, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-mhl", target="c-plw", type="bilateral_treaty", weight=0.62, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-mhl", target="c-twn", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+
+    # ── Nauru ─────────────────────────────────────────────────────────────────
+    DiplomaticEdgeSchema(source="c-nru", target="c-aus", type="bilateral_treaty", weight=0.80, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-nru", target="c-nzl", type="bilateral_treaty", weight=0.68, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-nru", target="c-gbr", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-nru", target="c-usa", type="bilateral_treaty", weight=0.55, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-nru", target="c-chn", type="bilateral_treaty", weight=0.50, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-nru", target="c-twn", type="bilateral_treaty", weight=0.58, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-nru", target="c-fsm", type="bilateral_treaty", weight=0.55, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-nru", target="c-png", type="bilateral_treaty", weight=0.52, treatyLevel=2),
+
+    # ── Kiribati ──────────────────────────────────────────────────────────────
+    DiplomaticEdgeSchema(source="c-kir", target="c-aus", type="bilateral_treaty", weight=0.75, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-kir", target="c-nzl", type="bilateral_treaty", weight=0.70, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-kir", target="c-gbr", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-kir", target="c-usa", type="bilateral_treaty", weight=0.58, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-kir", target="c-chn", type="bilateral_treaty", weight=0.55, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-kir", target="c-jpn", type="bilateral_treaty", weight=0.52, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-kir", target="c-fji", type="bilateral_treaty", weight=0.58, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-kir", target="c-wsm", type="bilateral_treaty", weight=0.55, treatyLevel=2),
+
+    # ── Tuvalu ────────────────────────────────────────────────────────────────
+    DiplomaticEdgeSchema(source="c-tuv", target="c-aus", type="bilateral_treaty", weight=0.78, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-tuv", target="c-nzl", type="bilateral_treaty", weight=0.75, treatyLevel=1),
+    DiplomaticEdgeSchema(source="c-tuv", target="c-gbr", type="bilateral_treaty", weight=0.62, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-tuv", target="c-usa", type="bilateral_treaty", weight=0.55, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-tuv", target="c-twn", type="bilateral_treaty", weight=0.60, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-tuv", target="c-jpn", type="bilateral_treaty", weight=0.50, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-tuv", target="c-fji", type="bilateral_treaty", weight=0.58, treatyLevel=2),
+    DiplomaticEdgeSchema(source="c-tuv", target="c-wsm", type="bilateral_treaty", weight=0.55, treatyLevel=2),
 ]
 
 # ISO 3166-1 alpha-2 → node id
