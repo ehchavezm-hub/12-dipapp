@@ -331,8 +331,8 @@ function DiplomaticGraph({
               [ele.data("parallelOffset") as number],
             "control-point-weights": [0.5],
             width: (ele: cytoscape.EdgeSingular) =>
-              Math.max(0.5, (ele.data("weight") as number) * 2),
-            opacity: 0.50,
+              Math.max(0.3, (ele.data("weight") as number) * 0.6),
+            opacity: 0.40,
             // Show edge type as a short label on the mid-point
             label: (ele: cytoscape.EdgeSingular) => {
               const t = ele.data("edgeType") as DiplomaticEdge["type"]
@@ -367,7 +367,7 @@ function DiplomaticGraph({
             "line-color": "#FFFFFF",
             "target-arrow-color": "#FFFFFF",
             opacity: 0.9,
-            width: 3,
+            width: 1,
           },
         },
         {
