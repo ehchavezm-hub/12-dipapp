@@ -124,7 +124,7 @@ export function GeopoliticalContextStep() {
               />
               <div>
                 <label htmlFor={`treaties-l${level}`} style={{ fontSize: 13, fontWeight: 600, color: "#FF6600", display: "block", marginBottom: 2 }}>
-                  {label}
+                  {label} <span style={{ fontWeight: 400, color: "#9E9E9E", fontSize: 11 }}>(0 – 100. Ej: Perú-EE.UU. ≈ 3, Perú-China ≈ 2, Perú-Bolivia ≈ 1)</span>
                 </label>
                 <p style={{ margin: "0 0 2px", fontSize: 12, color: "#424242" }}>{desc}</p>
                 <p style={{ margin: 0, fontSize: 11, color: "#9E9E9E" }}>
@@ -145,7 +145,7 @@ export function GeopoliticalContextStep() {
             />
             <div>
               <label htmlFor="icj-cases" style={{ fontSize: 13, fontWeight: 600, color: "#E85500", display: "block", marginBottom: 2 }}>
-                Litigios pendientes ante CIJ / CPA / CIADI (−15 pts c/u)
+                Litigios pendientes ante CIJ / CPA / CIADI (−15 pts c/u) <span style={{ fontWeight: 400, color: "#9E9E9E", fontSize: 11 }}>(0 – 50. Ej: Perú-Chile = 1, Bolivia-Chile = 2)</span>
               </label>
               <p style={{ margin: "0 0 2px", fontSize: 12, color: "#424242" }}>
                 Cada litigio internacional activo penaliza el score final. Cuente solo los que están formalmente abiertos.
