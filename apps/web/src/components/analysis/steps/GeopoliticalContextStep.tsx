@@ -124,7 +124,11 @@ export function GeopoliticalContextStep() {
               />
               <div>
                 <label htmlFor={`treaties-l${level}`} style={{ fontSize: 13, fontWeight: 600, color: "#FF6600", display: "block", marginBottom: 2 }}>
-                  {label} <span style={{ fontWeight: 400, color: "#9E9E9E", fontSize: 11 }}>(0 – 100. Ej: Perú-EE.UU. ≈ 3, Perú-China ≈ 2, Perú-Bolivia ≈ 1)</span>
+                  {label} <span style={{ fontWeight: 400, color: "#9E9E9E", fontSize: 11 }}>
+                    {level === 1 && "(0 – 100. Ej típico: 0–10. Perú ≈ 2, EE.UU. ≈ 8, país sin alianzas = 0)"}
+                    {level === 2 && "(0 – 100. Ej típico: 5–30. Perú ≈ 15, EE.UU. ≈ 20, Bolivia ≈ 5)"}
+                    {level === 3 && "(0 – 100. Ej típico: 10–80. Perú ≈ 40, China ≈ 85, país aislado ≈ 5)"}
+                  </span>
                 </label>
                 <p style={{ margin: "0 0 2px", fontSize: 12, color: "#424242" }}>{desc}</p>
                 <p style={{ margin: 0, fontSize: 11, color: "#9E9E9E" }}>
