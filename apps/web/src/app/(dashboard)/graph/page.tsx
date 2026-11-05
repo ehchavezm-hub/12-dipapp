@@ -25,7 +25,10 @@ export default async function GraphPage() {
   }
 
   return (
-    <main className="flex flex-col gap-4 p-6 min-h-screen bg-white font-sans">
+    <main
+      className="flex flex-col gap-2 p-4 overflow-hidden bg-white font-sans"
+      style={{ height: "calc(100vh - 45px)" }}
+    >
       <header>
         <h1 className="text-2xl font-bold text-black">Grafo de Relaciones Diplomáticas</h1>
         <p className="text-sm text-brand-gray mt-1">
@@ -44,7 +47,10 @@ export default async function GraphPage() {
 
       <GraphFilters />
 
-      <GraphCanvas initialNodes={initialNodes} initialEdges={initialEdges} />
+      {/* flex-1 + min-h-0: fills all remaining vertical space (q7) */}
+      <div className="flex-1 min-h-0">
+        <GraphCanvas initialNodes={initialNodes} initialEdges={initialEdges} />
+      </div>
     </main>
   )
 }
