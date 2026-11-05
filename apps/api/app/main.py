@@ -1,4 +1,9 @@
 """DipApp FastAPI entry point."""
+import asyncio
+import logging
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,7 +16,46 @@ from routers.graph import router as graph_router
 from schemas.errors import ProblemDetail
 from settings import get_settings
 
+log = logging.getLogger(__name__)
+
+
+async def _warm_graph_cache() -> None:
+    """Warm the graph cache on startup without blocking request handling."""
+    await asyncio.sleep(5)  # allow server to finish starting up
+    try:
+        from services.data_pipeline import build_graph
+        log.info("Warming graph cache from all 8 data sources…")
+        await asyncio.get_event_loop().run_in_executor(None, build_graph)
+        log.info("Graph cache warmed successfully")
+    except Exception as exc:
+        log.warning("Graph cache warm-up failed (non-fatal): %s", exc)
+
+
+async def _auto_refresh_loop() -> None:
+    """Refresh graph data every 24 hours automatically."""
+    while True:
+        await asyncio.sleep(86_400)  # 24 h
+        try:
+            from services.data_pipeline import build_graph
+            log.info("Auto-refreshing graph from all 8 data sources…")
+            await asyncio.get_event_loop().run_in_executor(
+                None, lambda: build_graph(force_refresh=True)
+            )
+            log.info("Auto-refresh complete")
+        except Exception as exc:
+            log.warning("Auto-refresh failed: %s", exc)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Manage startup / shutdown: warm cache + schedule auto-refresh."""
+    asyncio.create_task(_warm_graph_cache())
+    asyncio.create_task(_auto_refresh_loop())
+    yield
+
+
 app = FastAPI(
+    lifespan=lifespan,
     title="DipApp API",
     description="Diplomatic Intelligence Platform backend",
     version="0.1.0",
