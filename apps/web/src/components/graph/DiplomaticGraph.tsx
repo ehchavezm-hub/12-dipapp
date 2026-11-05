@@ -188,24 +188,25 @@ function DiplomaticGraph({
       { x: W / 6,       y: H * 3 / 4   },  // 5 — bottom-left cell centre
     ]
 
-    // Fermat (sunflower) spiral for the remaining nodes.
-    // Golden angle (≈137.5°) guarantees uniform coverage with no clustering.
-    // Radius grows with sqrt(idx) → equal-area packing, like seeds in a sunflower.
-    // The spiral starts near the centre and expands to fill the canvas so that
-    // when fit:true zooms to show everything, the TOP5 corner anchors sit near
-    // the visible edges (same radial scale as the outermost spiral nodes).
-    const GOLDEN_ANGLE  = Math.PI * (3 - Math.sqrt(5))
-    const SPIRAL_OFFSET = Math.min(W, H) * 0.030   // start just off centre
-    const SPIRAL_SCALE  = Math.min(W, H) * 0.040   // expand to fill canvas
+    // Five Fermat (sunflower) mini-spirals, one centred on each TOP5 anchor.
+    // Round-robin assignment: rank 5→cluster 0, rank 6→cluster 1, … rank 9→cluster 4,
+    // rank 10→cluster 0, … This keeps each cluster the same size (~N/5 nodes) and
+    // ensures every anchor node is surrounded by neighbours.
+    const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5))
+    const MINI_OFFSET  = Math.min(W, H) * 0.040   // start ~28px from each anchor
+    const MINI_SCALE   = Math.min(W, H) * 0.030   // ~21px per sqrt step
 
     function getGalaxyPos(rank: number): { x: number; y: number } {
       if (rank < 5) return TOP5[rank]
-      const idx   = rank - 5
-      const angle = idx * GOLDEN_ANGLE
-      const r     = SPIRAL_OFFSET + Math.sqrt(idx + 1) * SPIRAL_SCALE
+      const idx          = rank - 5
+      const clusterIdx   = idx % 5             // round-robin into 5 clusters
+      const posInCluster = Math.floor(idx / 5) // position within that cluster
+      const anchor       = TOP5[clusterIdx]
+      const angle        = posInCluster * GOLDEN_ANGLE
+      const r            = MINI_OFFSET + Math.sqrt(posInCluster + 1) * MINI_SCALE
       return {
-        x: cx  + r * Math.cos(angle),
-        y: cY  + r * Math.sin(angle) * 0.65,  // 0.65 → elliptical to match widescreen
+        x: anchor.x + r * Math.cos(angle),
+        y: anchor.y + r * Math.sin(angle),
       }
     }
 
