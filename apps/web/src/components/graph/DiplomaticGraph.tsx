@@ -155,50 +155,61 @@ function DiplomaticGraph({
 
     const fontFamily = resolveUrbanistFamily()
 
-    // --- Galaxy/cluster pre-positioning by region ---
+    // --- Galaxy layout: top-5 anchors + Milky Way spiral for the rest ---
     const W = containerRef.current.offsetWidth  || 1200
     const H = containerRef.current.offsetHeight || 700
+    const cx = W / 2
+    const cy = H / 2
 
-    // Each region gets a center point in the canvas (fractional coords)
-    const REGION_CENTER: Record<string, { x: number; y: number }> = {
-      europe:       { x: W * 0.50, y: H * 0.22 },
-      americas:     { x: W * 0.14, y: H * 0.50 },
-      asia_pacific: { x: W * 0.78, y: H * 0.26 },
-      africa:       { x: W * 0.38, y: H * 0.72 },
-      middle_east:  { x: W * 0.62, y: H * 0.68 },
-      oceania:      { x: W * 0.84, y: H * 0.72 },
-    }
-
-    // Build a degree map for initial spread radius (high-degree = closer to center)
+    // Build degree map
     const degreeMap: Record<string, number> = {}
     annotatedEdges.forEach(({ edge: e }) => {
       degreeMap[e.source] = (degreeMap[e.source] ?? 0) + 1
       degreeMap[e.target] = (degreeMap[e.target] ?? 0) + 1
     })
 
-    // Index within region for golden-angle spiral
-    const regionCount: Record<string, number> = {}
+    // Rank nodes by degree descending
+    const sortedByDegree = [...filteredNodes].sort(
+      (a, b) => (degreeMap[b.id] ?? 0) - (degreeMap[a.id] ?? 0)
+    )
+    const rankMap: Record<string, number> = {}
+    sortedByDegree.forEach((n, i) => { rankMap[n.id] = i })
+
+    // Top-5 anchor positions from sketch:
+    //   1 = center, 2 = top-left, 3 = top-right, 4 = bottom-right, 5 = bottom-left
+    const TOP5: Array<{ x: number; y: number }> = [
+      { x: cx,              y: cy },             // 1 — center
+      { x: cx - W * 0.36,  y: cy - H * 0.32 },  // 2 — top-left
+      { x: cx + W * 0.36,  y: cy - H * 0.32 },  // 3 — top-right
+      { x: cx + W * 0.36,  y: cy + H * 0.32 },  // 4 — bottom-right
+      { x: cx - W * 0.36,  y: cy + H * 0.32 },  // 5 — bottom-left
+    ]
+
+    // Logarithmic spiral galaxy for the remaining nodes
+    // 4 arms, inner radius 130, growing 24px per arm-step; y slightly compressed (0.72)
+    const NUM_ARMS = 4
+    const INNER_R  = 130
+    const ARM_STEP = 24
+
+    function getGalaxyPos(rank: number): { x: number; y: number } {
+      if (rank < 5) return TOP5[rank]
+      const idx  = rank - 5
+      const arm  = idx % NUM_ARMS
+      const step = Math.floor(idx / NUM_ARMS)
+      const thetaBase = (arm / NUM_ARMS) * 2 * Math.PI + Math.PI / NUM_ARMS
+      const theta = thetaBase + step * 0.30          // spiral twist per step
+      const r     = INNER_R + step * ARM_STEP
+      // Deterministic jitter (no Math.random — reproducible on every render)
+      const jx = Math.sin(idx * 7.391) * 18
+      const jy = Math.cos(idx * 5.173) * 18
+      return {
+        x: cx + r * Math.cos(theta) + jx,
+        y: cy + r * Math.sin(theta) * 0.72 + jy, // 0.72 → elliptical galaxy tilt
+      }
+    }
 
     function getInitialPos(n: DiplomaticNode) {
-      if (n.type === "organization") {
-        // Organizations cluster near canvas center
-        const orgIdx = regionCount["__org"] ?? 0
-        regionCount["__org"] = orgIdx + 1
-        const angle = orgIdx * 2.3998
-        return { x: W * 0.50 + Math.cos(angle) * 60, y: H * 0.48 + Math.sin(angle) * 60 }
-      }
-      const center = REGION_CENTER[n.region] ?? { x: W * 0.5, y: H * 0.5 }
-      const idx = regionCount[n.region] ?? 0
-      regionCount[n.region] = idx + 1
-      const deg = degreeMap[n.id] ?? 0
-      // Highly connected nodes → tighter to center, loosely connected → outer ring
-      const maxR = 200
-      const r = maxR * (1 - Math.min(deg / 30, 0.85))
-      const angle = idx * 2.3998 // golden angle in radians
-      return {
-        x: center.x + Math.cos(angle) * r,
-        y: center.y + Math.sin(angle) * r,
-      }
+      return getGalaxyPos(rankMap[n.id] ?? filteredNodes.length)
     }
 
     const cy = cytoscape({
@@ -362,21 +373,10 @@ function DiplomaticGraph({
         },
       ],
       layout: {
-        name: "cose-bilkent",
+        name: "preset",   // use the positions computed above — no physics pass
         animate: false,
-        randomize: false,          // keep pre-positioned clusters
-        nodeDimensionsIncludeLabels: false,
         fit: true,
-        padding: 50,
-        nodeRepulsion: 6500,       // push nodes apart within clusters
-        idealEdgeLength: 120,      // longer inter-cluster edges
-        edgeElasticity: 0.08,
-        nestingFactor: 0.1,
-        gravity: 0.08,             // gentle gravity keeps clusters cohesive
-        gravityRange: 1.2,
-        tilingPaddingVertical: 10,
-        tilingPaddingHorizontal: 10,
-        numIter: 2500,
+        padding: 60,
       } as cytoscape.LayoutOptions,
       userZoomingEnabled: true,
       userPanningEnabled: true,
