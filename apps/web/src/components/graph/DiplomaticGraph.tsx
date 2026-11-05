@@ -54,12 +54,16 @@ export interface DiplomaticGraphHandle {
 interface DiplomaticGraphProps {
   initialNodes?: DiplomaticNode[]
   initialEdges?: DiplomaticEdge[]
+  activeEdgeTypes?: Set<string>
+  minEdgeWeight?: number
 }
 
 const DiplomaticGraph = forwardRef<DiplomaticGraphHandle, DiplomaticGraphProps>(
 function DiplomaticGraph({
   initialNodes,
   initialEdges,
+  activeEdgeTypes,
+  minEdgeWeight = 0,
 }, ref) {
   const containerRef = useRef<HTMLDivElement>(null)
   const cyRef = useRef<cytoscape.Core | null>(null)
@@ -107,10 +111,13 @@ function DiplomaticGraph({
   )
   const filteredEdges = useMemo(() => {
     const filteredNodeIds = new Set(filteredNodes.map((n) => n.id))
-    return displayEdges.filter(
-      (e) => filteredNodeIds.has(e.source) && filteredNodeIds.has(e.target)
-    )
-  }, [displayEdges, filteredNodes])
+    return displayEdges.filter((e) => {
+      if (!filteredNodeIds.has(e.source) || !filteredNodeIds.has(e.target)) return false
+      if (activeEdgeTypes && activeEdgeTypes.size > 0 && !activeEdgeTypes.has(e.type)) return false
+      if (e.weight < minEdgeWeight) return false
+      return true
+    })
+  }, [displayEdges, filteredNodes, activeEdgeTypes, minEdgeWeight])
 
   /**
    * Annotate each edge with rendering metadata:

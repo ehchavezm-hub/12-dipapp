@@ -114,8 +114,29 @@ interface GraphCanvasProps {
   initialEdges: DiplomaticEdge[]
 }
 
+const EDGE_TYPE_META: { type: DiplomaticEdge["type"]; label: string; color: string; emoji: string }[] = [
+  { type: "bilateral_treaty",  label: "Bilateral",  color: "#00E5CC", emoji: "🤝" },
+  { type: "trade_agreement",   label: "Comercial",  color: "#4CAF50", emoji: "📦" },
+  { type: "un_vote_alignment", label: "ONU",        color: "#64B5F6", emoji: "🗳" },
+  { type: "dispute",           label: "Disputa",    color: "#FF5252", emoji: "⚠" },
+]
+
 export default function GraphCanvas({ initialNodes, initialEdges }: GraphCanvasProps) {
   const graphRef = useRef<DiplomaticGraphHandle>(null)
+
+  // Edge filters — all types ON, weight ≥ 0 by default
+  const [activeEdgeTypes, setActiveEdgeTypes] = useState<Set<string>>(
+    () => new Set(EDGE_TYPE_META.map((m) => m.type))
+  )
+  const [minWeight, setMinWeight] = useState(0)
+
+  function toggleEdgeType(type: string) {
+    setActiveEdgeTypes((prev) => {
+      const next = new Set(prev)
+      if (next.has(type)) { next.delete(type) } else { next.add(type) }
+      return next
+    })
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
@@ -140,9 +161,59 @@ export default function GraphCanvas({ initialNodes, initialEdges }: GraphCanvasP
         </div>
       </div>
 
+      {/* Barra de filtros de relaciones */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 10, padding: "6px 14px",
+        background: "#F7F8FA", borderBottom: "1px solid #DADCE0", flexWrap: "wrap",
+      }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "#6D6E71", textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: "var(--font-urbanist)" }}>
+          Relaciones
+        </span>
+        {EDGE_TYPE_META.map(({ type, label, color, emoji }) => {
+          const on = activeEdgeTypes.has(type)
+          return (
+            <button
+              key={type}
+              onClick={() => toggleEdgeType(type)}
+              style={{
+                display: "flex", alignItems: "center", gap: 5,
+                padding: "3px 10px", borderRadius: 20, cursor: "pointer",
+                fontSize: 12, fontFamily: "var(--font-urbanist)",
+                border: `1.5px solid ${color}`,
+                background: on ? color + "22" : "transparent",
+                color: on ? color : "#9E9E9E",
+                fontWeight: on ? 600 : 400,
+                transition: "all 0.15s",
+              }}
+            >
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: on ? color : "#9E9E9E", flexShrink: 0, display: "inline-block" }} />
+              {emoji} {label}
+            </button>
+          )
+        })}
+        <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 600, color: "#6D6E71", textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: "var(--font-urbanist)" }}>
+          Peso mín.
+        </span>
+        <input
+          type="range" min={0} max={1} step={0.05}
+          value={minWeight}
+          onChange={(e) => setMinWeight(parseFloat(e.target.value))}
+          style={{ width: 100, accentColor: "#FF6600", cursor: "pointer" }}
+        />
+        <span style={{ fontSize: 12, color: "#424242", fontFamily: "var(--font-urbanist)", minWidth: 28 }}>
+          {minWeight.toFixed(2)}
+        </span>
+      </div>
+
       {/* Canvas */}
       <div style={{ border: "1px solid #DADCE0", borderTop: "none", borderRadius: "0 6px 6px 6px", overflow: "hidden", position: "relative", minHeight: 540 }}>
-        <DiplomaticGraph ref={graphRef} initialNodes={initialNodes} initialEdges={initialEdges} />
+        <DiplomaticGraph
+          ref={graphRef}
+          initialNodes={initialNodes}
+          initialEdges={initialEdges}
+          activeEdgeTypes={activeEdgeTypes}
+          minEdgeWeight={minWeight}
+        />
       </div>
 
       {/* NodeSheet fuera de ambos tabs — reacciona al store compartido */}
