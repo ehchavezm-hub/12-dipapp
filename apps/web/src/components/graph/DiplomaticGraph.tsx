@@ -188,25 +188,26 @@ function DiplomaticGraph({
       { x: W / 6,       y: H * 3 / 4   },  // 5 — bottom-left cell centre
     ]
 
-    // Five Fermat (sunflower) mini-spirals, one centred on each TOP5 anchor.
-    // Round-robin assignment: rank 5→cluster 0, rank 6→cluster 1, … rank 9→cluster 4,
-    // rank 10→cluster 0, … This keeps each cluster the same size (~N/5 nodes) and
-    // ensures every anchor node is surrounded by neighbours.
+    // Full-canvas phyllotaxis (sunflower) scaled to fill the entire viewport.
+    // r = sqrt(rank / N) normalises each node to a radius in [0,1]; multiplied by
+    // the half-width / half-height it fills the canvas right to the edges.
+    // The golden angle keeps the distribution uniform — no stripes or empty zones.
+    // TOP5 nodes override with their grid-corner positions; the outer phyllotaxis
+    // ring naturally places neighbours near those corners (ranks ~175-200 sit at
+    // r ≈ 0.95-1.0, i.e. near the canvas perimeter where the anchors live).
     const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5))
-    const MINI_OFFSET  = Math.min(W, H) * 0.040   // start ~28px from each anchor
-    const MINI_SCALE   = Math.min(W, H) * 0.030   // ~21px per sqrt step
+    const PAD          = 60                       // px margin from canvas edge
+    const RX           = W / 2 - PAD             // half-width for phyllotaxis
+    const RY           = H / 2 - PAD             // half-height for phyllotaxis
+    const N            = filteredNodes.length + 1 // normalisation denominator
 
     function getGalaxyPos(rank: number): { x: number; y: number } {
       if (rank < 5) return TOP5[rank]
-      const idx          = rank - 5
-      const clusterIdx   = idx % 5             // round-robin into 5 clusters
-      const posInCluster = Math.floor(idx / 5) // position within that cluster
-      const anchor       = TOP5[clusterIdx]
-      const angle        = posInCluster * GOLDEN_ANGLE
-      const r            = MINI_OFFSET + Math.sqrt(posInCluster + 1) * MINI_SCALE
+      const r     = Math.sqrt(rank / N)           // 0 (centre) → 1 (edge)
+      const angle = rank * GOLDEN_ANGLE
       return {
-        x: anchor.x + r * Math.cos(angle),
-        y: anchor.y + r * Math.sin(angle),
+        x: W / 2 + r * RX * Math.cos(angle),
+        y: H / 2 + r * RY * Math.sin(angle),
       }
     }
 
