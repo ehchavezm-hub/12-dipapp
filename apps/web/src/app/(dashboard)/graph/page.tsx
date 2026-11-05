@@ -47,8 +47,8 @@ export default async function GraphPage() {
 
       <GraphFilters />
 
-      {/* flex-1 + min-h-0: fills all remaining vertical space (q7) */}
-      <div className="flex-1 min-h-0">
+      {/* flex chain: flex:1 + display:flex so GraphCanvas height:100% resolves */}
+      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
         <GraphCanvas initialNodes={initialNodes} initialEdges={initialEdges} />
       </div>
     </main>

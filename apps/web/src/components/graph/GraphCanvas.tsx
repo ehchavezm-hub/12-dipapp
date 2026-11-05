@@ -147,8 +147,8 @@ export default function GraphCanvas({ initialNodes, initialEdges }: GraphCanvasP
     <div
       ref={wrapperRef}
       style={{
+        flex: 1, minHeight: 0,
         display: "flex", flexDirection: "column",
-        height: "100%", minHeight: 0,
         // Dark bg fills fullscreen chrome outside the canvas area
         background: isFullscreen ? "#0A1628" : "transparent",
       }}

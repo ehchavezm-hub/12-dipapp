@@ -273,10 +273,10 @@ function DiplomaticGraph({
             color: "#FFFFFF",
             "text-valign": "bottom",
             "text-margin-y": 4,
-            // Solid background pad instead of outline — sharper on HiDPI
+            // Fully-opaque background pad — zero compositing = maximum sharpness
             "text-outline-width": 0,
             "text-background-color": "#0A1628",
-            "text-background-opacity": 0.72,
+            "text-background-opacity": 1,
             "text-background-padding": "2px",
             "text-background-shape": "roundrectangle",
             width: (ele: cytoscape.NodeSingular) => {
@@ -430,6 +430,16 @@ function DiplomaticGraph({
     cy.on("zoom", resizeNodesForZoom)
     resizeNodesForZoom() // apply on first render too
 
+    // ResizeObserver: when the flex container changes size (e.g. window resize,
+    // fullscreen, or the flex layout resolving after mount), tell Cytoscape to
+    // recreate its canvas at the new pixel size — prevents CSS-stretched blurring.
+    const ro = new ResizeObserver(() => {
+      cy.resize()
+      cy.fit(undefined, 60)
+      resizeNodesForZoom()
+    })
+    if (containerRef.current) ro.observe(containerRef.current)
+
     // Tap handler
     cy.on("tap", "node", (evt) => {
       const data = evt.target.data() as {
@@ -460,6 +470,7 @@ function DiplomaticGraph({
     cyRef.current = cy
 
     return () => {
+      ro.disconnect()
       cy.destroy()
       cyRef.current = null
     }
