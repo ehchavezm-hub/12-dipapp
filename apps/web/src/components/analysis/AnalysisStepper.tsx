@@ -92,7 +92,7 @@ export function AnalysisStepper() {
 
   const StepComponent = STEPS[step]
   const language = (currentCase.output_language ?? "es") as OutputLanguage
-  const llmModel = currentCase.llm_model ?? "claude-haiku-3-5"
+  const llmModel = currentCase.llm_model ?? "claude-haiku-5-5"
 
   /**
    * Validate and hand off to /results/new, which performs the single LLM request.
@@ -153,16 +153,16 @@ export function AnalysisStepper() {
           🤖 Modelo IA:
           <select
             value={llmModel}
-            onChange={(e) => updateCase({ llm_model: e.target.value as "claude-haiku-3-5" | "claude-sonnet-4-5" | "claude-opus-4-5" })}
+            onChange={(e) => updateCase({ llm_model: e.target.value as "claude-haiku-5-5" | "claude-sonnet-5-5" | "claude-opus-5-5" })}
             style={{
               border: "1px solid #DADCE0", borderRadius: 4, padding: "4px 8px",
               fontFamily: "var(--font-urbanist)", fontSize: 13, color: "#1A1A1A",
               background: "#fff", cursor: "pointer",
             }}
           >
-            <option value="claude-haiku-3-5">Haiku — rápido y económico</option>
-            <option value="claude-sonnet-4-5">Sonnet — equilibrado</option>
-            <option value="claude-opus-4-5">Opus — máxima calidad</option>
+            <option value="claude-haiku-5-5">Haiku — rápido y económico</option>
+            <option value="claude-sonnet-5-5">Sonnet — equilibrado</option>
+            <option value="claude-opus-5-5">Opus — máxima calidad</option>
           </select>
         </label>
       </div>
