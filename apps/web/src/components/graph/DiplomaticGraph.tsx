@@ -191,11 +191,12 @@ function DiplomaticGraph({
     // Fermat (sunflower) spiral for the remaining nodes.
     // Golden angle (≈137.5°) guarantees uniform coverage with no clustering.
     // Radius grows with sqrt(idx) → equal-area packing, like seeds in a sunflower.
-    const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5))
-    // Start the spiral outside the farthest anchor (nodes 2-5 at corners of grid)
-    const anchorDist = Math.sqrt((W / 3) ** 2 + (H / 4) ** 2)
-    const SPIRAL_OFFSET = anchorDist * 1.15   // 15% margin beyond farthest anchor
-    const SPIRAL_SCALE  = Math.min(W, H) * 0.065
+    // The spiral starts near the centre and expands to fill the canvas so that
+    // when fit:true zooms to show everything, the TOP5 corner anchors sit near
+    // the visible edges (same radial scale as the outermost spiral nodes).
+    const GOLDEN_ANGLE  = Math.PI * (3 - Math.sqrt(5))
+    const SPIRAL_OFFSET = Math.min(W, H) * 0.030   // start just off centre
+    const SPIRAL_SCALE  = Math.min(W, H) * 0.040   // expand to fill canvas
 
     function getGalaxyPos(rank: number): { x: number; y: number } {
       if (rank < 5) return TOP5[rank]
