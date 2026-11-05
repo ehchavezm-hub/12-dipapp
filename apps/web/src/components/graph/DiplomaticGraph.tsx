@@ -211,7 +211,7 @@ function DiplomaticGraph({
               return Math.max(8, Math.min(14, 8 + deg * 0.4))
             },
             "font-family": fontFamily,
-            "font-weight": "600",
+            "font-weight": 600,
             color: "#E0F7F4",
             "text-valign": "bottom",
             "text-margin-y": 5,
@@ -235,7 +235,6 @@ function DiplomaticGraph({
             },
             "border-opacity": 0.6,
             "background-opacity": 0.85,
-            // Glow
             "shadow-blur": 18,
             "shadow-color": (ele: cytoscape.NodeSingular) => {
               const t = ele.data("nodeType") as DiplomaticNode["type"]
@@ -245,7 +244,8 @@ function DiplomaticGraph({
             "shadow-opacity": 0.7,
             "shadow-offset-x": 0,
             "shadow-offset-y": 0,
-          },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any,
         },
         {
           selector: "edge",
