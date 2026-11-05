@@ -269,12 +269,16 @@ function DiplomaticGraph({
             label: "data(label)",
             "font-size": 11,   // overwritten per-zoom by resizeNodesForZoom
             "font-family": fontFamily,
-            "font-weight": 600,
-            color: "#E0F7F4",
+            "font-weight": 700,
+            color: "#FFFFFF",
             "text-valign": "bottom",
-            "text-margin-y": 3,
-            "text-outline-color": "#0A1628",
-            "text-outline-width": 1,
+            "text-margin-y": 4,
+            // Solid background pad instead of outline — sharper on HiDPI
+            "text-outline-width": 0,
+            "text-background-color": "#0A1628",
+            "text-background-opacity": 0.72,
+            "text-background-padding": "2px",
+            "text-background-shape": "roundrectangle",
             width: (ele: cytoscape.NodeSingular) => {
               const deg = ele.degree(false)
               const base = ele.data("nodeType") === "organization" ? 5 : 3
@@ -399,6 +403,8 @@ function DiplomaticGraph({
       } as cytoscape.LayoutOptions,
       userZoomingEnabled: true,
       userPanningEnabled: true,
+      // Render at device pixel ratio so text is crisp on retina/HiDPI screens
+      pixelRatio: typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1,
     })
 
     // Keep node screen sizes constant regardless of zoom level.
@@ -414,10 +420,9 @@ function DiplomaticGraph({
           const base = isOrg ? 7 : 5
           const screenSz = Math.max(base, Math.min(16, base + deg * 0.7))
           ele.style({
-            width:                screenSz / z,
-            height:               screenSz / z,
-            "font-size":          11 / z,          // constant 11px regardless of zoom
-            "text-outline-width": 2 / z,
+            width:      screenSz / z,
+            height:     screenSz / z,
+            "font-size": 11 / z,   // constant 11px screen size regardless of zoom
           })
         })
       })
