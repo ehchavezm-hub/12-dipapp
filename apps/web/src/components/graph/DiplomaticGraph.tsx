@@ -175,17 +175,16 @@ function DiplomaticGraph({
     const rankMap: Record<string, number> = {}
     sortedByDegree.forEach((n, i) => { rankMap[n.id] = i })
 
-    // Top-5 anchor positions: canvas divided into a 3-column × 2-row grid.
-    // Each numbered node sits at the red-X centre of its cell (from sketch).
-    //   col centres:  W/6  (left),  W/2  (middle),  5W/6  (right)
-    //   row centres:  H/4  (top),   3H/4             (bottom)
-    //   node 1 → middle column, vertically centred (intersection of all red lines)
+    // Top-5 anchor positions at W/4 & 3W/4 (not W/6 & 5W/6) so each corner anchor
+    // has canvas space on ALL sides and the phyllotaxis outer ring can surround it.
+    // W/6 & 5W/6 put anchors too close to the actual edges (only 200px clearance),
+    // leaving 3/4 of the surrounding area empty.
     const TOP5: Array<{ x: number; y: number }> = [
-      { x: W / 2,       y: H / 2       },  // 1 — canvas centre (middle col, middle)
-      { x: W / 6,       y: H / 4       },  // 2 — top-left cell centre
-      { x: W * 5 / 6,   y: H / 4       },  // 3 — top-right cell centre
-      { x: W * 5 / 6,   y: H * 3 / 4   },  // 4 — bottom-right cell centre
-      { x: W / 6,       y: H * 3 / 4   },  // 5 — bottom-left cell centre
+      { x: W / 2,       y: H / 2       },  // 1 — canvas centre
+      { x: W / 4,       y: H / 3       },  // 2 — upper-left quadrant centre
+      { x: W * 3 / 4,   y: H / 3       },  // 3 — upper-right quadrant centre
+      { x: W * 3 / 4,   y: H * 2 / 3   },  // 4 — lower-right quadrant centre
+      { x: W / 4,       y: H * 2 / 3   },  // 5 — lower-left quadrant centre
     ]
 
     // Full-canvas phyllotaxis (sunflower) scaled to fill the entire viewport.
