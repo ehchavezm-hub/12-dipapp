@@ -20,7 +20,10 @@ export function TargetProfileStep() {
       </h2>
       <div>
         <label htmlFor="target-name" style={{ display: "block", marginBottom: 4 }}>
-          Nombre
+          Nombre{" "}
+          <span style={{ fontSize: 12, color: "#9E9E9E", fontWeight: 400 }}>
+            (País o entidad a analizar. Ej: «China», «Brasil», «Unión Europea»)
+          </span>
         </label>
         <input
           id="target-name"
@@ -37,7 +40,10 @@ export function TargetProfileStep() {
       </div>
       <div>
         <label htmlFor="target-country" style={{ display: "block", marginBottom: 4 }}>
-          Código de País (2 letras)
+          Código de País (2 letras){" "}
+          <span style={{ fontSize: 12, color: "#9E9E9E", fontWeight: 400 }}>
+            (Código ISO. Ej: PE = Perú, BR = Brasil, CN = China, US = Estados Unidos)
+          </span>
         </label>
         <input
           id="target-country"
