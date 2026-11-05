@@ -175,25 +175,27 @@ function DiplomaticGraph({
     const rankMap: Record<string, number> = {}
     sortedByDegree.forEach((n, i) => { rankMap[n.id] = i })
 
-    // Top-5 anchor positions from sketch:
-    //   1 = center, 2 = top-left, 3 = top-right, 4 = bottom-right, 5 = bottom-left
+    // Top-5 anchor positions: canvas divided into a 3-column × 2-row grid.
+    // Each numbered node sits at the red-X centre of its cell (from sketch).
+    //   col centres:  W/6  (left),  W/2  (middle),  5W/6  (right)
+    //   row centres:  H/4  (top),   3H/4             (bottom)
+    //   node 1 → middle column, vertically centred (intersection of all red lines)
     const TOP5: Array<{ x: number; y: number }> = [
-      { x: cx,              y: cY },              // 1 — center
-      { x: cx - W * 0.36,  y: cY - H * 0.32 },  // 2 — top-left
-      { x: cx + W * 0.36,  y: cY - H * 0.32 },  // 3 — top-right
-      { x: cx + W * 0.36,  y: cY + H * 0.32 },  // 4 — bottom-right
-      { x: cx - W * 0.36,  y: cY + H * 0.32 },  // 5 — bottom-left
+      { x: W / 2,       y: H / 2       },  // 1 — canvas centre (middle col, middle)
+      { x: W / 6,       y: H / 4       },  // 2 — top-left cell centre
+      { x: W * 5 / 6,   y: H / 4       },  // 3 — top-right cell centre
+      { x: W * 5 / 6,   y: H * 3 / 4   },  // 4 — bottom-right cell centre
+      { x: W / 6,       y: H * 3 / 4   },  // 5 — bottom-left cell centre
     ]
 
     // Fermat (sunflower) spiral for the remaining nodes.
     // Golden angle (≈137.5°) guarantees uniform coverage with no clustering.
     // Radius grows with sqrt(idx) → equal-area packing, like seeds in a sunflower.
     const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5))
-    // Scale factor: each step expands by this many model-units per sqrt-unit.
-    // Larger → more spread; sized relative to canvas so fit looks good.
-    const SPIRAL_SCALE = Math.min(W, H) * 0.065
-    // Start the spiral well outside the TOP-5 anchor cloud
-    const SPIRAL_OFFSET = Math.min(W, H) * 0.38
+    // Start the spiral outside the farthest anchor (nodes 2-5 at corners of grid)
+    const anchorDist = Math.sqrt((W / 3) ** 2 + (H / 4) ** 2)
+    const SPIRAL_OFFSET = anchorDist * 1.15   // 15% margin beyond farthest anchor
+    const SPIRAL_SCALE  = Math.min(W, H) * 0.065
 
     function getGalaxyPos(rank: number): { x: number; y: number } {
       if (rank < 5) return TOP5[rank]
