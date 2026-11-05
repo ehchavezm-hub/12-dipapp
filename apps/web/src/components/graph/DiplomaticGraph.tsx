@@ -382,6 +382,30 @@ function DiplomaticGraph({
       userPanningEnabled: true,
     })
 
+    // Keep node screen sizes constant regardless of zoom level.
+    // Cytoscape node width/height are in model units; at zoom z, a model unit
+    // = z screen pixels.  Dividing target screen size by z keeps visual size fixed.
+    function resizeNodesForZoom() {
+      const z = cy.zoom()
+      cy.batch(() => {
+        cy.nodes().forEach((ele) => {
+          const deg = ele.degree(false)
+          const isOrg = ele.data("nodeType") === "organization"
+          const base = isOrg ? 24 : 14
+          const screenSz = Math.max(base, Math.min(60, base + deg * 3.5))
+          const screenFs = Math.max(8, Math.min(14, 8 + deg * 0.4))
+          ele.style({
+            width:               screenSz / z,
+            height:              screenSz / z,
+            "font-size":         screenFs / z,
+            "text-outline-width": 2 / z,
+          })
+        })
+      })
+    }
+    cy.on("zoom", resizeNodesForZoom)
+    resizeNodesForZoom() // apply on first render too
+
     // Tap handler
     cy.on("tap", "node", (evt) => {
       const data = evt.target.data() as {
