@@ -109,74 +109,29 @@ const btnStyle: React.CSSProperties = {
   boxShadow: "0 1px 3px rgba(0,0,0,0.10)",
 }
 
-type Tab = "connected" | "isolated"
-
 interface GraphCanvasProps {
   initialNodes: DiplomaticNode[]
   initialEdges: DiplomaticEdge[]
 }
 
 export default function GraphCanvas({ initialNodes, initialEdges }: GraphCanvasProps) {
-  const [activeTab, setActiveTab] = useState<Tab>("connected")
   const graphRef = useRef<DiplomaticGraphHandle>(null)
-
-  // Split nodes into connected vs isolated
-  const { connectedNodes, isolatedNodes } = useMemo(() => {
-    const linked = new Set<string>()
-    initialEdges.forEach((e) => { linked.add(e.source); linked.add(e.target) })
-    return {
-      connectedNodes: initialNodes.filter((n) => linked.has(n.id)),
-      isolatedNodes:  initialNodes.filter((n) => !linked.has(n.id)),
-    }
-  }, [initialNodes, initialEdges])
-
-  const tabBase: React.CSSProperties = {
-    padding: "8px 20px",
-    fontSize: 13,
-    fontFamily: "var(--font-urbanist)",
-    border: "1px solid #DADCE0",
-    borderBottom: "none",
-    borderRadius: "6px 6px 0 0",
-    cursor: "pointer",
-    background: "#F8F9FA",
-    color: "#6D6E71",
-  }
-
-  const tabActive: React.CSSProperties = {
-    ...tabBase,
-    background: "#fff",
-    color: "#FF6600",
-    fontWeight: 600,
-    borderColor: "#DADCE0",
-  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-      {/* Pestañas */}
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 4, borderBottom: "1px solid #DADCE0" }}>
-        <button
-          onClick={() => setActiveTab("connected")}
-          style={activeTab === "connected" ? tabActive : tabBase}
-        >
+      {/* Cabecera con título y controles */}
+      <div style={{ display: "flex", alignItems: "center", gap: 4, borderBottom: "1px solid #DADCE0", paddingBottom: 4 }}>
+        <span style={{ padding: "8px 20px", fontSize: 13, fontFamily: "var(--font-urbanist)", fontWeight: 600, color: "#FF6600" }}>
           🌐 Red diplomática
           <span style={{ marginLeft: 8, fontSize: 11, background: "#FF6600", color: "#fff", borderRadius: 10, padding: "1px 7px" }}>
-            {connectedNodes.length}
+            {initialNodes.length}
           </span>
-        </button>
-        <button
-          onClick={() => setActiveTab("isolated")}
-          style={activeTab === "isolated" ? tabActive : tabBase}
-        >
-          🗺️ Países sin vinculación
-          <span style={{ marginLeft: 8, fontSize: 11, background: "#6D6E71", color: "#fff", borderRadius: 10, padding: "1px 7px" }}>
-            {isolatedNodes.length}
-          </span>
-        </button>
+        </span>
 
         {/* Controles zoom — alineados a la derecha */}
-        <div style={{ marginLeft: "auto", display: "flex", gap: 6, paddingBottom: 4, alignItems: "center" }}>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 6, alignItems: "center" }}>
           <CountrySearch
-            nodes={connectedNodes}
+            nodes={initialNodes}
             onSelect={(id) => graphRef.current?.focusNode(id)}
           />
           <button onClick={() => graphRef.current?.fit()} style={btnStyle}>⊡ Ajustar</button>
@@ -185,12 +140,9 @@ export default function GraphCanvas({ initialNodes, initialEdges }: GraphCanvasP
         </div>
       </div>
 
-      {/* Canvas — solo monta el tab activo para evitar conflictos en el store */}
+      {/* Canvas */}
       <div style={{ border: "1px solid #DADCE0", borderTop: "none", borderRadius: "0 6px 6px 6px", overflow: "hidden", position: "relative", minHeight: 540 }}>
-        {activeTab === "connected"
-          ? <DiplomaticGraph key="connected" ref={graphRef} initialNodes={connectedNodes} initialEdges={initialEdges} />
-          : <DiplomaticGraph key="isolated"  ref={graphRef} initialNodes={isolatedNodes}  initialEdges={[]} />
-        }
+        <DiplomaticGraph ref={graphRef} initialNodes={initialNodes} initialEdges={initialEdges} />
       </div>
 
       {/* NodeSheet fuera de ambos tabs — reacciona al store compartido */}
