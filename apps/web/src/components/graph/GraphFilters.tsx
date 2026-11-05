@@ -35,9 +35,9 @@ const TYPE_LABELS: Record<DiplomaticNode["type"], string> = {
 }
 
 const TYPE_COLORS: Record<DiplomaticNode["type"], string> = {
-  country: "#FF6600",
-  organization: "#003087",
-  embassy: "#0078C1",
+  country: "#1A1A1A",
+  organization: "#333333",
+  embassy: "#555555",
   diplomat: "#6D6E71",
 }
 
@@ -87,8 +87,8 @@ export default function GraphFilters() {
                 className={[
                   "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
                   active
-                    ? "bg-[#FF6600] text-white border-[#FF6600]"
-                    : "bg-white text-brand-gray border-brand-gray/30 hover:border-[#FF6600] hover:text-[#FF6600]",
+                    ? "bg-[#1A1A1A] text-white border-[#1A1A1A]"
+                    : "bg-white text-brand-gray border-brand-gray/30 hover:border-[#1A1A1A] hover:text-[#1A1A1A]",
                 ].join(" ")}
               >
                 {REGION_LABELS[region]}
@@ -112,7 +112,7 @@ export default function GraphFilters() {
           onChange={(e) =>
             setFilters({ minAffinityScore: Number(e.target.value) })
           }
-          className="w-full h-2 rounded-full accent-[#FF6600]"
+          className="w-full h-2 rounded-full accent-[#1A1A1A]"
           aria-label="Minimum affinity score filter"
         />
         <div className="flex justify-between text-xs text-brand-gray mt-1">
@@ -191,7 +191,7 @@ export default function GraphFilters() {
             onClick={handleFindPath}
             disabled={!pathSrc || !pathTgt}
             className="px-3 py-1 rounded text-xs font-semibold text-white"
-            style={{ background: pathSrc && pathTgt ? "#FF6600" : "#555555", cursor: pathSrc && pathTgt ? "pointer" : "default" }}
+            style={{ background: pathSrc && pathTgt ? "#1A1A1A" : "#555555", cursor: pathSrc && pathTgt ? "pointer" : "default" }}
           >
             Trazar ruta
           </button>
@@ -203,7 +203,7 @@ export default function GraphFilters() {
             Limpiar
           </button>
         </div>
-        {pathError && <p className="text-xs text-[#E85500] mt-1">{pathError}</p>}
+        {pathError && <p className="text-xs text-[#555555] mt-1">{pathError}</p>}
         <p className="text-xs text-brand-gray mt-1">
           El camino resaltado en rojo es la ruta de menor costo entre los nodos seleccionados.
         </p>

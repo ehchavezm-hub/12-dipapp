@@ -81,9 +81,9 @@ export function ScenarioTabs() {
                 fontFamily: "var(--font-urbanist)",
                 fontSize: 14,
                 fontWeight: isActive ? 700 : 400,
-                background: isActive ? "#FF6600" : "#fff",
+                background: isActive ? "#1A1A1A" : "#fff",
                 color: isActive ? "#fff" : "#6D6E71",
-                borderBottom: isActive ? "2px solid #FF6600" : "2px solid transparent",
+                borderBottom: isActive ? "2px solid #1A1A1A" : "2px solid transparent",
                 transition: "all 0.2s ease",
               }}
             >

@@ -75,7 +75,7 @@ export default async function AdminPage() {
               <span style={{
                 fontSize: 13,
                 fontWeight: 600,
-                color: ok === false ? "#E85500" : ok === true ? "#003087" : "#1A1A1A",
+                color: ok === false ? "#555555" : ok === true ? "#333333" : "#1A1A1A",
               }}>
                 {value}
               </span>
@@ -94,7 +94,7 @@ export default async function AdminPage() {
             { title: "Render (backend)", vars: ["NEXTAUTH_SECRET", "ANTHROPIC_API_KEY", "OPENAI_API_KEY", "UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"] },
           ].map(({ title, vars }) => (
             <div key={title} style={{ background: "#F2F2F2", border: "1px solid #DADCE0", borderRadius: 8, padding: 16 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#FF6600", marginBottom: 10 }}>{title}</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#1A1A1A", marginBottom: 10 }}>{title}</div>
               {vars.map(v => (
                 <div key={v} style={{ fontSize: 12, color: "#1A1A1A", fontFamily: "monospace", padding: "3px 0", borderBottom: "1px solid #DADCE0" }}>
                   {v}
@@ -116,7 +116,7 @@ export default async function AdminPage() {
             { rol: "viewer", acceso: "/graph, /results (solo lectura)", criterio: "Cualquier usuario GitHub autenticado" },
           ].map(({ rol, acceso, criterio }, i) => (
             <div key={rol} style={{ padding: "12px 20px", background: i % 2 === 0 ? "#fff" : "#F2F2F2", borderBottom: i < 2 ? "1px solid #DADCE0" : "none" }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#FF6600", marginBottom: 4 }}>{rol}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#1A1A1A", marginBottom: 4 }}>{rol}</div>
               <div style={{ fontSize: 12, color: "#1A1A1A", marginBottom: 2 }}>Acceso: {acceso}</div>
               <div style={{ fontSize: 11, color: "#6D6E71" }}>Criterio: {criterio}</div>
             </div>

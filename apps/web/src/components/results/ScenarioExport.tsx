@@ -6,10 +6,10 @@ import {
 import type { Scenario, ScoringResult } from "@/lib/types/results"
 import type { AnalysisCaseDTO } from "@/lib/schemas/analysis"
 
-const ORANGE   = "#FF6600"   // AECOM Orange — primary CTA
-const ENG_BLUE = "#003087"   // Engineering Blue — pros / scenario A
-const MED_BLUE = "#0078C1"   // Blue Medium — leverage / scenario C
-const RED      = "#E85500"   // Orange Deep — risk / cons
+const ORANGE   = "#1A1A1A"   // AECOM Orange — primary CTA
+const ENG_BLUE = "#333333"   // Engineering Blue — pros / scenario A
+const MED_BLUE = "#555555"   // Blue Medium — leverage / scenario C
+const RED      = "#555555"   // Orange Deep — risk / cons
 const GRAY     = "#6D6E71"
 const LIGHT    = "#F2F2F2"
 const DARK     = "#1A1A1A"
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
 
   /* Chain of Thought */
   cotBox: {
-    backgroundColor: "#FFF3E0", borderLeft: `3px solid ${YELLOW}`,
+    backgroundColor: "#F5F5F5", borderLeft: `3px solid ${YELLOW}`,
     padding: "12 14", borderRadius: 2,
   },
   cotText: { fontSize: 9, color: "#1A1A1A", lineHeight: 1.7, fontFamily: "Helvetica-Oblique" },
@@ -144,7 +144,7 @@ function CasePage({ analysisCase }: { analysisCase: Partial<AnalysisCaseDTO> }) 
 
       {/* Objective */}
       {obj && (
-        <View style={[styles.section, { backgroundColor: "#FFF3E0", borderLeft: `4px solid ${ORANGE}`, padding: "12 14", borderRadius: 4 }]}>
+        <View style={[styles.section, { backgroundColor: "#F5F5F5", borderLeft: `4px solid ${ORANGE}`, padding: "12 14", borderRadius: 4 }]}>
           <Text style={styles.sectionTitle}>Objetivo Diplomático</Text>
           <Text style={{ fontSize: 10, fontWeight: "bold", color: ORANGE, marginBottom: 4 }}>
             Tipo: {OBJECTIVE_TYPE_LABELS[obj.type] ?? obj.type}
@@ -351,7 +351,7 @@ function RoadmapFlowPage({ scenario }: { scenario: Scenario }) {
           <View key={step.step}>
             {/* Step box */}
             <View style={{
-              flexDirection: "row", backgroundColor: "#FFF3E0",
+              flexDirection: "row", backgroundColor: "#F5F5F5",
               borderLeft: `4px solid ${C_ACTION}`, borderRadius: 4,
               padding: "10 12", marginBottom: 0,
             }}>
@@ -518,7 +518,7 @@ function ComparativePage({ scenarios, scoring }: { scenarios: Scenario[]; scorin
       )}
 
       {/* Recommendation */}
-      <View style={{ backgroundColor: "#FFF3E0", borderLeft: `3px solid ${C_ACTION}`, padding: "10 12", borderRadius: 4 }}>
+      <View style={{ backgroundColor: "#F5F5F5", borderLeft: `3px solid ${C_ACTION}`, padding: "10 12", borderRadius: 4 }}>
         <Text style={{ fontSize: 10, fontWeight: "bold", color: C_ACTION, marginBottom: 4 }}>
           Recomendación del Sistema
         </Text>

@@ -163,7 +163,7 @@ export default function LoginPage() {
               disabled={loading}
               style={{
                 width: "100%",
-                backgroundColor: loading ? "#aaaaaa" : "#1a73e8",
+                backgroundColor: loading ? "#aaaaaa" : "#1A1A1A",
                 color: "#ffffff",
                 border: "none",
                 borderRadius: 8,

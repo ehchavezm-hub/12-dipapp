@@ -42,7 +42,7 @@ export default function ResultsPage() {
           <p style={{ marginBottom: 16 }}>
             No hay un caso de análisis activo. Los resultados no se almacenan en el servidor.
           </p>
-          <Link href="/analysis/new" style={{ color: "#FF6600", fontWeight: 600 }}>
+          <Link href="/analysis/new" style={{ color: "#1A1A1A", fontWeight: 600 }}>
             Crear un nuevo análisis
           </Link>
         </div>
@@ -52,8 +52,8 @@ export default function ResultsPage() {
         <div
           role="alert"
           style={{
-            border: "1px solid #E85500",
-            color: "#E85500",
+            border: "1px solid #555555",
+            color: "#555555",
             borderRadius: 8,
             padding: "12px 16px",
             marginBottom: 24,
@@ -70,7 +70,7 @@ export default function ResultsPage() {
               onClick={retry}
               disabled={isStreaming}
               style={{
-                background: "#E85500",
+                background: "#555555",
                 color: "#fff",
                 border: "none",
                 borderRadius: 4,
@@ -103,14 +103,14 @@ export default function ResultsPage() {
         >
           <div>
             <div>Score base</div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: "#FF6600" }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: "#1A1A1A" }}>
               {scoring.score_total.toFixed(1)}
             </div>
           </div>
           <div>Afinidad: {scoring.breakdown.affinity.toFixed(1)}</div>
           <div>Historial: {scoring.breakdown.history.toFixed(1)}</div>
           <div>Intereses: {scoring.breakdown.interests.toFixed(1)}</div>
-          <div style={{ color: scoring.litigation_penalty < 0 ? "#E85500" : "#6D6E71" }}>
+          <div style={{ color: scoring.litigation_penalty < 0 ? "#555555" : "#6D6E71" }}>
             Litigios: {scoring.litigation_penalty.toFixed(0)}
           </div>
           {metadata && (
@@ -142,7 +142,7 @@ export default function ResultsPage() {
                   style={{
                     height: "100%",
                     width: `${Math.min(100, Math.max(0, s.score_total))}%`,
-                    background: "#FF6600",
+                    background: "#1A1A1A",
                     borderRadius: 4,
                   }}
                 />

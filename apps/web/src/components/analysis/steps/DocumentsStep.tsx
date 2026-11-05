@@ -111,7 +111,7 @@ export function DocumentsStep() {
         onClick={() => fileInputRef.current?.click()}
         disabled={uploading}
         style={{
-          background: uploading ? "#6D6E71" : "#FF6600",
+          background: uploading ? "#6D6E71" : "#1A1A1A",
           color: "#fff",
           border: "none",
           borderRadius: 4,
@@ -125,7 +125,7 @@ export function DocumentsStep() {
       </button>
 
       {errors.length > 0 && (
-        <ul role="alert" style={{ listStyle: "none", padding: 0, color: "#E85500", fontSize: 13 }}>
+        <ul role="alert" style={{ listStyle: "none", padding: 0, color: "#555555", fontSize: 13 }}>
           {errors.map((e) => (
             <li key={`${e.file}-${e.message}`}>
               {e.file}: {e.message}
@@ -141,7 +141,7 @@ export function DocumentsStep() {
               key={source}
               style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0" }}
             >
-              <span style={{ color: "#003087" }} aria-hidden="true">
+              <span style={{ color: "#333333" }} aria-hidden="true">
                 PDF
               </span>
               <span style={{ fontFamily: "var(--font-urbanist)" }}>
@@ -153,7 +153,7 @@ export function DocumentsStep() {
               <button
                 type="button"
                 onClick={() => removeSource(source)}
-                style={{ background: "none", border: "none", color: "#E85500", cursor: "pointer" }}
+                style={{ background: "none", border: "none", color: "#555555", cursor: "pointer" }}
                 aria-label={`Eliminar ${source}`}
               >
                 ✕

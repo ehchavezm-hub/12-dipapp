@@ -123,7 +123,7 @@ export function GeopoliticalContextStep() {
                 style={{ ...INPUT_STYLE, width: 80, flexShrink: 0 }}
               />
               <div>
-                <label htmlFor={`treaties-l${level}`} style={{ fontSize: 13, fontWeight: 600, color: "#FF6600", display: "block", marginBottom: 2 }}>
+                <label htmlFor={`treaties-l${level}`} style={{ fontSize: 13, fontWeight: 600, color: "#1A1A1A", display: "block", marginBottom: 2 }}>
                   {label}
                 </label>
                 <p style={{ margin: "0 0 2px", fontSize: 12, color: "#424242" }}>{desc}</p>
@@ -144,7 +144,7 @@ export function GeopoliticalContextStep() {
               style={{ ...INPUT_STYLE, width: 80, flexShrink: 0 }}
             />
             <div>
-              <label htmlFor="icj-cases" style={{ fontSize: 13, fontWeight: 600, color: "#E85500", display: "block", marginBottom: 2 }}>
+              <label htmlFor="icj-cases" style={{ fontSize: 13, fontWeight: 600, color: "#333333", display: "block", marginBottom: 2 }}>
                 Litigios pendientes ante CIJ / CPA / CIADI (−15 pts c/u)
               </label>
               <p style={{ margin: "0 0 2px", fontSize: 12, color: "#424242" }}>
