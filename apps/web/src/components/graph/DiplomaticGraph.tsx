@@ -267,10 +267,7 @@ function DiplomaticGraph({
               return affinityColor(ele.data("affinityScore") as number ?? 50)
             },
             label: "data(label)",
-            "font-size": (ele: cytoscape.NodeSingular) => {
-              const deg = ele.degree(false)
-              return Math.max(5, Math.min(9, 5 + deg * 0.08))  // 1/5 of original
-            },
+            "font-size": 11,   // overwritten per-zoom by resizeNodesForZoom
             "font-family": fontFamily,
             "font-weight": 600,
             color: "#E0F7F4",
@@ -343,11 +340,11 @@ function DiplomaticGraph({
               }
               return labels[t] ?? ""
             },
-            "font-size": 9,
+            "font-size": 7,
             "text-rotation": "autorotate",
-            "text-margin-y": -6,
+            "text-margin-y": -4,
             color: "#FFFFFF",
-            "text-opacity": 0.75,
+            "text-opacity": 0.55,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } as any,
         },
@@ -378,6 +375,21 @@ function DiplomaticGraph({
             "shadow-opacity": 1,
           },
         },
+        // Search result highlight — bright ring + oversized shadow
+        {
+          selector: "node.search-found",
+          style: {
+            "border-color":  "#FFD600",
+            "border-width":  5,
+            "border-opacity": 1,
+            "shadow-color":  "#FFD600",
+            "shadow-blur":   40,
+            "shadow-opacity": 1,
+            "shadow-offset-x": 0,
+            "shadow-offset-y": 0,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any,
+        },
       ],
       layout: {
         name: "preset",   // use the positions computed above — no physics pass
@@ -392,19 +404,19 @@ function DiplomaticGraph({
     // Keep node screen sizes constant regardless of zoom level.
     // Cytoscape node width/height are in model units; at zoom z, a model unit
     // = z screen pixels.  Dividing target screen size by z keeps visual size fixed.
+    // Labels: fixed 11px screen size so they're always readable.
     function resizeNodesForZoom() {
       const z = cy.zoom()
       cy.batch(() => {
         cy.nodes().forEach((ele) => {
           const deg = ele.degree(false)
           const isOrg = ele.data("nodeType") === "organization"
-          const base = isOrg ? 5 : 3                          // 1/5 of original (24→5, 14→3)
-          const screenSz = Math.max(base, Math.min(12, base + deg * 0.7)) // max 12 (was 60)
-          const screenFs = Math.max(5, Math.min(9, 5 + deg * 0.08))       // labels: 5-9px
+          const base = isOrg ? 7 : 5
+          const screenSz = Math.max(base, Math.min(16, base + deg * 0.7))
           ele.style({
-            width:               screenSz / z,
-            height:              screenSz / z,
-            "font-size":         screenFs / z,
+            width:                screenSz / z,
+            height:               screenSz / z,
+            "font-size":          11 / z,          // constant 11px regardless of zoom
             "text-outline-width": 2 / z,
           })
         })
@@ -495,9 +507,17 @@ function DiplomaticGraph({
       if (!cy) return
       const node = cy.getElementById(nodeId)
       if (!node.length) return
+
+      // Centre + zoom to node
       cy.animate({ center: { eles: node }, zoom: 2.5 }, { duration: 600 })
       node.select()
-      // Trigger tap event to open NodeSheet
+
+      // Bright yellow ring highlight — clears after 2.5 s
+      cy.nodes().removeClass("search-found")
+      node.addClass("search-found")
+      setTimeout(() => { node.removeClass("search-found") }, 2500)
+
+      // Open NodeSheet
       const data = node.data() as {
         id: string; label: string; nodeType: DiplomaticNode["type"]
         region: DiplomaticNode["region"]; affinityScore: number; clusterId: string
