@@ -103,6 +103,18 @@ async def fetch_live_context(targets: str, objective: str) -> str:
             f"Incluir: relaciones diplomáticas recientes, acuerdos vigentes, tensiones activas. "
             f"Responde en máximo 200 palabras, solo hechos verificables del {date.today().year}."
         )
+        # Default verified domains — extend via SEARCH_ALLOWED_DOMAINS env var
+        # (comma-separated list in Render → Environment, e.g. "apnews.com,dw.com")
+        default_domains = [
+            "un.org", "undocs.org", "worldbank.org", "imf.org",
+            "oas.org", "asean.org", "apec.org", "europa.eu",
+            "reuters.com", "bbc.com", "ft.com", "bloomberg.com",
+            "economist.com", "afp.com",
+        ]
+        import os
+        extra = [d.strip() for d in os.environ.get("SEARCH_ALLOWED_DOMAINS", "").split(",") if d.strip()]
+        allowed_domains = list(dict.fromkeys(default_domains + extra))  # deduplicate, preserve order
+
         response = await client.messages.create(
             model="claude-haiku-5-5",
             max_tokens=300,
@@ -110,12 +122,7 @@ async def fetch_live_context(targets: str, objective: str) -> str:
                 "type": "web_search_20250305",
                 "name": "web_search",
                 "max_uses": 1,
-                "allowed_domains": [
-                    "un.org", "undocs.org", "worldbank.org", "imf.org",
-                    "oas.org", "asean.org", "apec.org", "europa.eu",
-                    "reuters.com", "bbc.com", "ft.com", "bloomberg.com",
-                    "economist.com", "afp.com",
-                ],
+                "allowed_domains": allowed_domains,
             }],
             messages=[{"role": "user", "content": query}],
         )
