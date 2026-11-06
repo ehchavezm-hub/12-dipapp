@@ -20,6 +20,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <Link href="/graph" className="text-sm text-brand-gray hover:text-brand-blue">
           Grafo
         </Link>
+        <Link href="/ambassadors" className="text-sm text-brand-gray hover:text-brand-blue">
+          Embajadores
+        </Link>
         {canAnalyze && (
           <Link href="/analysis/new" className="text-sm text-brand-gray hover:text-brand-blue">
             Nuevo análisis
