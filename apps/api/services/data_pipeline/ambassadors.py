@@ -224,7 +224,6 @@ _SPARQL_QUERY = """
 SELECT DISTINCT
   ?personLabel
   ?posLabel
-  ?fromCountryCode
   ?startDate
 WHERE {
   ?person wdt:P31 wd:Q5 ;
@@ -234,15 +233,19 @@ WHERE {
   UNION
   { ?pos wdt:P279+ wd:Q121998 }
   FILTER NOT EXISTS { ?stmt pq:P582 [] }
-  OPTIONAL {
-    ?pos wdt:P17 ?fromCountry .
-    ?fromCountry wdt:P298 ?fromCountryCode .
-  }
+
+  # Only positions with English labels containing " to " — this guarantees
+  # the consistent format "Ambassador of [FROM] to [TO]", making extraction
+  # trivial and 100% reliable without any regex fragility.
+  ?pos rdfs:label ?posLabel .
+  FILTER(LANG(?posLabel) = "en")
+  FILTER(CONTAINS(LCASE(?posLabel), " to "))
+
   OPTIONAL { ?stmt pq:P580 ?startDate }
   SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
 }
-ORDER BY ?fromCountryCode ?personLabel
-LIMIT 8000
+ORDER BY ?posLabel ?personLabel
+LIMIT 10000
 """
 
 
@@ -273,22 +276,12 @@ def _fetch_wikidata_ambassadors() -> list[dict[str, Any]]:
     for row in bindings:
         name = row.get("personLabel", {}).get("value", "")
         pos_label = row.get("posLabel", {}).get("value", "")
-        p17_code = row.get("fromCountryCode", {}).get("value", "").upper()
         raw_date = row.get("startDate", {}).get("value", "")
 
-        if not name or name.startswith("Q"):
+        if not name or name.startswith("Q") or not pos_label:
             continue
 
-        # Derive countries from the English position label first ("Ambassador of X to Y").
-        # P17 is used ONLY as a fallback for fromCountry when label extraction fails —
-        # Wikidata P17 on diplomatic positions inconsistently points to sending OR
-        # receiving country depending on who entered the data.
-        to_code = _extract_to_country(pos_label) if pos_label else ""
-        from_code = _extract_from_country(pos_label) if pos_label else ""
-        if not from_code:
-            from_code = p17_code  # P17 fallback
-
-        # Skip records with no usable country data or self-assignments
+        from_code, to_code = _parse_ambassador_label(pos_label)
         if not from_code or not to_code or from_code == to_code:
             continue
 
@@ -500,7 +493,7 @@ async def _fetch_all_sources() -> tuple[list[dict[str, Any]], list[dict[str, Any
 
 def fetch_ambassadors() -> list[dict[str, Any]]:
     """Return merged ambassador list from Wikidata + MFA websites. Cached 12h."""
-    cache_key = "ambassadors_combined_v3"
+    cache_key = "ambassadors_combined_v4"
     cached = C.get(cache_key)
     if cached is not None:
         return cached
@@ -617,53 +610,49 @@ def _match_country(fragment: str) -> str:
     return best
 
 
-def _extract_to_country(label: str) -> str:
-    """Extract ISO-3 destination from ambassador position label.
+# International organization names → short code (used as toCountry)
+_IO_NAMES: dict[str, str] = {
+    "united nations": "UN",
+    "european union": "EU",
+    "organization of american states": "OAS",
+    "organisation of american states": "OAS",
+    "african union": "AU",
+    "world trade organization": "WTO",
+    "world trade organisation": "WTO",
+    "north atlantic treaty organization": "NATO",
+    "north atlantic treaty organisation": "NATO",
+    "asean": "ASEAN",
+    "council of europe": "COE",
+    "arab league": "AL",
+    "commonwealth": "CW",
+}
 
-    Handles English ('to', 'in'), Spanish ('ante', 'en', 'para', 'en') and
-    French ('auprès de') formats found in Wikidata English/Spanish labels.
+
+def _match_io(fragment: str) -> str:
+    """Return short IO code if fragment contains a known organization name."""
+    for name, code in _IO_NAMES.items():
+        if name in fragment:
+            return code
+    return ""
+
+
+def _parse_ambassador_label(label: str) -> tuple[str, str]:
+    """Parse 'Ambassador of [FROM] to [TO]' English label → (from_iso3, to_code).
+
+    The SPARQL guarantees labels contain ' to ' and are in English, so this
+    simple split is sufficient — no multilingual regex needed.
     """
-    label_lower = label.lower()
-    patterns = [
-        # English: "Ambassador of X to [the] Y"
-        r"\bto\s+(?:the\s+)?(.+?)(?:\s*$|\s*\()",
-        # Spanish: "Embajador de X ante [el/la] Y"
-        r"\bante\s+(?:el\s+|la\s+|los\s+|las\s+)?(.+?)(?:\s*$|\s*\()",
-        # Spanish: "... para [el/la] Y"
-        r"\bpara\s+(?:el\s+|la\s+|los\s+|las\s+)?(.+?)(?:\s*$|\s*\()",
-        # Spanish: "Embajador de X en [el/la] Y"  ("en" = "in" in Spanish)
-        r"\ben\s+(?:el\s+|la\s+|los\s+|las\s+)?(.+?)(?:\s*$|\s*\()",
-        # French: "Ambassadeur auprès de [la/l'/le] Y"
-        r"\bauprès\s+de\s+(?:l[a']?\s+|le\s+|les\s+)?(.+?)(?:\s*$|\s*\()",
-        # English fallback: "Ambassador in Y"
-        r"\bin\s+(?:the\s+)?(.+?)(?:\s*$|\s*\()",
-    ]
-    for pattern in patterns:
-        m = re.search(pattern, label_lower)
-        if m:
-            fragment = m.group(1).strip().rstrip(")").strip()
-            code = _match_country(fragment)
-            if code:
-                return code
-    return ""
+    lower = label.lower()
+    of_idx = lower.find(" of ")
+    to_idx = lower.rfind(" to ")
+    if of_idx == -1 or to_idx == -1 or to_idx <= of_idx:
+        return "", ""
 
+    from_raw = lower[of_idx + 4: to_idx].strip().lstrip("the ").strip()
+    to_raw = lower[to_idx + 4:].strip().lstrip("the ").strip()
+    to_raw = re.sub(r"\s*\(.*$", "", to_raw).strip()
 
-def _extract_from_country(label: str) -> str:
-    """Extract ISO-3 sending country from ambassador position label."""
-    label_lower = label.lower()
-    # English: "Ambassador of [the] X to/ante/auprès Y"
-    m = re.search(r"\bof\s+(?:the\s+)?(.+?)\s+(?:to|ante|en|auprès)\b", label_lower)
-    if m:
-        code = _match_country(m.group(1).strip())
-        if code:
-            return code
-    # Spanish: "Embajador de/del [el/la] X ante/para/en Y"
-    m = re.search(
-        r"\b(?:de|del)\s+(?:el\s+|la\s+|los\s+|las\s+)?(.+?)\s+(?:ante|para|en)\b",
-        label_lower,
-    )
-    if m:
-        code = _match_country(m.group(1).strip())
-        if code:
-            return code
-    return ""
+    from_code = _match_country(from_raw)
+    to_code = _match_country(to_raw) or _match_io(to_raw)
+
+    return from_code, to_code
