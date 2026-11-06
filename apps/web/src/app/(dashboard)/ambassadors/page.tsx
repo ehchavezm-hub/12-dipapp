@@ -282,7 +282,7 @@ export default function AmbassadorsPage() {
 
           {/* Source note */}
           <p style={{ fontSize: 11, color: "#BBBCBE", marginTop: 16 }}>
-            Fuente: Wikidata (P39 — cargo actual). Actualización automática cada 12h. Última carga: {new Date().toLocaleDateString("es-PE", { year: "numeric", month: "long", day: "numeric" })}.
+            Fuente: Wikidata + Cancillerías oficiales (sitios públicos). Actualización automática mensual. Última carga: {new Date().toLocaleDateString("es-PE", { year: "numeric", month: "long", day: "numeric" })}.
           </p>
         </>
       )}
