@@ -87,50 +87,72 @@ async def fetch_un_votes(country: str, years: int) -> str:
 
 
 async def fetch_live_context(targets: str, objective: str) -> str:
-    """Use claude-haiku-5-5 + web_search to get a brief current geopolitical summary.
+    """Use claude-haiku-5-5 + web_search to get current geopolitical context.
 
-    One search, max 200 words response — minimum token cost (~$0.001 per call).
+    Up to 5 searches, 1 200 tokens — covers recent treaties, memberships,
+    and diplomatic events from the last 12 months. ~$0.003–0.005 per call.
     Returns empty string on any error (graceful degradation).
     """
+    import os
     from settings import get_settings
     settings = get_settings()
     if not settings.ANTHROPIC_API_KEY:
         return ""
+
+    today = date.today()
+    last_year = today.year - 1
+
+    # Default verified domains — extend via SEARCH_ALLOWED_DOMAINS env var
+    # (comma-separated list in Render → Environment, e.g. "apnews.com,dw.com")
+    default_domains = [
+        # Official org sites
+        "un.org", "undocs.org", "worldbank.org", "imf.org",
+        "oas.org", "asean.org", "apec.org", "europa.eu",
+        "wto.org", "g20.org", "g7.org", "nato.int", "osce.org",
+        "africanunion.org", "sica.int", "mercosur.int", "caricom.org",
+        # Verified global press
+        "reuters.com", "bbc.com", "ft.com", "bloomberg.com",
+        "economist.com", "afp.com", "apnews.com", "dw.com",
+        "nikkei.com", "scmp.com", "france24.com", "aljazeera.com",
+        "washingtonpost.com", "nytimes.com", "theguardian.com",
+        "foreignpolicy.com", "cfr.org",
+        # Official government sources
+        "state.gov", "mfa.gov.cn", "mid.ru", "auswaertiges-amt.de",
+    ]
+    extra = [d.strip() for d in os.environ.get("SEARCH_ALLOWED_DOMAINS", "").split(",") if d.strip()]
+    allowed_domains = list(dict.fromkeys(default_domains + extra))
+
+    query = (
+        f"Proporciona un resumen COMPLETO y ACTUALIZADO de la situación geopolítica de: {targets}. "
+        f"Objetivo del análisis: {objective}. "
+        f"BUSCA Y REPORTA OBLIGATORIAMENTE: "
+        f"(1) Tratados firmados, ampliados o ratificados en {last_year}-{today.year}. "
+        f"(2) Nuevos miembros, candidatos o salidas de organizaciones internacionales. "
+        f"(3) Acuerdos comerciales o diplomáticos vigentes o recientes. "
+        f"(4) Tensiones, disputas o sanciones activas. "
+        f"(5) Cambios de liderazgo o política exterior relevantes. "
+        f"Usa múltiples búsquedas para cubrir todos los puntos. "
+        f"Solo hechos verificables con fecha. Fecha de hoy: {today}."
+    )
+
     try:
         client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
-        query = (
-            f"Situación geopolítica actual de {targets} relevante para: {objective}. "
-            f"Incluir: relaciones diplomáticas recientes, acuerdos vigentes, tensiones activas. "
-            f"Responde en máximo 200 palabras, solo hechos verificables del {date.today().year}."
-        )
-        # Default verified domains — extend via SEARCH_ALLOWED_DOMAINS env var
-        # (comma-separated list in Render → Environment, e.g. "apnews.com,dw.com")
-        default_domains = [
-            "un.org", "undocs.org", "worldbank.org", "imf.org",
-            "oas.org", "asean.org", "apec.org", "europa.eu",
-            "reuters.com", "bbc.com", "ft.com", "bloomberg.com",
-            "economist.com", "afp.com",
-        ]
-        import os
-        extra = [d.strip() for d in os.environ.get("SEARCH_ALLOWED_DOMAINS", "").split(",") if d.strip()]
-        allowed_domains = list(dict.fromkeys(default_domains + extra))  # deduplicate, preserve order
-
         response = await client.messages.create(
             model="claude-haiku-5-5",
-            max_tokens=300,
+            max_tokens=1200,
             tools=[{
                 "type": "web_search_20250305",
                 "name": "web_search",
-                "max_uses": 1,
+                "max_uses": 5,
                 "allowed_domains": allowed_domains,
             }],
             messages=[{"role": "user", "content": query}],
         )
-        # Extract only text blocks from the response
         text_parts = [b.text for b in response.content if hasattr(b, "text") and b.text]
         summary = " ".join(text_parts).strip()
         if summary:
-            logger.info("Live web context fetched (%d chars)", len(summary))
+            logger.info("Live web context fetched (%d chars, %d content blocks)",
+                        len(summary), len(response.content))
         return summary
     except Exception as exc:
         logger.warning("fetch_live_context failed: %s", exc)
