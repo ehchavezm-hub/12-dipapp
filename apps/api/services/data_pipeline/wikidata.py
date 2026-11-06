@@ -71,7 +71,7 @@ def fetch_diplomatic_edges() -> list[dict[str, Any]]:
         })
 
     if edges:
-        C.set(cache_key, edges, ttl=C.API_TTL)
+        C.set(cache_key, edges, ttl=C.AMBASSADOR_TTL)  # 12 h — ambassador rotations change frequently
         return edges
     return _fallback_diplomatic_edges()
 

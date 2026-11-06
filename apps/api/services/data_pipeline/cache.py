@@ -10,8 +10,11 @@ from typing import Any
 _CACHE_DIR = Path(os.environ.get("DIPAPP_CACHE_DIR", "/tmp/dipapp_cache"))
 _CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
-API_TTL = 86_400       # 24 h for live APIs
-STATIC_TTL = 604_800   # 7 days for static CSVs / datasets
+# TTLs configurable via env vars (seconds). Defaults: 24h live APIs, 24h datasets.
+# Set DIPAPP_API_TTL / DIPAPP_STATIC_TTL in Render → Environment to override.
+API_TTL    = int(os.environ.get("DIPAPP_API_TTL",    86_400))   # default 24 h
+STATIC_TTL = int(os.environ.get("DIPAPP_STATIC_TTL", 86_400))   # default 24 h (was 7 days)
+AMBASSADOR_TTL = int(os.environ.get("DIPAPP_AMBASSADOR_TTL", 43_200))  # default 12 h
 
 
 def _path(key: str) -> Path:
