@@ -144,6 +144,20 @@ async def health_check() -> dict[str, str]:
     return {"status": "ok", "service": "dipapp-api"}
 
 
+@app.get("/keepalive")
+async def keepalive() -> dict[str, str]:
+    """Called by external scheduler (cron-job.org) every 14 min to prevent Render spin-down.
+    Also triggers a lightweight cache check so data stays warm.
+    """
+    try:
+        from services.data_pipeline import cache as C
+        cached = C.get("graph_data")
+        warm = cached is not None
+    except Exception:
+        warm = False
+    return {"status": "alive", "cache_warm": str(warm)}
+
+
 @app.get("/health/config")
 async def config_check() -> dict[str, object]:
     """Non-sensitive config check: which API keys are set (never exposes values)."""
