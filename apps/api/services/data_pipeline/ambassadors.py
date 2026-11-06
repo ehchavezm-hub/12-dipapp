@@ -19,11 +19,12 @@ log = logging.getLogger(__name__)
 
 _SPARQL_URL = "https://query.wikidata.org/sparql"
 
-# Query: current ambassadors — people whose P39 (position held) is a subclass
-# of Q121998 (ambassador), with no P582 (end date) = still in post.
-# P17  = country (sending country of the position item)
-# P131 = administrative location (receiving country, often set on the position)
-# P580 = start time (appointment date)
+# Query: current ambassadors — people whose P39 (position held) is an instance
+# of Q121998 (ambassador) or Q3917681 (Ambassador Extraordinary and Plenipotentiary).
+# Ambassador position items in Wikidata use P31 (instance of), NOT P279 (subclass of).
+# P17  = sending country on the position item
+# P131 = receiving country on the position item
+# P580 = start time (appointment date) on the statement
 _QUERY = """
 SELECT DISTINCT
   ?personLabel
@@ -31,10 +32,10 @@ SELECT DISTINCT
   ?toCountryCode
   ?startDate
 WHERE {
-  ?person wdt:P31 wd:Q5 .
-  ?person p:P39 ?stmt .
+  ?person wdt:P31 wd:Q5 ;
+          p:P39 ?stmt .
   ?stmt ps:P39 ?pos .
-  ?pos wdt:P279* wd:Q121998 .
+  ?pos wdt:P31/wdt:P279* wd:Q121998 .
   FILTER NOT EXISTS { ?stmt pq:P582 [] }
   OPTIONAL {
     ?pos wdt:P17 ?fromCountry .
@@ -73,7 +74,7 @@ def fetch_ambassadors() -> list[dict[str, Any]]:
         resp.raise_for_status()
         bindings = resp.json().get("results", {}).get("bindings", [])
     except Exception as exc:
-        log.warning("Wikidata ambassadors SPARQL failed: %s", exc)
+        log.error("Wikidata ambassadors SPARQL failed: %s — type: %s", exc, type(exc).__name__)
         return []
 
     records: list[dict[str, Any]] = []
@@ -105,4 +106,7 @@ def fetch_ambassadors() -> list[dict[str, Any]]:
     if records:
         C.set(cache_key, records, ttl=C.AMBASSADOR_TTL)
         log.info("Fetched %d ambassador records from Wikidata", len(records))
+    else:
+        # Do not cache empty results — retry on next request
+        log.warning("Wikidata ambassadors returned 0 records (query may need adjustment)")
     return records
