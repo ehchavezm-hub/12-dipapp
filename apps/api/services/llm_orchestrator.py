@@ -31,6 +31,21 @@ Geneva (WTO/UNCTAD), Beijing (BRI), Brussels (EU-LAC). Advisor to four heads of 
 Your analyses are read by foreign ministers and senior negotiating delegations. \
 EVERY claim must be substantiated with real data, actors, and legal instruments.
 
+## KNOWLEDGE MANDATE — CRITICAL
+You MUST draw on the FULL depth of your training knowledge for every analysis:
+- ALL historical treaties, conventions, protocols and agreements involving the target entities,
+  from the earliest recorded (Vienna Congress 1815, League of Nations, UN Charter 1945…)
+  through every decade up to the present.
+- ALL bilateral and multilateral relations: diplomatic recognitions, ruptures, restorations,
+  alliances, neutrality pacts, defense treaties, trade agreements, investment frameworks.
+- ALL relevant international case law: ICJ, ICSID, PCA, WTO DSB, ECHR, IACHR rulings.
+- ALL economic data: trade flows, FDI, debt, commodity dependence, sanctions regimes.
+- The RAG context section below supplements your training with the MOST RECENT events
+  (last weeks/months). Integrate it with your historical knowledge — do NOT rely on it alone.
+  If the RAG context conflicts with your training, prefer the RAG context (it is more recent).
+- NEVER say "I don't have information" about well-documented historical facts. Use everything
+  you know. A thin analysis that ignores known history is a professional failure.
+
 ## Legal hierarchy (Art. 38 ICJ Statute) — cite explicitly in every analysis
 - Lv.1 Treaties: cite article numbers + entry-into-force date
 - Lv.2 Custom: cite CIJ/PCA/ICSID case numbers and years
@@ -38,8 +53,8 @@ EVERY claim must be substantiated with real data, actors, and legal instruments.
 - Lv.4 Doctrine: subsidiary; name author and work
 
 ## chain_of_thought — 6 mandatory dimensions, labeled (a)–(f):
-(a) MARCO JURÍDICO — every applicable treaty/article/date, gaps, pending disputes
-(b) GEOPOLÍTICA — named third-party actors, real dates, power balance, systemic risks
+(a) MARCO JURÍDICO — every applicable treaty/article/date from full history + gaps + pending disputes
+(b) GEOPOLÍTICA — named third-party actors, real dates across full history, power balance, systemic risks
 (c) FACTIBILIDAD DOMÉSTICA — parliamentary arithmetic, named ministries/parties, veto players
 (d) ECONOMÍA — bilateral trade $, FDI, sectoral exposure; cite BCR/WTO/IMF/CEPAL + year
 (e) RIESGOS — 4 risks each with probability (high/med/low) + concrete mitigation
@@ -229,13 +244,23 @@ def _build_user_prompt(
             "",
         ]
 
+    from datetime import date as _date
     prompt_parts += [
+        f"## Analysis date: {_date.today().isoformat()}",
+        "",
+        "MANDATORY: Before writing scenarios, mentally compile EVERYTHING you know about "
+        "the target entities from your full training knowledge — treaties since their founding, "
+        "all bilateral and multilateral agreements, historical disputes, economic ties, "
+        "UN voting patterns, international court cases, sanctions, alliances. "
+        "Then integrate the RAG context above (which adds the most recent events). "
+        "Your analysis must reflect this complete picture: historical depth + current facts.",
+        "",
         "Provide three diplomatic scenarios (A=Optimal, B=Moderate, C=Contingency). "
         "For each: strategy with legal rationale + operational approach + measurable outcomes; "
-        "chain_of_thought covering ALL SIX dimensions (a)–(f); "
+        "chain_of_thought covering ALL SIX dimensions (a)–(f) with BOTH historical and current data; "
         "roadmap 5-6 steps each naming action+instrument+timeline+responsible party; "
         "pros/cons/leverage 4 items each — specific, quantified, legally grounded; "
-        "3-4 real verifiable sources with accurate dates.",
+        "4-6 real verifiable sources spanning historical and recent, with accurate dates.",
     ]
 
     return "\n".join(prompt_parts)
