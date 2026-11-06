@@ -1,4 +1,4 @@
-"""RAG context builder with domain whitelist and UN vote fetching."""
+"""RAG context builder with domain whitelist, UN vote fetching, and live web search."""
 from __future__ import annotations
 
 import asyncio
@@ -6,6 +6,7 @@ import logging
 from datetime import date
 from urllib.parse import urlparse
 
+import anthropic
 import httpx
 
 from schemas.analysis import AnalysisCaseDTO
@@ -85,20 +86,60 @@ async def fetch_un_votes(country: str, years: int) -> str:
         return ""
 
 
-async def collect_rag_parts(case: AnalysisCaseDTO) -> list[str]:
-    """Collect RAG context blocks (UN vote summaries + sanitized support documents).
+async def fetch_live_context(targets: str, objective: str) -> str:
+    """Use claude-haiku-5-5 + web_search to get a brief current geopolitical summary.
 
-    UN vote lookups run concurrently; failed lookups are dropped, so the
-    length of the result is the number of sources actually used.
+    One search, max 200 words response — minimum token cost (~$0.001 per call).
+    Returns empty string on any error (graceful degradation).
     """
-    votes = await asyncio.gather(
-        *(fetch_un_votes(p.country_code, case.analysis_period_years) for p in case.target_profiles)
+    from settings import get_settings
+    settings = get_settings()
+    if not settings.ANTHROPIC_API_KEY:
+        return ""
+    try:
+        client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
+        query = (
+            f"Situación geopolítica actual de {targets} relevante para: {objective}. "
+            f"Incluir: relaciones diplomáticas recientes, acuerdos vigentes, tensiones activas. "
+            f"Responde en máximo 200 palabras, solo hechos verificables del {date.today().year}."
+        )
+        response = await client.messages.create(
+            model="claude-haiku-5-5",
+            max_tokens=300,
+            tools=[{"type": "web_search_20250305", "name": "web_search", "max_uses": 1}],
+            messages=[{"role": "user", "content": query}],
+        )
+        # Extract only text blocks from the response
+        text_parts = [b.text for b in response.content if hasattr(b, "text") and b.text]
+        summary = " ".join(text_parts).strip()
+        if summary:
+            logger.info("Live web context fetched (%d chars)", len(summary))
+        return summary
+    except Exception as exc:
+        logger.warning("fetch_live_context failed: %s", exc)
+        return ""
+
+
+async def collect_rag_parts(case: AnalysisCaseDTO) -> list[str]:
+    """Collect RAG context blocks: live web search + UN votes + support documents."""
+    targets_str = ", ".join(p.name for p in case.target_profiles)
+    objective_str = case.diplomatic_objective.description if case.diplomatic_objective else ""
+
+    # Run live web search and UN votes concurrently
+    live_ctx, *votes = await asyncio.gather(
+        fetch_live_context(targets_str, objective_str),
+        *(fetch_un_votes(p.country_code, case.analysis_period_years) for p in case.target_profiles),
     )
-    parts: list[str] = [
+
+    parts: list[str] = []
+    if live_ctx:
+        parts.append(f"[Contexto actual — búsqueda web {date.today()}]\n{live_ctx}")
+
+    parts.extend(
         f"[UN Voting — {profile.name}]\n{text}"
         for profile, text in zip(case.target_profiles, votes)
         if text
-    ]
+    )
     parts.extend(
         f"[Document: {doc.source} #{doc.chunk_index}]\n{doc.content}"
         for doc in case.support_documents
