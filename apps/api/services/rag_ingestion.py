@@ -100,7 +100,7 @@ async def fetch_live_context(targets: str, objective: str) -> str:
         return ""
 
     today = date.today()
-    last_year = today.year - 1
+    two_years_ago = today.year - 2
 
     # Default verified domains — extend via SEARCH_ALLOWED_DOMAINS env var
     # (comma-separated list in Render → Environment, e.g. "apnews.com,dw.com")
@@ -122,17 +122,25 @@ async def fetch_live_context(targets: str, objective: str) -> str:
     extra = [d.strip() for d in os.environ.get("SEARCH_ALLOWED_DOMAINS", "").split(",") if d.strip()]
     allowed_domains = list(dict.fromkeys(default_domains + extra))
 
+    # The query explicitly covers the period from 2 years ago through TODAY.
+    # This ensures that regardless of when the app is run, the web search
+    # fetches ALL events up to that exact date — covering any gap between
+    # the LLM's training cutoff and the current run date.
     query = (
-        f"Proporciona un resumen COMPLETO y ACTUALIZADO de la situación geopolítica de: {targets}. "
+        f"ANÁLISIS EJECUTADO EL {today}. "
+        f"Proporciona un resumen COMPLETO de los eventos geopolíticos de: {targets} "
+        f"desde {two_years_ago} hasta HOY {today}. "
         f"Objetivo del análisis: {objective}. "
-        f"BUSCA Y REPORTA OBLIGATORIAMENTE: "
-        f"(1) Tratados firmados, ampliados o ratificados en {last_year}-{today.year}. "
-        f"(2) Nuevos miembros, candidatos o salidas de organizaciones internacionales. "
-        f"(3) Acuerdos comerciales o diplomáticos vigentes o recientes. "
-        f"(4) Tensiones, disputas o sanciones activas. "
-        f"(5) Cambios de liderazgo o política exterior relevantes. "
-        f"Usa múltiples búsquedas para cubrir todos los puntos. "
-        f"Solo hechos verificables con fecha. Fecha de hoy: {today}."
+        f"BUSCA EN MÚLTIPLES FUENTES Y REPORTA OBLIGATORIAMENTE TODOS los eventos en ese período: "
+        f"(1) Tratados firmados, ampliados, ratificados o denunciados desde {two_years_ago} hasta {today}. "
+        f"(2) Cambios de membresía en organizaciones internacionales (nuevos miembros, candidatos, suspensiones, salidas). "
+        f"(3) Acuerdos comerciales, de inversión o diplomáticos nuevos o modificados. "
+        f"(4) Tensiones, disputas, conflictos o sanciones activas o resueltas. "
+        f"(5) Cambios de gobierno, política exterior o liderazgo relevante. "
+        f"(6) Decisiones de tribunales internacionales (ICJ, OMC, ICSID). "
+        f"Incluye FECHAS EXACTAS para cada evento. "
+        f"Realiza búsquedas separadas por subtema para máxima cobertura. "
+        f"Este análisis debe reflejar el estado del mundo al {today} — no omitas nada."
     )
 
     try:
