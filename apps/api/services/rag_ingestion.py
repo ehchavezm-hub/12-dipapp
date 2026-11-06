@@ -106,7 +106,17 @@ async def fetch_live_context(targets: str, objective: str) -> str:
         response = await client.messages.create(
             model="claude-haiku-5-5",
             max_tokens=300,
-            tools=[{"type": "web_search_20250305", "name": "web_search", "max_uses": 1}],
+            tools=[{
+                "type": "web_search_20250305",
+                "name": "web_search",
+                "max_uses": 1,
+                "allowed_domains": [
+                    "un.org", "undocs.org", "worldbank.org", "imf.org",
+                    "oas.org", "asean.org", "apec.org", "europa.eu",
+                    "reuters.com", "bbc.com", "ft.com", "bloomberg.com",
+                    "economist.com", "afp.com",
+                ],
+            }],
             messages=[{"role": "user", "content": query}],
         )
         # Extract only text blocks from the response
