@@ -106,6 +106,116 @@ _MFA_SOURCES: list[dict[str, str]] = [
 # All MFA domains to include in allowed_domains for the web search tool
 _MFA_DOMAINS = [s["domain"] for s in _MFA_SOURCES]
 
+# International organizations that publish accredited ambassador/permanent rep lists
+_IO_SOURCES: list[dict[str, str]] = [
+    {
+        "id": "UN_NY",
+        "name": "United Nations (New York) — Permanent Representatives",
+        "domain": "un.org",
+        "query": (
+            "Search protocol.un.org or un.org for the current complete list of "
+            "Permanent Representatives accredited to the United Nations in New York. "
+            "For each country return: country name, ambassador/permanent representative full name, "
+            "and date of accreditation if available. "
+            "Return ONLY a JSON array: "
+            '[{"name":"...","fromCountry":"full country name","toCountry":"UN","startDate":"YYYY-MM-DD or empty"}].'
+        ),
+    },
+    {
+        "id": "UN_GE",
+        "name": "United Nations (Geneva) — Permanent Representatives",
+        "domain": "unog.ch",
+        "query": (
+            "Search unog.ch for the current list of Permanent Representatives accredited "
+            "to the United Nations Office at Geneva. "
+            "For each country return: country name, ambassador/permanent representative full name, "
+            "and date of accreditation if available. "
+            "Return ONLY a JSON array: "
+            '[{"name":"...","fromCountry":"full country name","toCountry":"UN Geneva","startDate":"YYYY-MM-DD or empty"}].'
+        ),
+    },
+    {
+        "id": "OAS",
+        "name": "Organization of American States — Permanent Missions",
+        "domain": "oas.org",
+        "query": (
+            "Search oas.org for the current list of Permanent Representatives "
+            "and Ambassadors accredited to the Organization of American States (OAS/OEA). "
+            "For each country return: country name, ambassador full name, "
+            "and date of accreditation if available. "
+            "Return ONLY a JSON array: "
+            '[{"name":"...","fromCountry":"full country name","toCountry":"OAS","startDate":"YYYY-MM-DD or empty"}].'
+        ),
+    },
+    {
+        "id": "EU",
+        "name": "European Union — Accredited Ambassadors",
+        "domain": "eeas.europa.eu",
+        "query": (
+            "Search eeas.europa.eu for the current list of Ambassadors and Heads of Mission "
+            "accredited to the European Union. "
+            "For each country return: country name, ambassador full name, "
+            "and date of accreditation if available. "
+            "Return ONLY a JSON array: "
+            '[{"name":"...","fromCountry":"full country name","toCountry":"EU","startDate":"YYYY-MM-DD or empty"}].'
+        ),
+    },
+    {
+        "id": "ASEAN",
+        "name": "ASEAN — Accredited Ambassadors",
+        "domain": "asean.org",
+        "query": (
+            "Search asean.org for the current list of Ambassadors and Permanent Representatives "
+            "accredited to ASEAN. "
+            "For each country return: country name, ambassador full name, "
+            "and date of accreditation if available. "
+            "Return ONLY a JSON array: "
+            '[{"name":"...","fromCountry":"full country name","toCountry":"ASEAN","startDate":"YYYY-MM-DD or empty"}].'
+        ),
+    },
+    {
+        "id": "AU",
+        "name": "African Union — Accredited Ambassadors",
+        "domain": "africanunion.org",
+        "query": (
+            "Search africanunion.org for the current list of Ambassadors and Permanent Representatives "
+            "accredited to the African Union. "
+            "For each country return: country name, ambassador full name, "
+            "and date of accreditation if available. "
+            "Return ONLY a JSON array: "
+            '[{"name":"...","fromCountry":"full country name","toCountry":"African Union","startDate":"YYYY-MM-DD or empty"}].'
+        ),
+    },
+    {
+        "id": "WTO",
+        "name": "WTO — Permanent Representatives",
+        "domain": "wto.org",
+        "query": (
+            "Search wto.org for the current list of Permanent Representatives and Ambassadors "
+            "accredited to the World Trade Organization. "
+            "For each country return: country name, ambassador full name, "
+            "and date of accreditation if available. "
+            "Return ONLY a JSON array: "
+            '[{"name":"...","fromCountry":"full country name","toCountry":"WTO","startDate":"YYYY-MM-DD or empty"}].'
+        ),
+    },
+    {
+        "id": "NATO",
+        "name": "NATO — Permanent Representatives",
+        "domain": "nato.int",
+        "query": (
+            "Search nato.int for the current list of Permanent Representatives "
+            "accredited to NATO. "
+            "For each country return: country name, ambassador full name, "
+            "and date of accreditation if available. "
+            "Return ONLY a JSON array: "
+            '[{"name":"...","fromCountry":"full country name","toCountry":"NATO","startDate":"YYYY-MM-DD or empty"}].'
+        ),
+    },
+]
+
+_IO_DOMAINS = list({s["domain"] for s in _IO_SOURCES})
+
 # ---------------------------------------------------------------------------
 # Wikidata SPARQL query
 # ---------------------------------------------------------------------------
@@ -275,17 +385,88 @@ async def _fetch_mfa_country(source: dict[str, str], client: anthropic.AsyncAnth
     return records
 
 
-async def _fetch_all_mfa_ambassadors() -> list[dict[str, Any]]:
-    """Fetch ambassador lists from all MFA websites concurrently (batches of 10)."""
+async def _fetch_io_org(source: dict[str, str], client: anthropic.AsyncAnthropic) -> list[dict[str, Any]]:
+    """Fetch ambassador/rep list from one international organization (ONU, OEA, EU, etc.)."""
+    cache_key = f"io_ambassadors_{source['id']}_v1"
+    cached = C.get(cache_key)
+    if cached is not None:
+        return cached
+
+    allowed = _IO_DOMAINS + _MFA_DOMAINS + ["un.org", "reuters.com", "apnews.com"]
+
+    try:
+        response = await client.messages.create(
+            model="claude-haiku-5-5",
+            max_tokens=4000,
+            tools=[{
+                "type": "web_search_20250305",
+                "name": "web_search",
+                "max_uses": 3,
+                "allowed_domains": list(dict.fromkeys(allowed)),
+            }],
+            messages=[{"role": "user", "content": source["query"]}],
+        )
+        text = " ".join(b.text for b in response.content if hasattr(b, "text") and b.text).strip()
+        m = re.search(r"\[.*\]", text, re.DOTALL)
+        if not m:
+            return []
+        raw_list = json.loads(m.group(0))
+    except Exception as exc:
+        log.warning("IO web search failed for %s: %s", source["id"], exc)
+        return []
+
+    records: list[dict[str, Any]] = []
+    for item in raw_list:
+        name = str(item.get("name", "")).strip()
+        from_name = str(item.get("fromCountry", "")).strip()
+        to_name = str(item.get("toCountry", "")).strip()
+        start = str(item.get("startDate", "")).strip()
+
+        if not name or name.startswith("Q"):
+            continue
+
+        from_code = _match_country(from_name.lower()) or from_name[:3].upper()
+        # Keep IO destinations as readable string (UN, OAS, EU, etc.)
+        to_code = to_name if to_name else source["id"]
+
+        records.append({
+            "name": name,
+            "fromCountry": from_code,
+            "toCountry": to_code,
+            "startDate": start if re.match(r"\d{4}", start) else "",
+        })
+
+    _MONTHLY = 30 * 86_400
+    if records:
+        C.set(cache_key, records, ttl=_MONTHLY)
+        log.info("IO %s: %d reps fetched", source["name"], len(records))
+
+    return records
+
+
+async def _fetch_all_io_ambassadors() -> list[dict[str, Any]]:
+    """Fetch permanent representative lists from all international organizations."""
     from settings import get_settings
     settings = get_settings()
     if not settings.ANTHROPIC_API_KEY:
         return []
 
     client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
-    all_records: list[dict[str, Any]] = []
+    results = await asyncio.gather(
+        *[_fetch_io_org(src, client) for src in _IO_SOURCES],
+        return_exceptions=True,
+    )
+    records: list[dict[str, Any]] = []
+    for r in results:
+        if isinstance(r, list):
+            records.extend(r)
+    log.info("IO organizations total: %d rep records", len(records))
+    return records
 
-    # Process in batches of 10 to respect rate limits
+
+async def _fetch_all_mfa_ambassadors(client: anthropic.AsyncAnthropic) -> list[dict[str, Any]]:
+    """Fetch ambassador lists from all MFA websites concurrently (batches of 10)."""
+    all_records: list[dict[str, Any]] = []
     batch_size = 10
     for i in range(0, len(_MFA_SOURCES), batch_size):
         batch = _MFA_SOURCES[i:i + batch_size]
@@ -296,10 +477,24 @@ async def _fetch_all_mfa_ambassadors() -> list[dict[str, Any]]:
         for r in results:
             if isinstance(r, list):
                 all_records.extend(r)
-        await asyncio.sleep(1)  # brief pause between batches
-
+        await asyncio.sleep(1)
     log.info("MFA web search total: %d ambassador records", len(all_records))
     return all_records
+
+
+async def _fetch_all_sources() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Run MFA + IO fetches concurrently and return (mfa_records, io_records)."""
+    from settings import get_settings
+    settings = get_settings()
+    if not settings.ANTHROPIC_API_KEY:
+        return [], []
+    client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
+    mfa, io = await asyncio.gather(
+        _fetch_all_mfa_ambassadors(client),
+        _fetch_all_io_ambassadors(),
+        return_exceptions=True,
+    )
+    return (mfa if isinstance(mfa, list) else []), (io if isinstance(io, list) else [])
 
 
 # ---------------------------------------------------------------------------
@@ -316,19 +511,18 @@ def fetch_ambassadors() -> list[dict[str, Any]]:
     # Wikidata (sync)
     wikidata_records = _fetch_wikidata_ambassadors()
 
-    # MFA web search (async — run in event loop)
+    # MFA + IO web search (async — run in event loop)
     try:
-        mfa_records = asyncio.run(_fetch_all_mfa_ambassadors())
+        mfa_records, io_records = asyncio.run(_fetch_all_sources())
     except RuntimeError:
-        # Already inside an event loop (e.g. during startup warm-up)
-        mfa_records = []
-        log.info("MFA fetch skipped (event loop already running); will retry on next request")
+        mfa_records, io_records = [], []
+        log.info("Web fetch skipped (event loop already running); will retry on next request")
 
     # Merge and deduplicate by (name, fromCountry, toCountry)
     seen: set[tuple[str, str, str]] = set()
     merged: list[dict[str, Any]] = []
 
-    for rec in wikidata_records + mfa_records:
+    for rec in wikidata_records + mfa_records + io_records:
         key = (rec["name"].lower(), rec["fromCountry"], rec["toCountry"])
         if key in seen:
             continue
@@ -340,8 +534,8 @@ def fetch_ambassadors() -> list[dict[str, Any]]:
     _MONTHLY = 30 * 86_400
     if merged:
         C.set(cache_key, merged, ttl=_MONTHLY)
-        log.info("Combined ambassador list: %d records (Wikidata=%d, MFA=%d)",
-                 len(merged), len(wikidata_records), len(mfa_records))
+        log.info("Combined ambassador list: %d records (Wikidata=%d, MFA=%d, IO=%d)",
+                 len(merged), len(wikidata_records), len(mfa_records), len(io_records))
     else:
         log.warning("Combined ambassador list is empty")
 
