@@ -114,6 +114,26 @@ export default function GraphCanvas({ initialNodes, initialEdges }: GraphCanvasP
   const graphRef    = useRef<DiplomaticGraphHandle>(null)
   const wrapperRef  = useRef<HTMLDivElement>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
+  const [refreshMsg, setRefreshMsg] = useState<string | null>(null)
+
+  async function handleRefresh() {
+    setRefreshing(true)
+    setRefreshMsg(null)
+    try {
+      const res = await fetch("/api/proxy/graph/refresh", { method: "POST" })
+      if (res.ok) {
+        setRefreshMsg("✓ Datos actualizados")
+        setTimeout(() => window.location.reload(), 1200)
+      } else {
+        setRefreshMsg("Error al actualizar")
+      }
+    } catch {
+      setRefreshMsg("Error al actualizar")
+    } finally {
+      setRefreshing(false)
+    }
+  }
 
   const [activeEdgeTypes, setActiveEdgeTypes] = useState<Set<string>>(
     () => new Set(EDGE_TYPE_META.map((m) => m.type))
@@ -169,6 +189,14 @@ export default function GraphCanvas({ initialNodes, initialEdges }: GraphCanvasP
 
         <div style={{ marginLeft: "auto", display: "flex", gap: 6, alignItems: "center", paddingRight: 8 }}>
           <CountrySearch nodes={initialNodes} onSelect={(id) => graphRef.current?.focusNode(id)} />
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            title="Forzar actualización de datos desde todas las fuentes"
+            style={{ ...btnStyle, color: refreshMsg?.startsWith("✓") ? "#2E7D32" : "#1A1A1A", opacity: refreshing ? 0.6 : 1 }}
+          >
+            {refreshing ? "⟳ Actualizando…" : refreshMsg ?? "⟳ Actualizar datos"}
+          </button>
           <button onClick={() => graphRef.current?.fit()}   style={btnStyle}>⊡ Ajustar</button>
           <button onClick={() => graphRef.current?.zoomIn()} style={btnStyle}>＋</button>
           <button onClick={() => graphRef.current?.zoomOut()} style={btnStyle}>－</button>
