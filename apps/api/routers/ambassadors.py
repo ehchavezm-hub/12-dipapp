@@ -28,7 +28,7 @@ async def list_ambassadors(
 ) -> dict:
     """Return current ambassadors list. Cached 12h; pass ?refresh=true to force reload."""
     if refresh:
-        C.invalidate("wikidata_ambassadors_v1")
+        C.invalidate("ambassadors_combined_v2")
 
     records = fetch_ambassadors()
     return {

@@ -225,7 +225,6 @@ SELECT DISTINCT
   ?personLabel
   ?posLabel
   ?fromCountryCode
-  ?toCountryCode
   ?startDate
 WHERE {
   ?person wdt:P31 wd:Q5 ;
@@ -239,16 +238,8 @@ WHERE {
     ?pos wdt:P17 ?fromCountry .
     ?fromCountry wdt:P298 ?fromCountryCode .
   }
-  OPTIONAL {
-    ?pos wdt:P131 ?toPlace .
-    OPTIONAL { ?toPlace wdt:P298 ?toCountryCode . }
-    OPTIONAL {
-      ?toPlace wdt:P17 ?toViaCity .
-      ?toViaCity wdt:P298 ?toCountryCode .
-    }
-  }
   OPTIONAL { ?stmt pq:P580 ?startDate }
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "en,es" }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
 }
 ORDER BY ?fromCountryCode ?personLabel
 LIMIT 8000
@@ -283,16 +274,20 @@ def _fetch_wikidata_ambassadors() -> list[dict[str, Any]]:
         name = row.get("personLabel", {}).get("value", "")
         pos_label = row.get("posLabel", {}).get("value", "")
         from_code = row.get("fromCountryCode", {}).get("value", "").upper()
-        to_code = row.get("toCountryCode", {}).get("value", "").upper()
         raw_date = row.get("startDate", {}).get("value", "")
 
         if not name or name.startswith("Q"):
             continue
-        if not to_code and pos_label:
-            to_code = _extract_to_country(pos_label)
+
+        # Always derive toCountry from the English position label —
+        # P131 (located in territory) is unreliable: it often resolves to
+        # a city in the SENDING country, giving toCountry == fromCountry.
+        to_code = _extract_to_country(pos_label) if pos_label else ""
         if not from_code and pos_label:
             from_code = _extract_from_country(pos_label)
-        if not from_code and not to_code:
+
+        # Skip records with no usable country data or self-assignments
+        if not from_code or not to_code or from_code == to_code:
             continue
 
         records.append({
@@ -503,7 +498,7 @@ async def _fetch_all_sources() -> tuple[list[dict[str, Any]], list[dict[str, Any
 
 def fetch_ambassadors() -> list[dict[str, Any]]:
     """Return merged ambassador list from Wikidata + MFA websites. Cached 12h."""
-    cache_key = "ambassadors_combined_v1"
+    cache_key = "ambassadors_combined_v2"
     cached = C.get(cache_key)
     if cached is not None:
         return cached
@@ -621,21 +616,44 @@ def _match_country(fragment: str) -> str:
 
 
 def _extract_to_country(label: str) -> str:
-    """Extract ISO-3 destination from 'Ambassador of X to Y' style label."""
+    """Extract ISO-3 destination from ambassador position label.
+
+    Supports English ('to', 'in'), Spanish ('ante', 'en', 'para') and
+    French ('auprès de', 'en', 'pour') label formats found in Wikidata.
+    """
     label_lower = label.lower()
-    for pattern in (r"\bto\s+(.+?)(?:\s*$|\s*\()", r"\bin\s+(.+?)(?:\s*$|\s*\()"):
+    # Ordered from most-specific to least-specific to avoid false matches
+    patterns = [
+        # English: "Ambassador of X to Y"
+        r"\bto\s+(?:the\s+)?(.+?)(?:\s*$|\s*\()",
+        # Spanish: "Embajador de X ante Y" or "... para Y"
+        r"\bante\s+(?:el\s+|la\s+|los\s+|las\s+)?(.+?)(?:\s*$|\s*\()",
+        r"\bpara\s+(?:el\s+|la\s+|los\s+|las\s+)?(.+?)(?:\s*$|\s*\()",
+        # French: "Ambassadeur auprès de Y"
+        r"\bauprès\s+de\s+(?:l[a']?\s+|le\s+|les\s+)?(.+?)(?:\s*$|\s*\()",
+        # Generic "in Y" (English/Spanish fallback — last resort)
+        r"\bin\s+(?:the\s+)?(.+?)(?:\s*$|\s*\()",
+    ]
+    for pattern in patterns:
         m = re.search(pattern, label_lower)
         if m:
-            code = _match_country(m.group(1).strip().rstrip(")"))
+            code = _match_country(m.group(1).strip().rstrip(")").strip())
             if code:
                 return code
     return ""
 
 
 def _extract_from_country(label: str) -> str:
-    """Extract ISO-3 sending country from 'Ambassador of X to Y' style label."""
+    """Extract ISO-3 sending country from ambassador position label."""
     label_lower = label.lower()
-    m = re.search(r"\bof\s+(.+?)\s+to\b", label_lower)
+    # English: "Ambassador of X to Y"
+    m = re.search(r"\bof\s+(?:the\s+)?(.+?)\s+(?:to|ante|auprès)\b", label_lower)
+    if m:
+        code = _match_country(m.group(1).strip())
+        if code:
+            return code
+    # Spanish: "Embajador de X ante Y" / "Embajador de X en Y"
+    m = re.search(r"\bde\s+(?:el\s+|la\s+|los\s+)?(.+?)\s+(?:ante|para|en)\b", label_lower)
     if m:
         code = _match_country(m.group(1).strip())
         if code:
