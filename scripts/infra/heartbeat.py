@@ -273,9 +273,9 @@ POLICIES = [
 def review() -> int:
     rows, changed = ["| Política | Estado | Detalle |", "|---|---|---|"], []
     for name, url, phrases in POLICIES:
-        code, text = http("GET", f"{url}/login", timeout=30)
+        code, text = http("GET", url, timeout=30, headers={"Accept": "text/html"})
         missing = [p for p in phrases if p not in text]
-        st = "sin cambios" if code == 200 and not missing else "REVISAR"
+        st = "NO VERIFICABLE" if code != 200 else ("REVISAR" if missing else "sin cambios")
         detail = f"HTTP {code}" + (f"; falta: {', '.join(missing)}" if missing else "")
         print(f"[review] {name}: {st} — {detail}")
         rows.append(f"| [{name}]({url}) | {st} | {detail} |")
