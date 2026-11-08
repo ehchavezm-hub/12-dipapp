@@ -34,11 +34,13 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - name: Probe Vercel URL candidates (temporary)
+        run: for u in 12-dipapp 12-dipapp-web dipapp dipapp-web 12-dipapp-ehchavezm-hub; do echo "$u.vercel.app -> $(curl -s -o /dev/null -w '%{http_code}' -m 20 https://$u.vercel.app/login)"; done
       - name: Run
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WORKFLOW_FILE: infra-heartbeat.yml
-          BACKEND_URL: ${{ vars.BACKEND_URL }}
+          BACKEND_URL: https://dipapp-api-invalid-failtest.onrender.com
           FRONTEND_URL: ${{ vars.FRONTEND_URL }}
           UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
           UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
