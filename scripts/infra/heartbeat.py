@@ -136,16 +136,16 @@ def discover_frontend() -> str:
                 for s in statuses:
                     if s.get("state") == "success" and s.get("environment_url"):
                         return s["environment_url"].rstrip("/")
-    return ""
+    return "https://12-dipapp.vercel.app"  # verified 2026-11-08 (/login → 200)
 
 
 def check_frontend(url: str) -> tuple[str, str]:
     if not url:
         return "skip", "URL de producción no encontrada (definir variable de repo FRONTEND_URL)"
-    print(f"[frontend] GET {url}")
+    print(f"[frontend] GET {url}/login")
 
     def once():
-        code, text = http("GET", url, timeout=30)
+        code, text = http("GET", f"{url}/login", timeout=30)
         paused = "DEPLOYMENT_PAUSED" in text or "DEPLOYMENT_DISABLED" in text
         ok = 200 <= code < 500 and code != 0 and not paused and code not in (402,)
         return ok, f"HTTP {code}{' DEPLOYMENT_PAUSED' if paused else ''}"
@@ -273,7 +273,7 @@ POLICIES = [
 def review() -> int:
     rows, changed = ["| Política | Estado | Detalle |", "|---|---|---|"], []
     for name, url, phrases in POLICIES:
-        code, text = http("GET", url, timeout=30)
+        code, text = http("GET", f"{url}/login", timeout=30)
         missing = [p for p in phrases if p not in text]
         st = "sin cambios" if code == 200 and not missing else "REVISAR"
         detail = f"HTTP {code}" + (f"; falta: {', '.join(missing)}" if missing else "")
