@@ -1,0 +1,46 @@
+name: Infra heartbeat
+
+# Health-checks Render (backend), Vercel (frontend), Upstash (if secrets exist)
+# and TLS expiry; opens a GitHub issue labelled `infra-alert` on failure.
+# Scheduled triggers only run from the repository's default branch.
+# See docs/infraestructura.md.
+on:
+  schedule:
+    - cron: "17 */6 * * *"     # heartbeat every 6 h
+    - cron: "41 14 2 1,4,7,10 *" # quarterly policy review
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "heartbeat | review"
+        default: heartbeat
+  push:
+    paths:
+      - ".github/workflows/infra-heartbeat.yml"
+      - "scripts/infra/**"
+
+permissions:
+  contents: read
+  issues: write        # open/close alert issues
+  actions: write       # re-enable this workflow (scheduler keep-alive)
+  deployments: read    # discover the Vercel production URL
+
+concurrency:
+  group: infra-heartbeat
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WORKFLOW_FILE: infra-heartbeat.yml
+          BACKEND_URL: ${{ vars.BACKEND_URL }}
+          FRONTEND_URL: ${{ vars.FRONTEND_URL }}
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+          MODE: ${{ github.event.schedule == '41 14 2 1,4,7,10 *' && 'review' || inputs.mode || 'heartbeat' }}
+        run: python3 scripts/infra/heartbeat.py "$MODE"
