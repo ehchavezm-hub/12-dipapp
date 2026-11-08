@@ -274,7 +274,8 @@ def review() -> int:
     rows, changed = ["| Política | Estado | Detalle |", "|---|---|---|"], []
     for name, url, phrases in POLICIES:
         code, text = http("GET", url, timeout=30, headers={"Accept": "text/html"})
-        missing = [p for p in phrases if p not in text]
+        flat = "".join(text.replace("&nbsp;", " ").replace("&#160;", " ").split()).lower()
+        missing = [p for p in phrases if "".join(p.split()).lower() not in flat]
         st = "NO VERIFICABLE" if code != 200 else ("REVISAR" if missing else "sin cambios")
         detail = f"HTTP {code}" + (f"; falta: {', '.join(missing)}" if missing else "")
         print(f"[review] {name}: {st} — {detail}")
