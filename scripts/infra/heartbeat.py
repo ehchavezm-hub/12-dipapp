@@ -141,7 +141,7 @@ def discover_frontend() -> str:
 
 def check_frontend(url: str) -> tuple[str, str]:
     if not url:
-        return "warn", "URL de producción no encontrada (definir variable de repo FRONTEND_URL)"
+        return "skip", "URL de producción no encontrada (definir variable de repo FRONTEND_URL)"
     print(f"[frontend] GET {url}")
 
     def once():
